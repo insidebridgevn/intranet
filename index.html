@@ -716,7 +716,7 @@ const KO = {
 'Chưa có phiếu lương':'급여명세서 없음','Kế toán chưa gắn phiếu lương cho tài khoản của bạn. Phiếu sẽ xuất hiện ở đây sau khi lương tháng được phát hành.':'아직 급여명세서가 연결되지 않았습니다. 급여가 발행되면 여기에 표시됩니다.',
 'Tải lại':'새로고침','Mở tab mới':'새 탭에서 열기','Khung trống hoặc báo lỗi? Trang gốc chưa cho phép hiển thị bên trong intranet. Bấm':'화면이 비어 있거나 오류가 나나요? 원본 페이지가 인트라넷 내 표시를 허용하지 않습니다.','để dùng.':'를 눌러 이용하세요.',
 'Chưa gắn liên kết':'링크 미설정','Admin vào Quản trị › Liên kết để thêm đường dẫn.':'관리자가 관리 › 링크에서 주소를 추가해야 합니다.','Tuyển dụng IBVN':'IBVN 채용',
-'Mở trang mua hàng':'구매 페이지 열기','Đặt mua sản phẩm của các thương hiệu với giá dành cho nhân viên IBVN. Trang mua hàng mở ở tab mới.':'IBVN 임직원가로 각 브랜드 제품을 구매하세요. 구매 페이지는 새 탭에서 열립니다.',
+'Mở trang tuyển dụng':'채용 페이지 열기','Xem các vị trí đang tuyển tại IBVN và giới thiệu ứng viên. Trang tuyển dụng mở ở tab mới.':'IBVN 채용 중인 포지션을 확인하고 후보자를 추천하세요. 채용 페이지는 새 탭에서 열립니다.','Mở trang mua hàng':'구매 페이지 열기','Đặt mua sản phẩm của các thương hiệu với giá dành cho nhân viên IBVN. Trang mua hàng mở ở tab mới.':'IBVN 임직원가로 각 브랜드 제품을 구매하세요. 구매 페이지는 새 탭에서 열립니다.',
 'Chỉ dành cho Leader':'리더 전용','Trang đánh giá ứng viên và nhân sự chỉ mở cho trưởng nhóm và quản lý.':'지원자 · 직원 평가는 팀장과 관리자만 볼 수 있습니다.',
 'Đánh giá ứng viên & nhân sự':'지원자 · 직원 평가','Admin vào Quản trị › Liên kết, điền LINK_DANH_GIA để mở trang này.':'관리자가 관리 › 링크에서 LINK_DANH_GIA를 입력해야 합니다.',
 'Đã đăng nhập bằng tài khoản intranet':'인트라넷 계정으로 로그인됨','Mở toàn màn hình':'전체 화면으로 열기','Cổng phê duyệt':'결재 포털',
@@ -1490,7 +1490,11 @@ VIEWS.muahang = async el => {
   el.innerHTML = `<div class="launch"><div class="big">${ic('bag')}</div><div><h3>Mua hàng nội bộ</h3><p>Đặt mua sản phẩm của các thương hiệu với giá dành cho nhân viên IBVN. Trang mua hàng mở ở tab mới.</p>
     <a class="btn lg white" href="${esc(S.links.muahang)}" target="_blank" rel="noopener">${ic('ext')}Mở trang mua hàng</a></div></div>`;
 };
-VIEWS.tuyendung = async el => embedView(el, { title:'Tuyển dụng IBVN', icon:'briefcase', url:S.links.tuyendung });
+VIEWS.tuyendung = async el => {
+  if (!S.links.tuyendung) return embedView(el, { title:'Tuyển dụng IBVN', icon:'briefcase', url:'' });
+  el.innerHTML = `<div class="launch"><div class="big">${ic('briefcase')}</div><div><h3>Tuyển dụng IBVN</h3><p>Xem các vị trí đang tuyển tại IBVN và giới thiệu ứng viên. Trang tuyển dụng mở ở tab mới.</p>
+    <a class="btn lg white" href="${esc(S.links.tuyendung)}" target="_blank" rel="noopener">${ic('ext')}Mở trang tuyển dụng</a></div></div>`;
+};
 VIEWS.danhgia = async el => {
   if (!has('LEADER')) { el.innerHTML = `<div class="card"><div class="empty"><div class="ico">${ic('lock')}</div><b>Chỉ dành cho Leader</b>Trang đánh giá ứng viên và nhân sự chỉ mở cho trưởng nhóm và quản lý.</div></div>`; return; }
   embedView(el, { title:'Đánh giá ứng viên & nhân sự', icon:'users', url:S.links.danhgia, missing:'Admin vào Quản trị › Liên kết, điền LINK_DANH_GIA để mở trang này.' });
