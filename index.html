@@ -1836,7 +1836,7 @@ function attBuild(R){
     const dow = parseISO(day).getDay() || 7, work = wd.includes(dow), isToday = day === R.today;
     R.emps.forEach(e => {
       const r = by[e.id + '|' + day];
-      if (!r && (!work || (isToday && attSecs(R.now) < ra))) return;
+      if (!r && (!work || (isToday && attSecs(R.now) < vao))) return;   // hôm nay: sau giờ vào làm mà chưa quét → tính là không có dữ liệu
       const ci = r ? r[2] : '', co = r ? r[3] : '', a = attSecs(ci), b = attSecs(co), flags = [];
       if (!r) flags.push('absent');
       else {
