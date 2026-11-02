@@ -684,6 +684,7 @@ window.addEventListener('unhandledrejection', e => showFatal('Lỗi: ' + (e.reas
    Dữ liệu người dùng nhập (tên, nội dung thông báo, lý do…) giữ nguyên. */
 let LANG = store.get('ibvn_lang') === 'ko' ? 'ko' : 'vi';
 const KO = {
+'Toàn công ty':'전사 현황','Tình hình chấm công toàn công ty':'전사 출퇴근 현황','Theo ngày':'일별','Theo khoảng thời gian':'기간별','Tuần này':'이번 주','Đi làm đúng giờ':'정상 출근','Đi trễ':'지각','Về sớm':'조퇴','Quên check-in':'출근 미태그','Quên check-out':'퇴근 미태그','Không có dữ liệu':'기록 없음','Đúng giờ':'정상','người':'명','Tải Excel':'엑셀 다운로드','Bộ phận':'부서','Tổng giờ':'근무 시간','Không có dòng nào':'데이터가 없습니다','Thử chọn mục khác hoặc ngày khác.':'다른 항목이나 날짜를 선택해 보세요.','Giờ vào = lần quét sớm nhất ở':'출근 = 가장 이른 태그:','· Giờ ra = lần quét trễ nhất ở':'· 퇴근 = 가장 늦은 태그:','· Trễ sau':'· 지각 기준','về sớm trước':'조퇴 기준',', về sớm trước':', 조퇴 기준','Chưa tải được thư viện Excel, thử tải lại trang':'엑셀 라이브러리를 불러오지 못했습니다. 새로고침해 주세요','Xác nhận phiếu lương':'급여명세서 확인','Xác nhận':'확인','Để sau':'나중에','Xác nhận phiếu lương?':'급여명세서를 확인하시겠습니까?','Đã xác nhận phiếu lương':'급여명세서를 확인했습니다','Kế toán đã nhận được xác nhận.':'회계팀에 확인이 전달되었습니다.','Kiểu chữ':'글꼴','Cỡ chữ':'글자 크기','Mặc định':'기본','Có chân':'세리프','Đơn cách':'고정폭','Nhỏ':'작게','Vừa':'보통','Lớn':'크게','Rất lớn':'아주 크게','Khổng lồ':'최대','• Danh sách':'• 목록','1. Danh sách':'1. 번호 목록','Link':'링크','Xoá định dạng':'서식 지우기','Viết nội dung thông báo…':'공지 내용을 입력하세요…','Giờ họp theo bước 15 phút (:00, :15, :30, :45)':'회의 시간은 15분 단위입니다 (:00, :15, :30, :45)','Bạn chỉ xem được chấm công của mình':'본인 출퇴근 기록만 볼 수 있습니다','Chỉ người được cấp quyền mới xem chấm công toàn công ty':'권한이 있는 사람만 전사 출퇴근 현황을 볼 수 있습니다','Chỉ xác nhận được phiếu lương mới nhất':'최신 급여명세서만 확인할 수 있습니다','Bạn đã xác nhận phiếu lương tháng này rồi':'이번 달 급여명세서를 이미 확인했습니다','Dữ liệu chấm công tự động cập nhật từ khóa cửa TTLock khoảng 10 phút/lần.':'출퇴근 기록은 TTLock 도어락에서 약 10분마다 자동 업데이트됩니다.','Dữ liệu chấm công tự động cập nhật từ khóa cửa.':'출퇴근 기록은 도어락에서 자동 업데이트됩니다.','Chọn tối đa 3 tháng mỗi lần':'한 번에 최대 3개월까지 선택할 수 있습니다','Chọn ngày hợp lệ':'올바른 날짜를 선택하세요',
 'Hiện số tiền':'금액 보기','Ẩn số tiền':'금액 숨기기','Tổng số tiền lương thực nhận':'실수령액','Tổng thu nhập':'총 소득','Tổng khấu trừ':'총 공제액','Ngày phép còn lại':'잔여 연차',
 'Giờ OT còn lại':'잔여 OT 시간','Ngày công & thời gian':'근무일 · 시간','Thu nhập thực tế':'실제 소득','Các khoản khấu trừ':'공제 항목','Ngày công chuẩn':'기준 근무일','Công tính lương':'급여 산정 근무일',
 'Ngày làm thực tế':'실근무일','Công chính thức':'정규 근무일','Ngày nghỉ phép':'연차 사용일','Công thử việc':'수습 근무일','Ngày nghỉ phép bệnh':'병가','Công học việc':'견습 근무일','Ngày nghỉ không lương':'무급휴가',
@@ -809,6 +810,13 @@ const KO = {
 const KO_WD = { 'Thứ hai':'월요일','Thứ ba':'화요일','Thứ tư':'수요일','Thứ năm':'목요일','Thứ sáu':'금요일','Thứ bảy':'토요일','Chủ nhật':'일요일','Hôm nay':'오늘','T2':'월','T3':'화','T4':'수','T5':'목','T6':'금','T7':'토','CN':'일' };
 Object.assign(KO, KO_WD);
 const KO_RX = [
+  [/^Chi tiết \((\d+) dòng\)$/, '상세 ($1행)'], [/^(Đi trễ|Về sớm|Quên check-in|Quên check-out|Không có dữ liệu|Đi làm đúng giờ) \((\d+) lượt\)$/, (m, a, n) => KO[a] + ' (' + n + '회)'],
+  [/^(\d+)% \/ (\d+) người$/, '$1% / $2명'], [/^(\d+)% \/ (\d+) người · (\d+) lượt$/, '$1% / $2명 · $3회'],
+  [/^Xác nhận phiếu lương tháng (\d+)\/(\d{4})$/, '$2년 $1월 급여명세서 확인'], [/^Bạn đã xác nhận phiếu lương tháng (\d+)\/(\d{4})$/, '$2년 $1월 급여명세서를 확인했습니다'],
+  [/^Lúc (.+)\. Kế toán đã nhận được xác nhận\.$/, '$1 확인 · 회계팀에 전달되었습니다.'],
+  [/^Kiểm tra kỹ các khoản rồi bấm xác nhận\. Hạn chót ngày (\d+) tháng này\.$/, '항목을 꼼꼼히 확인한 뒤 확인 버튼을 누르세요. 이번 달 $1일까지 가능합니다.'],
+  [/^Chỉ xác nhận được từ ngày (\d+) đến ngày (\d+) hằng tháng\..*$/, '매월 $1일~$2일에만 확인할 수 있습니다. 오류가 있으면 아래에서 회계팀에 문의하세요.'],
+  [/^Chỉ xác nhận phiếu lương từ ngày (\d+) đến ngày (\d+) hằng tháng$/, '매월 $1일~$2일에만 급여명세서를 확인할 수 있습니다'],
   [/^Tháng (\d+)\/(\d{4})$/, '$2년 $1월'], [/^Tháng (\d+), (\d{4})$/, '$2년 $1월'], [/^Sinh nhật tháng (\d+)$/, '$1월 생일'], [/^Th (\d+)$/, '$1월'],
   [/^(\d+(?:\.\d+)?) giờ$/, '$1시간'], [/^(\d+(?:\.\d+)?) ngày$/, '$1일'], [/^(\d+) lượt$/, '$1회'], [/^(\d+) lượt quét$/, '태그 $1회'],
   [/^(\d+) phút trước$/, '$1분 전'], [/^(\d+) giờ trước$/, '$1시간 전'], [/^(\d+) ngày trước$/, '$1일 전'],
@@ -1803,7 +1811,7 @@ VIEWS.chamcong = async el => {
     $('#ca-x').onclick = () => { if (!R) return; if (!window.XLSX) return toast('Chưa tải được thư viện Excel, thử tải lại trang', 'err'); exportAtt(R, LIST); };
     const load = async () => {
       $('#ca-list').innerHTML = skel(5, 40);
-      try { R = await call('att.report', { from: d1 < d2 ? d1 : d2, to: d1 < d2 ? d2 : d1 }); LIST = attBuild(R); paint(); }
+      try { R = await call('att.report', { from: d1 < d2 ? d1 : d2, to: d1 < d2 ? d2 : d1 }); R.gioVao = attHM(R.gioVao) || '08:00'; R.gioRa = attHM(R.gioRa) || '17:00'; LIST = attBuild(R); paint(); }
       catch(err) { $('#ca-list').innerHTML = errBox(err.message); $('#ca-sum').innerHTML = ''; }
     };
     pick(); await load();
@@ -1814,7 +1822,8 @@ VIEWS.chamcong = async el => {
   await drawMine();
 };
 
-const attSecs = t => { const m = String(t || '').match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?/); return m ? (+m[1]) * 3600 + (+m[2]) * 60 + (+(m[3] || 0)) : null; };
+const attSecs = t => { const m = String(t || '').trim().match(/(\d{1,2}):(\d{2})(?::(\d{2}))?$/); return m ? (+m[1]) * 3600 + (+m[2]) * 60 + (+(m[3] || 0)) : null; };
+const attHM = t => String(t || '').trim().replace(/^.*\s/, '').slice(0, 5);
 const attHms = n => n == null ? '' : `${pad(Math.floor(n / 3600))}:${pad(Math.floor(n % 3600 / 60))}`;
 function attBuild(R){
   const wd = String(R.workDays).split(/[^0-9]+/).filter(Boolean).map(Number);
