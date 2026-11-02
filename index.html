@@ -1846,7 +1846,7 @@ function attBuild(R){
         if (!ci) flags.push('noin');
         if (!co && !(isToday && attSecs(R.now) < ra + 3600)) flags.push('noout');
         if (a != null && a > vao) flags.push('late');
-        if (b != null && b < ra) flags.push('early');
+        if (b != null && b < ra && !(isToday && attSecs(R.now) < ra)) flags.push('early');   // hôm nay chưa tới giờ tan làm → chưa tính về sớm
         if (!flags.length && (ci || co)) flags.push('ok');
       }
       out.push({ day, e, ci, co, hrs: a != null && b != null && b > a ? b - a : null, flags });
