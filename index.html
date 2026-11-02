@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" data-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -972,7 +972,7 @@ function busy(btn, on, label){
 }
 
 function isDark(){ const t = document.documentElement.dataset.theme; return t ? t === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches; }
-function applyTheme(){ const t = store.get('ibvn_theme'); if (t==='light'||t==='dark') document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme; }
+function applyTheme(){ const t = store.get('ibvn_theme'); if (t === 'auto') delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = t === 'dark' ? 'dark' : 'light'; }
 applyTheme();
 
 /* ---------- Navigation config ---------- */
@@ -2194,7 +2194,7 @@ VIEWS.gopy = async el => {
 
 /* ---------- Cài đặt ---------- */
 VIEWS.caidat = async el => {
-  const theme = store.get('ibvn_theme') || 'auto';
+  const theme = store.get('ibvn_theme') || 'light';
   const roleName = { ADMIN:'Admin', LEADER:'Leader', ACCOUNTING:'Kế toán', HR:'Nhân sự' };
   el.innerHTML = `<div class="grid g2" style="align-items:start">
     <div class="stack">
