@@ -624,6 +624,14 @@ kbd{font:600 11px var(--fb);background:var(--surface-3);color:var(--text-2);bord
 #imp-bar .btn{flex:none}
 .tbl tr.emp-off td{background:rgba(120,110,105,.07);color:var(--muted)}
 .tbl tr.emp-off td b,.tbl tr.emp-off input,.tbl tr.emp-off select{opacity:.6}
+.ann-rx{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:10px}
+.ann-rx .rx{display:inline-flex;align-items:center;gap:4px;height:30px;padding:0 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-size:15px;line-height:1;color:var(--text);transition:transform .12s}
+.ann-rx .rx b{font-size:12.5px;font-weight:700}
+.ann-rx .rx.z{opacity:.55;padding:0 8px}.ann-rx .rx:hover{opacity:1;transform:translateY(-1px)}
+.ann-rx .rx.on{background:var(--brand-soft);border-color:var(--brand);opacity:1}
+.ann.flash{box-shadow:0 0 0 3px var(--brand);border-radius:18px;transition:box-shadow .3s}
+.as-list{max-height:55vh;overflow:auto}.as-r{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 4px;border-top:1px solid var(--line)}
+.as-em{font-size:18px;padding:12px 4px 4px}.as-em b{font-size:13px}
 .demo-flag{position:fixed;left:50%;transform:translateX(-50%);bottom:12px;z-index:95;background:var(--text);color:var(--bg);font-size:12px;padding:7px 14px;border-radius:999px;opacity:.88;pointer-events:none;box-shadow:var(--shadow)}
 @media (max-width:640px){.demo-flag{display:none}}
 </style>
@@ -690,6 +698,7 @@ window.addEventListener('unhandledrejection', e => showFatal('Lỗi: ' + (e.reas
    Dữ liệu người dùng nhập (tên, nội dung thông báo, lý do…) giữ nguyên. */
 let LANG = store.get('ibvn_lang') === 'ko' ? 'ko' : 'vi';
 const KO = {
+'Bỏ cảm xúc':'반응 취소','Thả cảm xúc':'반응 남기기','Đã sao chép link thông báo':'공지 링크를 복사했습니다','Link thông báo':'공지 링크','Gửi lại email':'이메일 재발송','Đóng':'닫기','Chưa ai xem':'아직 아무도 보지 않았습니다','Mọi người đã xem hết':'모두 확인했습니다','Chưa ai thả cảm xúc':'아직 반응이 없습니다','Email nhận thông báo':'알림 이메일','Gửi email thông báo cho toàn bộ nhân viên (kèm link xem trên intranet)':'전 직원에게 이메일 알림 보내기 (인트라넷 링크 포함)','Đang đăng & gửi email…':'게시 및 이메일 발송 중…',
 'Xoá':'삭제','Khôi phục':'복구','Đã xoá khỏi hệ thống':'시스템에서 삭제됨','Xoá nhân viên khỏi hệ thống?':'직원을 시스템에서 삭제하시겠습니까?','Khôi phục nhân viên?':'직원을 복구하시겠습니까?','Đã khôi phục':'복구되었습니다','Mã này không đăng nhập được nữa. Lịch sử chấm công, đơn từ vẫn được giữ.':'이 사번으로 더 이상 로그인할 수 없습니다. 출퇴근·신청 기록은 유지됩니다.',
 'Xem với tư cách':'다른 직원으로 보기','Thoát':'나가기','Bạn không có quyền xem với tư cách người khác':'다른 직원으로 볼 권한이 없습니다',
 'Gửi tới':'받는 사람','Góp ý chung':'일반 의견','Ý kiến lên CEO':'CEO에게 의견','Gửi CEO':'CEO에게','Chỉ CEO đọc được ý kiến này.':'CEO만 이 의견을 볼 수 있습니다.','Góp ý về intranet, công việc chung. Ban quản trị đọc và phản hồi.':'인트라넷 및 업무 전반에 대한 의견입니다. 관리자가 확인 후 답변합니다.','(không ghi tên bạn, và bạn cũng không xem lại được ý kiến này)':'(이름이 기록되지 않으며, 본인도 다시 볼 수 없습니다)','Bạn không có quyền xem mục này':'이 항목을 볼 권한이 없습니다',
@@ -819,6 +828,8 @@ const KO = {
 const KO_WD = { 'Thứ hai':'월요일','Thứ ba':'화요일','Thứ tư':'수요일','Thứ năm':'목요일','Thứ sáu':'금요일','Thứ bảy':'토요일','Chủ nhật':'일요일','Hôm nay':'오늘','T2':'월','T3':'화','T4':'수','T5':'목','T6':'금','T7':'토','CN':'일' };
 Object.assign(KO, KO_WD);
 const KO_RX = [
+  [/^(\d+) đã xem$/, '$1명 확인'], [/^Ai đã xem · (.+)$/, '확인한 사람 · $1'], [/^Đã xem \((\d+)\)$/, '확인 ($1)'], [/^Chưa xem \((\d+)\)$/, '미확인 ($1)'], [/^Cảm xúc \((\d+)\)$/, '반응 ($1)'],
+  [/^Đã gửi email tới (\d+) địa chỉ(.*)$/, '이메일 $1건 발송$2'],
   [/^Đang xem với tư cách (.+?) – chỉ xem.*$/, '$1(으)로 보는 중 – 보기 전용입니다. 나가기를 눌러 본인 계정으로 돌아가세요.'],
   [/^Từ (\d{2}\/\d{2}\/\d{4}): chỉ tính quét$/, '$1부터: 지문 태그만 인정'],
   [/^(\d+) lượt quét trong tháng$/, '이번 달 태그 $1회'], [/^· Vào (.+) · Ra (.+) · (\d+) lượt$/, '· 출근 $1 · 퇴근 $2 · $3회'],
@@ -1067,7 +1078,7 @@ function getStartPage(){
     if (IS_GAS && google.script.url) google.script.url.getLocation(l => { S.startCode = l.parameter.code || ''; res(l.parameter.page); });
     else {
       let q; try { q = new URLSearchParams(location.search); } catch(e) { q = null; }
-      S.startCode = (q && q.get('code')) || '';
+      S.startCode = (q && q.get('code')) || ''; S.startAnn = (q && q.get('id')) || '';
       res(location.hash.slice(1) || (q && q.get('page')) || '');
     }
   });
@@ -1515,6 +1526,30 @@ function rteInit(ed, body){
 }
 const rteValue = ed => { const h = richClean(ed.innerHTML).trim(); return /^(<br\s*\/?>|\s|&nbsp;)*$/i.test(h) ? '' : h; };
 
+const ANN_EMOJI = ['👍', '❤️', '🎉', '😂', '😮', '🙏'];
+function annUrl(id){ const base = location.origin + location.pathname; return base + '?page=thongbao&id=' + encodeURIComponent(id); }
+async function annStatsModal(a){
+  if (!a) return;
+  const m = modal('Ai đã xem · ' + a.title, `<div id="as-b">${skel(4, 36)}</div>`, `${has('HR') ? '<button class="btn ghost" id="as-mail">Gửi lại email</button>' : ''}<button class="btn primary" data-close>Đóng</button>`);
+  const mb = $('#as-mail', m.el);
+  if (mb) mb.onclick = async ev => { busy(ev.currentTarget, true, 'Đang gửi…'); try { const r = await call('ann.resend', { id:a.id }); toast(`Đã gửi email tới ${r.sent} địa chỉ${r.missing ? ` · ${r.missing} người chưa có email` : ''}`); } catch(err) { toast(err.message, 'err'); } busy(ev.currentTarget, false); };
+  try {
+    const d = await call('ann.stats', { id:a.id });
+    const seen = d.emps.filter(e => e.seenAt).sort((x, y) => x.seenAt < y.seenAt ? 1 : -1), not = d.emps.filter(e => !e.seenAt);
+    let tab = 'seen';
+    const paint = () => {
+      const row = (e, right) => `<div class="as-r"><div style="min-width:0"><b>${esc(e.name)}</b><div class="small muted">${esc(e.id)}${e.dept ? ' · ' + esc(e.dept) : ''}</div></div><span class="small muted">${right}</span></div>`;
+      const byEm = d.emojis.map(em => ({ em, list: d.reacts.filter(r => r.emoji === em) })).filter(x => x.list.length);
+      $('#as-b', m.el).innerHTML = `<div class="seg" id="as-t" style="margin-bottom:12px"><button data-t="seen" class="${tab === 'seen' ? 'on' : ''}">Đã xem (${seen.length})</button><button data-t="not" class="${tab === 'not' ? 'on' : ''}">Chưa xem (${not.length})</button><button data-t="rx" class="${tab === 'rx' ? 'on' : ''}">Cảm xúc (${d.reacts.length})</button></div>
+        <div class="as-list">${tab === 'seen' ? (seen.map(e => row(e, esc(e.seenAt.slice(11, 16) + ' · ' + vnDate(e.seenAt.slice(0, 10)).slice(0, 5)))).join('') || '<div class="empty">Chưa ai xem</div>')
+          : tab === 'not' ? (not.map(e => row(e, '')).join('') || '<div class="empty">Mọi người đã xem hết</div>')
+          : (byEm.map(x => `<div class="as-em">${x.em} <b>${x.list.length}</b></div>` + x.list.map(r => row({ name:r.name, id:r.id }, esc(String(r.time).slice(11, 16)))).join('')).join('') || '<div class="empty">Chưa ai thả cảm xúc</div>')}</div>`;
+      $('#as-t', m.el).onclick = e => { const b = e.target.closest('[data-t]'); if (b) { tab = b.dataset.t; paint(); } };
+    };
+    paint();
+  } catch(err) { $('#as-b', m.el).innerHTML = errBox(err.message); }
+}
+
 /* ---------- Thông báo ---------- */
 VIEWS.thongbao = async el => {
   const canPost = has('HR');
@@ -1527,15 +1562,21 @@ VIEWS.thongbao = async el => {
   let cat = '';
   const draw = () => {
     const list = S.ann.filter(a => !cat || a.cat === cat);
-    $('#tb-list').innerHTML = list.length ? list.map(a => { const d = parseISO(a.date) || new Date(); return `<div class="ann hu-${({ 'Nhân sự':'sky', 'Sự kiện':'mint', 'Khẩn':'rose' })[a.cat] || 'peach'} ${a.date > prevSeen ? 'new' : ''}">
+    $('#tb-list').innerHTML = list.length ? list.map(a => { const d = parseISO(a.date) || new Date(); return `<div class="ann hu-${({ 'Nhân sự':'sky', 'Sự kiện':'mint', 'Khẩn':'rose' })[a.cat] || 'peach'} ${a.date > prevSeen ? 'new' : ''}" id="ann-${esc(a.id)}">
       <div class="date"><b>${pad(d.getDate())}</b><span>Th ${d.getMonth()+1}</span></div>
       <div style="flex:1;min-width:0"><h4>${a.pinned ? `<span class="pill brand">${ic('pin')}Ghim</span>` : ''}${esc(a.title)}</h4>
         <div class="body rich">${richHtml(a.body)}</div>
+        <div class="ann-rx" data-rx="${esc(a.id)}">${ANN_EMOJI.map(em => { const n = (a.react || {})[em] || 0, on = (a.myReact || []).includes(em); return `<button class="rx ${on ? 'on' : ''} ${n ? '' : 'z'}" data-em="${em}" title="${on ? 'Bỏ cảm xúc' : 'Thả cảm xúc'}">${em}${n ? `<b>${n}</b>` : ''}</button>`; }).join('')}
+          <span class="spacer"></span>${a.views != null ? `<button class="btn sm ghost" data-stats="${esc(a.id)}">${ic('eye')}${a.views} đã xem</button>` : ''}<button class="btn sm ghost" data-link="${esc(a.id)}" title="Sao chép link thông báo">${ic('ext')}Link</button></div>
         <div class="meta"><span class="pill ${a.cat === 'Khẩn' ? 'bad' : a.cat === 'Nhân sự' ? 'info' : a.cat === 'Sự kiện' ? 'ok' : ''}">${esc(a.cat)}</span><span>${esc(a.by)}</span><span>${vnDateTime(a.date)}</span>
         ${canPost ? `<span class="spacer"></span><button class="btn sm ghost" data-edit="${esc(a.id)}">${ic('edit')}Sửa</button><button class="btn sm danger" data-del="${esc(a.id)}">${ic('trash')}Gỡ</button>` : ''}</div></div></div>`; }).join('')
       : `<div class="empty"><div class="ico">${ic('bell')}</div><b>Chưa có thông báo</b>Khi công ty đăng tin mới, bạn sẽ thấy ở đây.</div>`;
   };
   draw(); markAnnSeen(); renderNav();
+  const unseen = S.ann.filter(a => !a.seen).map(a => a.id);
+  if (unseen.length) call('ann.seen', { ids: unseen }).then(() => S.ann.forEach(a => a.seen = true)).catch(() => {});
+  if (S.startAnn) { const t = document.getElementById('ann-' + S.startAnn); S.startAnn = '';
+    if (t) { t.scrollIntoView({ behavior:'smooth', block:'center' }); t.classList.add('flash'); setTimeout(() => t.classList.remove('flash'), 2600); } }
   $('#tb-f').onclick = e => { const b = e.target.closest('button'); if (!b) return; $$('#tb-f button').forEach(x => x.classList.toggle('on', x === b)); cat = b.dataset.c; draw(); };
   const edit = a => {
     a = a || {};
@@ -1543,13 +1584,27 @@ VIEWS.thongbao = async el => {
       <div class="field"><label>Tiêu đề <span class="req">*</span></label><input class="input" id="an-t" value="${esc(a.title||'')}"></div>
       <div class="field"><label>Nội dung</label>${rteHtml()}</div>
       <div class="row"><div class="field" style="flex:1"><label>Loại</label><select class="select" id="an-c">${['Chung','Nhân sự','Sự kiện','Khẩn'].map(c => `<option ${a.cat===c?'selected':''}>${c}</option>`).join('')}</select></div>
-      <label class="check" style="margin-top:22px"><input type="checkbox" id="an-p" ${a.pinned?'checked':''}> Ghim lên đầu</label></div>`,
+      <label class="check" style="margin-top:22px"><input type="checkbox" id="an-p" ${a.pinned?'checked':''}> Ghim lên đầu</label></div>
+      ${a.id ? '' : `<label class="check"><input type="checkbox" id="an-m" checked> Gửi email thông báo cho toàn bộ nhân viên (kèm link xem trên intranet)</label>`}`,
       `<button class="btn ghost" data-close>Huỷ</button><button class="btn primary" id="an-s">${a.id ? 'Lưu' : 'Đăng'}</button>`);
     rteInit($('#an-ed', m.el), a.body || '');
-    $('#an-s', m.el).onclick = async ev => { busy(ev.currentTarget, true); try { S.ann = await call('ann.save', { id:a.id, title:$('#an-t').value, body:rteValue($('#an-ed', m.el)), cat:$('#an-c').value, pinned:$('#an-p').checked }); m.close(); draw(); markAnnSeen(); renderNav(); toast('Đã lưu thông báo'); } catch(err){ toast(err.message,'err'); busy(ev.currentTarget,false); } };
+    $('#an-s', m.el).onclick = async ev => { busy(ev.currentTarget, true); try { const em = !a.id && $('#an-m') && $('#an-m').checked; busy(ev.currentTarget, true, em ? 'Đang đăng & gửi email…' : 'Đang lưu…');
+      const r = await call('ann.save', { id:a.id, title:$('#an-t').value, body:rteValue($('#an-ed', m.el)), cat:$('#an-c').value, pinned:$('#an-p').checked, email: em });
+      if (Array.isArray(r)) S.ann = r; else { S.ann = r.list;
+        if (r.mailError) toast('Đã đăng, nhưng chưa gửi được email: ' + r.mailError, 'err');
+        else if (r.mail) toast(`Đã gửi email tới ${r.mail.sent} địa chỉ${r.mail.missing ? ` · ${r.mail.missing} người chưa có email` : ''}`); }
+      m.close(); draw(); markAnnSeen(); renderNav(); toast('Đã lưu thông báo'); } catch(err){ toast(err.message,'err'); busy(ev.currentTarget,false); } };
   };
   if (canPost) $('#tb-new').onclick = () => edit();
   $('#tb-list').onclick = async e => {
+    const rx = e.target.closest('[data-em]');
+    if (rx) { const id = rx.closest('[data-rx]').dataset.rx; rx.disabled = true;
+      try { const u = await call('ann.react', { id, emoji: rx.dataset.em }); if (u) { const i = S.ann.findIndex(a => a.id === id); if (i >= 0) S.ann[i] = { ...S.ann[i], react: u.react, myReact: u.myReact }; } draw(); }
+      catch(err) { toast(err.message, 'err'); rx.disabled = false; } return; }
+    const lk = e.target.closest('[data-link]');
+    if (lk) { const url = annUrl(lk.dataset.link); try { await navigator.clipboard.writeText(url); toast('Đã sao chép link thông báo'); } catch(err) { modal('Link thông báo', `<input class="input" value="${esc(url)}" readonly onclick="this.select()">`, '<button class="btn primary" data-close>Đóng</button>'); } return; }
+    const st = e.target.closest('[data-stats]');
+    if (st) return annStatsModal(S.ann.find(a => a.id === st.dataset.stats));
     const ed = e.target.closest('[data-edit]'), dl = e.target.closest('[data-del]');
     if (ed) edit(S.ann.find(a => a.id === ed.dataset.edit));
     if (dl) { const m = modal('Gỡ thông báo?', '<p style="margin:0">Thông báo sẽ không còn hiện với nhân viên.</p>', '<button class="btn ghost" data-close>Huỷ</button><button class="btn danger" id="dl-ok">Gỡ</button>');
@@ -2325,13 +2380,14 @@ VIEWS.admin = async el => {
       q = (q || '').toLowerCase();
       const rank = e => /XO[AÁ]/i.test(e.status) ? 2 : /NGHỈ/i.test(e.status) ? 1 : 0;
       const rows = list.filter(e => !q || (e.name + e.id + e.dept).toLowerCase().includes(q)).sort((a, b) => rank(a) - rank(b));
-      $('#ad-l').innerHTML = `<table class="tbl"><thead><tr><th>Nhân viên</th><th>Quyền</th><th>Link phiếu lương</th><th>Email phê duyệt</th><th>Trạng thái</th><th>Đăng nhập</th><th></th></tr></thead><tbody>${rows.map(e => rank(e) === 2
-        ? `<tr data-id="${esc(e.id)}" class="emp-off"><td><b>${esc(e.name)}</b><div class="small muted">${esc(e.id)} · ${esc(e.dept)}</div></td><td colspan="4"><span class="pill bad">Đã xoá khỏi hệ thống</span> <span class="small muted">Mã này không đăng nhập được nữa. Lịch sử chấm công, đơn từ vẫn được giữ.</span></td><td></td>
+      $('#ad-l').innerHTML = `<table class="tbl"><thead><tr><th>Nhân viên</th><th>Quyền</th><th>Link phiếu lương</th><th>Email nhận thông báo</th><th>Email phê duyệt</th><th>Trạng thái</th><th>Đăng nhập</th><th></th></tr></thead><tbody>${rows.map(e => rank(e) === 2
+        ? `<tr data-id="${esc(e.id)}" class="emp-off"><td><b>${esc(e.name)}</b><div class="small muted">${esc(e.id)} · ${esc(e.dept)}</div></td><td colspan="5"><span class="pill bad">Đã xoá khỏi hệ thống</span> <span class="small muted">Mã này không đăng nhập được nữa. Lịch sử chấm công, đơn từ vẫn được giữ.</span></td><td></td>
             <td><button class="btn sm ghost" data-restore>${ic('refresh')}Khôi phục</button></td></tr>`
         : `<tr data-id="${esc(e.id)}" class="${rank(e) === 1 ? 'emp-off' : ''}">
         <td><b>${esc(e.name)}</b><div class="small muted">${esc(e.id)} · ${esc(e.dept)}</div></td>
         <td><div class="row" style="gap:6px">${ROLES.map(([k, l]) => `<label class="check small"><input type="checkbox" data-role="${k}" ${e.roles.toUpperCase().split(/[,\s]+/).includes(k) ? 'checked' : ''}>${l}</label>`).join('')}</div></td>
         <td><input class="input" data-pay value="${esc(e.payslip)}" placeholder="https:\/\/…" style="min-width:200px"></td>
+        <td><input class="input" data-em value="${esc(e.email || '')}" placeholder="ten@insidegroup.co.kr" style="min-width:190px" title="Email nhận thông báo từ intranet. Để trống thì dùng Email phê duyệt hoặc email bên web phê duyệt (theo mã NV)"></td>
         <td><input class="input" data-ae value="${esc(e.approvalEmail || '')}" placeholder="tự lấy theo mã NV" style="min-width:190px" title="Chỉ điền khi người này duyệt bằng email vai trò (vd sếp dùng hr@)"></td>
         <td><select class="select" data-st style="width:auto"><option ${e.status !== 'NGHỈ VIỆC' ? 'selected' : ''}>ĐANG LÀM</option><option ${e.status === 'NGHỈ VIỆC' ? 'selected' : ''}>NGHỈ VIỆC</option></select></td>
         <td class="small">${e.hasPw ? `<span class="pill ok">Đã đổi pass</span>` : `<span class="pill warn">Pass mặc định</span>`}<div class="muted">${esc(e.lastLogin)}</div></td>
@@ -2357,7 +2413,7 @@ VIEWS.admin = async el => {
       if (e.target.closest('[data-save]')) {
         const btn = e.target.closest('[data-save]'); busy(btn, true, '…');
         const roles = $$('[data-role]', tr).filter(x => x.checked).map(x => x.dataset.role).join(',');
-        try { await call('adm.saveEmployee', { id, roles, payslip: $('[data-pay]', tr).value.trim(), approvalEmail: $('[data-ae]', tr).value.trim(), status: $('[data-st]', tr).value }); const it = list.find(x => x.id === id); it.roles = roles; it.payslip = $('[data-pay]', tr).value.trim(); it.status = $('[data-st]', tr).value; toast('Đã lưu ' + id); } catch(err) { toast(err.message, 'err'); }
+        try { await call('adm.saveEmployee', { id, roles, payslip: $('[data-pay]', tr).value.trim(), approvalEmail: $('[data-ae]', tr).value.trim(), email: $('[data-em]', tr).value.trim(), status: $('[data-st]', tr).value }); const it = list.find(x => x.id === id); it.roles = roles; it.payslip = $('[data-pay]', tr).value.trim(); it.status = $('[data-st]', tr).value; toast('Đã lưu ' + id); } catch(err) { toast(err.message, 'err'); }
         busy(btn, false);
       }
       if (e.target.closest('[data-reset]')) {
