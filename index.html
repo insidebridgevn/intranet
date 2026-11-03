@@ -1027,7 +1027,8 @@ async function startImp(id, btn){
     location.hash = 'home'; location.reload();
   } catch(err) { toast(err.message, 'err'); if (btn) busy(btn, false); }
 }
-function stopImp(){
+async function stopImp(){
+  try { await call('logout', { token:S.token }); } catch(e){}   // huỷ luôn phiên xem trên máy chủ
   const back = store.get('ibvn_token_admin');
   store.del('ibvn_token_admin');
   if (back) store.set('ibvn_token', back); else store.del('ibvn_token');
