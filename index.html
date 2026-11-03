@@ -685,6 +685,7 @@ window.addEventListener('unhandledrejection', e => showFatal('Lỗi: ' + (e.reas
    Dữ liệu người dùng nhập (tên, nội dung thông báo, lý do…) giữ nguyên. */
 let LANG = store.get('ibvn_lang') === 'ko' ? 'ko' : 'vi';
 const KO = {
+'Gửi tới':'받는 사람','Góp ý chung':'일반 의견','Ý kiến lên CEO':'CEO에게 의견','Gửi CEO':'CEO에게','Chỉ CEO đọc được ý kiến này.':'CEO만 이 의견을 볼 수 있습니다.','Góp ý về intranet, công việc chung. Ban quản trị đọc và phản hồi.':'인트라넷 및 업무 전반에 대한 의견입니다. 관리자가 확인 후 답변합니다.','(không ghi tên bạn, và bạn cũng không xem lại được ý kiến này)':'(이름이 기록되지 않으며, 본인도 다시 볼 수 없습니다)','Bạn không có quyền xem mục này':'이 항목을 볼 권한이 없습니다',
 'Giờ quét':'태그 시간','Cách mở':'방식','Khóa':'도어락','Kết quả':'결과','Thành công':'성공','Thất bại':'실패','Chưa có dữ liệu tháng này':'이번 달 기록이 없습니다','Tổng nhân viên':'전체 직원','Toàn công ty':'전사 현황','Tình hình chấm công toàn công ty':'전사 출퇴근 현황','Theo ngày':'일별','Theo khoảng thời gian':'기간별','Tuần này':'이번 주','Đi làm đúng giờ':'정상 출근','Đi trễ':'지각','Về sớm':'조퇴','Quên check-in':'출근 미태그','Quên check-out':'퇴근 미태그','Không có dữ liệu':'기록 없음','Đúng giờ':'정상','người':'명','Tải Excel':'엑셀 다운로드','Bộ phận':'부서','Tổng giờ':'근무 시간','Không có dòng nào':'데이터가 없습니다','Thử chọn mục khác hoặc ngày khác.':'다른 항목이나 날짜를 선택해 보세요.','Giờ vào = lần quét sớm nhất ở':'출근 = 가장 이른 태그:','· Giờ ra = lần quét trễ nhất ở':'· 퇴근 = 가장 늦은 태그:','· Trễ sau':'· 지각 기준','về sớm trước':'조퇴 기준',', về sớm trước':', 조퇴 기준','Chưa tải được thư viện Excel, thử tải lại trang':'엑셀 라이브러리를 불러오지 못했습니다. 새로고침해 주세요','Xác nhận phiếu lương':'급여명세서 확인','Xác nhận':'확인','Để sau':'나중에','Xác nhận phiếu lương?':'급여명세서를 확인하시겠습니까?','Đã xác nhận phiếu lương':'급여명세서를 확인했습니다','Kế toán đã nhận được xác nhận.':'회계팀에 확인이 전달되었습니다.','Kiểu chữ':'글꼴','Cỡ chữ':'글자 크기','Mặc định':'기본','Có chân':'세리프','Đơn cách':'고정폭','Nhỏ':'작게','Vừa':'보통','Lớn':'크게','Rất lớn':'아주 크게','Khổng lồ':'최대','• Danh sách':'• 목록','1. Danh sách':'1. 번호 목록','Link':'링크','Xoá định dạng':'서식 지우기','Viết nội dung thông báo…':'공지 내용을 입력하세요…','Giờ họp theo bước 15 phút (:00, :15, :30, :45)':'회의 시간은 15분 단위입니다 (:00, :15, :30, :45)','Bạn chỉ xem được chấm công của mình':'본인 출퇴근 기록만 볼 수 있습니다','Chỉ người được cấp quyền mới xem chấm công toàn công ty':'권한이 있는 사람만 전사 출퇴근 현황을 볼 수 있습니다','Chỉ xác nhận được phiếu lương mới nhất':'최신 급여명세서만 확인할 수 있습니다','Bạn đã xác nhận phiếu lương tháng này rồi':'이번 달 급여명세서를 이미 확인했습니다','Dữ liệu chấm công tự động cập nhật từ khóa cửa TTLock khoảng 10 phút/lần.':'출퇴근 기록은 TTLock 도어락에서 약 10분마다 자동 업데이트됩니다.','Dữ liệu chấm công tự động cập nhật từ khóa cửa.':'출퇴근 기록은 도어락에서 자동 업데이트됩니다.','Chọn tối đa 3 tháng mỗi lần':'한 번에 최대 3개월까지 선택할 수 있습니다','Chọn ngày hợp lệ':'올바른 날짜를 선택하세요',
 'Hiện số tiền':'금액 보기','Ẩn số tiền':'금액 숨기기','Tổng số tiền lương thực nhận':'실수령액','Tổng thu nhập':'총 소득','Tổng khấu trừ':'총 공제액','Ngày phép còn lại':'잔여 연차',
 'Giờ OT còn lại':'잔여 OT 시간','Ngày công & thời gian':'근무일 · 시간','Thu nhập thực tế':'실제 소득','Các khoản khấu trừ':'공제 항목','Ngày công chuẩn':'기준 근무일','Công tính lương':'급여 산정 근무일',
@@ -811,6 +812,7 @@ const KO = {
 const KO_WD = { 'Thứ hai':'월요일','Thứ ba':'화요일','Thứ tư':'수요일','Thứ năm':'목요일','Thứ sáu':'금요일','Thứ bảy':'토요일','Chủ nhật':'일요일','Hôm nay':'오늘','T2':'월','T3':'화','T4':'수','T5':'목','T6':'금','T7':'토','CN':'일' };
 Object.assign(KO, KO_WD);
 const KO_RX = [
+  [/^Từ (\d{2}\/\d{2}\/\d{4}): chỉ tính quét$/, '$1부터: 지문 태그만 인정'],
   [/^(\d+) lượt quét trong tháng$/, '이번 달 태그 $1회'], [/^· Vào (.+) · Ra (.+) · (\d+) lượt$/, '· 출근 $1 · 퇴근 $2 · $3회'],
   [/^Có chấm công: (\d+) người$/, '출퇴근 기록: $1명'],
   [/^Chi tiết \((\d+) dòng\)$/, '상세 ($1행)'], [/^(Đi trễ|Về sớm|Quên check-in|Quên check-out|Không có dữ liệu|Đi làm đúng giờ) \((\d+) lượt\)$/, (m, a, n) => KO[a] + ' (' + n + '회)'],
@@ -1689,7 +1691,14 @@ VIEWS.chamcong = async el => {
       const d = await call('att.get', { month, empId });
       $('#cc-upd').textContent = d.updated ? `Cập nhật lần cuối lúc ${vnDateTime(d.updated)}${d.upTo ? ' · dữ liệu có đến ngày ' + vnDate(d.upTo) : ''}` : 'Chưa có lần cập nhật nào';
       if (d.note) $('#cc-note').textContent = d.note;
-      days = d.days.map(x => { const ok = x.scans.filter(s => s.ok); return { ...x, first: ok[0], last: ok.length > 1 ? ok[ok.length-1] : null }; });
+      const RU = d.rule || null, nk = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[đĐ]/g, 'D').toUpperCase().trim();
+      days = d.days.map(x => { const ok = x.scans.filter(s => s.ok);
+        if (RU && x.date >= RU.vanTayTu) {   // từ ngày áp dụng: vào = vân tay ở cổng ngoài, ra = vân tay ở cổng trong
+          const fp = ok.filter(s => /VAN TAY/.test(nk(s.type)));
+          const ins = fp.filter(s => nk(s.lock) === nk(RU.khoaVao)), outs = fp.filter(s => nk(s.lock) === nk(RU.khoaRa));
+          return { ...x, first: ins[0] || null, last: outs.length ? outs[outs.length - 1] : null };
+        }
+        return { ...x, first: ok[0], last: ok.length > 1 ? ok[ok.length-1] : null }; });
       const work = days.filter(x => x.first), single = days.filter(x => x.first && !x.last).length;
       const ins = work.map(x => toMin(x.first.time)).sort((a, b) => a - b);
       const hrs = work.filter(x => x.last).map(x => (toMin(x.last.time) - toMin(x.first.time)) / 60);
@@ -1801,7 +1810,7 @@ VIEWS.chamcong = async el => {
       const people = k => new Set(LIST.filter(x => x.flags.includes(k)).map(x => x.e.id)).size;
       const times = k => LIST.filter(x => x.flags.includes(k)).length;
       const tot = R.emps.length, one = R.from === R.to;
-      $('#ca-rule').innerHTML = `Giờ vào = lần quét sớm nhất ở <b>${esc(R.khoaVao)}</b> · Giờ ra = lần quét trễ nhất ở <b>${esc(R.khoaRa)}</b> · Trễ sau <b>${esc(R.gioVao)}</b>, về sớm trước <b>${esc(R.gioRa)}</b>`;
+      $('#ca-rule').innerHTML = `Giờ vào = lần quét sớm nhất ở <b>${esc(R.khoaVao)}</b> · Giờ ra = lần quét trễ nhất ở <b>${esc(R.khoaRa)}</b> · Trễ sau <b>${esc(R.gioVao)}</b>, về sớm trước <b>${esc(R.gioRa)}</b>${R.vanTayTu && R.vanTayTu <= R.to ? `<br>Từ ${esc(vnDate(R.vanTayTu))}: chỉ tính quét <b>vân tay</b> (thẻ từ không tính giờ vào/ra)` : ''}`;
       const present = new Set(LIST.filter(x => x.ci || x.co).map(x => x.e.id)).size;
       $('#ca-sum').innerHTML = `<button class="stat hu-lilac ca-card ${filt === 'all' ? 'on' : ''}" data-f="all"><div><div class="k">Tổng nhân viên</div>
         <div class="v"><span>${tot}</span><small>người</small></div><div class="small muted">Có chấm công: ${present} người</div></div></button>` + KINDS.map(K => { const n = people(K.k), c = times(K.k); return `<button class="stat hu-${K.hue} ca-card ${filt === K.k ? 'on' : ''}" data-f="${K.k}"><div><div class="k">${esc(K.l)}</div>
@@ -2173,36 +2182,42 @@ VIEWS.dontu = async el => {
 
 /* ---------- Góp ý ---------- */
 VIEWS.gopy = async el => {
-  const admin = !!(S.links && S.links.fbAll);
+  const admin = !!(S.links && S.links.fbAll), ceo = !!(S.links && S.links.fbCeo);
   el.innerHTML = `<div class="grid" style="grid-template-columns:minmax(0,420px) minmax(0,1fr);align-items:start" id="gy-g">
     <div class="card"><div class="card-h"><h3><span class="hi">${ic('sparkle')}</span>Gửi góp ý</h3></div><form class="card-b stack" id="gy-f">
       <div class="field"><label>Chủ đề</label><div class="chips" id="gy-t">${['Giao diện','Báo lỗi','Ý tưởng tính năng','Khác'].map((t, i) => `<button type="button" class="chip ${i === 0 ? 'on' : ''}">${t}</button>`).join('')}</div></div>
       <div class="field"><label>Nội dung <span class="req">*</span></label><textarea class="textarea" id="gy-c" style="min-height:140px" placeholder="Bạn muốn intranet thêm gì, sửa gì? Nếu báo lỗi, ghi rõ trang nào và bạn đã bấm gì."></textarea></div>
+      <div class="field"><label>Gửi tới</label><div class="seg" id="gy-to"><button type="button" class="on" data-to="ADMIN">${ic('message')}Góp ý chung</button><button type="button" data-to="CEO">${ic('user')}Ý kiến lên CEO</button></div>
+        <span class="small muted" id="gy-toh" style="margin-top:6px;display:block">Góp ý về intranet, công việc chung. Ban quản trị đọc và phản hồi.</span></div>
+      <div><label class="check"><input type="checkbox" id="gy-a"> Gửi ẩn danh</label><div class="muted small" style="margin:4px 0 0 28px">(không ghi tên bạn, và bạn cũng không xem lại được ý kiến này)</div></div>
       <button class="btn primary" id="gy-b">Gửi góp ý</button></form></div>
-    <div class="card"><div class="card-h">${admin ? `<div class="seg" id="gy-s"><button class="on" data-v="my">Của tôi</button><button data-v="all">Tất cả góp ý</button></div>` : `<h3><span class="hi">${ic('message')}</span>Góp ý của tôi</h3>`}</div><div id="gy-l">${skel(3,60)}</div></div></div>`;
+    <div class="card"><div class="card-h">${admin || ceo ? `<div class="seg" id="gy-s"><button class="on" data-v="my">Của tôi</button>${admin ? '<button data-v="all">Tất cả góp ý</button>' : ''}${ceo ? '<button data-v="ceo">Ý kiến lên CEO</button>' : ''}</div>` : `<h3><span class="hi">${ic('message')}</span>Góp ý của tôi</h3>`}</div><div id="gy-l">${skel(3,60)}</div></div></div>`;
   if (matchMedia('(max-width:900px)').matches) $('#gy-g').style.gridTemplateColumns = 'minmax(0,1fr)';
   $('#gy-t').onclick = e => { const c = e.target.closest('.chip'); if (c) $$('#gy-t .chip').forEach(x => x.classList.toggle('on', x === c)); };
   let v = 'my';
   const stPill = s => `<span class="pill ${s === 'Đã xử lý' ? 'ok' : s === 'Đang xử lý' ? 'info' : s === 'Không áp dụng' ? '' : 'brand'}">${esc(s)}</span>`;
   const load = async () => {
     $('#gy-l').innerHTML = skel(3, 60);
-    const list = await call(v === 'all' ? 'fb.all' : 'fb.my');
+    const list = await call(v === 'my' ? 'fb.my' : 'fb.all', v === 'ceo' ? { to:'CEO' } : {});
     if (!list.length) { $('#gy-l').innerHTML = `<div class="empty"><div class="ico">${ic('message')}</div><b>Chưa có góp ý</b>Mọi ý kiến đều được đọc.</div>`; return; }
     $('#gy-l').innerHTML = list.map(f => `<div class="req-item"><div class="ic">${ic('message')}</div><div class="bd">
-      <div class="row" style="gap:8px"><b>${esc(f.topic)}</b>${stPill(f.status)}${v === 'all' ? `<span class="small muted">${esc(f.by)}</span>` : ''}</div>
+      <div class="row" style="gap:8px"><b>${esc(f.topic)}</b>${stPill(f.status)}${v !== 'my' ? `<span class="small muted">${esc(f.by)}</span>` : f.to === 'CEO' ? '<span class="pill info">Gửi CEO</span>' : ''}</div>
       <div class="dt" style="white-space:pre-wrap">${esc(f.content)}</div><div class="small muted">${vnDateTime(f.time)}</div>
       ${f.reply ? `<div class="note" style="margin-top:8px">${ic('message')}<span><b>Admin:</b> ${esc(f.reply)}</span></div>` : ''}
-      ${v === 'all' ? `<div class="row" style="margin-top:8px"><select class="select" style="width:auto" data-st="${esc(f.id)}">${['Mới','Đang xử lý','Đã xử lý','Không áp dụng'].map(s => `<option ${s === f.status ? 'selected' : ''}>${s}</option>`).join('')}</select><input class="input" style="flex:1;min-width:160px" placeholder="Phản hồi cho người gửi" data-rp="${esc(f.id)}" value="${esc(f.reply)}"><button class="btn sm primary" data-sv="${esc(f.id)}">Lưu</button></div>` : ''}
+      ${v !== 'my' ? `<div class="row" style="margin-top:8px"><select class="select" style="width:auto" data-st="${esc(f.id)}">${['Mới','Đang xử lý','Đã xử lý','Không áp dụng'].map(s => `<option ${s === f.status ? 'selected' : ''}>${s}</option>`).join('')}</select><input class="input" style="flex:1;min-width:160px" placeholder="Phản hồi cho người gửi" data-rp="${esc(f.id)}" value="${esc(f.reply)}"><button class="btn sm primary" data-sv="${esc(f.id)}">Lưu</button></div>` : ''}
       </div></div>`).join('');
   };
-  if (admin) {
+  let to = 'ADMIN';
+  $('#gy-to').onclick = e => { const b = e.target.closest('[data-to]'); if (!b) return; to = b.dataset.to; $$('#gy-to button').forEach(x => x.classList.toggle('on', x === b));
+    $('#gy-toh').textContent = to === 'CEO' ? 'Chỉ CEO đọc được ý kiến này.' : 'Góp ý về intranet, công việc chung. Ban quản trị đọc và phản hồi.'; };
+  if (admin || ceo) {
     $('#gy-s').onclick = e => { const b = e.target.closest('button'); if (!b) return; v = b.dataset.v; $$('#gy-s button').forEach(x => x.classList.toggle('on', x === b)); load(); };
     $('#gy-l').onclick = async e => { const b = e.target.closest('[data-sv]'); if (!b) return; const id = b.dataset.sv; busy(b, true, '…');
       try { await call('fb.update', { id, status: $(`[data-st="${id}"]`).value, reply: $(`[data-rp="${id}"]`).value }); toast('Đã lưu'); load(); } catch(err) { toast(err.message, 'err'); busy(b, false); } };
   }
   $('#gy-f').addEventListener('submit', async e => {
     e.preventDefault(); const b = $('#gy-b'); busy(b, true, 'Đang gửi…');
-    try { await call('fb.submit', { topic: $('#gy-t .chip.on').textContent, content: $('#gy-c').value }); toast('Cảm ơn bạn đã góp ý!'); $('#gy-c').value = ''; busy(b, false); load(); }
+    try { await call('fb.submit', { topic: $('#gy-t .chip.on').textContent, content: $('#gy-c').value, anonymous: $('#gy-a').checked, to }); toast('Cảm ơn bạn đã góp ý!'); $('#gy-c').value = ''; busy(b, false); load(); }
     catch(err) { toast(err.message, 'err'); busy(b, false); }
   });
   await load();
