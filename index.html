@@ -622,6 +622,8 @@ kbd{font:600 11px var(--fb);background:var(--surface-3);color:var(--text-2);bord
 #imp-bar{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:120;display:flex;align-items:center;gap:10px;background:#2B1A12;color:#fff;padding:8px 10px 8px 16px;border-radius:16px;box-shadow:var(--shadow);font-size:13.5px;max-width:calc(100vw - 24px)}
 #imp-bar svg{width:16px;height:16px;flex:none}
 #imp-bar .btn{flex:none}
+.tbl tr.emp-off td{background:rgba(120,110,105,.07);color:var(--muted)}
+.tbl tr.emp-off td b,.tbl tr.emp-off input,.tbl tr.emp-off select{opacity:.6}
 .demo-flag{position:fixed;left:50%;transform:translateX(-50%);bottom:12px;z-index:95;background:var(--text);color:var(--bg);font-size:12px;padding:7px 14px;border-radius:999px;opacity:.88;pointer-events:none;box-shadow:var(--shadow)}
 @media (max-width:640px){.demo-flag{display:none}}
 </style>
@@ -688,6 +690,7 @@ window.addEventListener('unhandledrejection', e => showFatal('Lỗi: ' + (e.reas
    Dữ liệu người dùng nhập (tên, nội dung thông báo, lý do…) giữ nguyên. */
 let LANG = store.get('ibvn_lang') === 'ko' ? 'ko' : 'vi';
 const KO = {
+'Xoá':'삭제','Khôi phục':'복구','Đã xoá khỏi hệ thống':'시스템에서 삭제됨','Xoá nhân viên khỏi hệ thống?':'직원을 시스템에서 삭제하시겠습니까?','Khôi phục nhân viên?':'직원을 복구하시겠습니까?','Đã khôi phục':'복구되었습니다','Mã này không đăng nhập được nữa. Lịch sử chấm công, đơn từ vẫn được giữ.':'이 사번으로 더 이상 로그인할 수 없습니다. 출퇴근·신청 기록은 유지됩니다.',
 'Xem với tư cách':'다른 직원으로 보기','Thoát':'나가기','Bạn không có quyền xem với tư cách người khác':'다른 직원으로 볼 권한이 없습니다',
 'Gửi tới':'받는 사람','Góp ý chung':'일반 의견','Ý kiến lên CEO':'CEO에게 의견','Gửi CEO':'CEO에게','Chỉ CEO đọc được ý kiến này.':'CEO만 이 의견을 볼 수 있습니다.','Góp ý về intranet, công việc chung. Ban quản trị đọc và phản hồi.':'인트라넷 및 업무 전반에 대한 의견입니다. 관리자가 확인 후 답변합니다.','(không ghi tên bạn, và bạn cũng không xem lại được ý kiến này)':'(이름이 기록되지 않으며, 본인도 다시 볼 수 없습니다)','Bạn không có quyền xem mục này':'이 항목을 볼 권한이 없습니다',
 'Giờ quét':'태그 시간','Cách mở':'방식','Khóa':'도어락','Kết quả':'결과','Thành công':'성공','Thất bại':'실패','Chưa có dữ liệu tháng này':'이번 달 기록이 없습니다','Tổng nhân viên':'전체 직원','Toàn công ty':'전사 현황','Tình hình chấm công toàn công ty':'전사 출퇴근 현황','Theo ngày':'일별','Theo khoảng thời gian':'기간별','Tuần này':'이번 주','Đi làm đúng giờ':'정상 출근','Đi trễ':'지각','Về sớm':'조퇴','Quên check-in':'출근 미태그','Quên check-out':'퇴근 미태그','Không có dữ liệu':'기록 없음','Đúng giờ':'정상','người':'명','Tải Excel':'엑셀 다운로드','Bộ phận':'부서','Tổng giờ':'근무 시간','Không có dòng nào':'데이터가 없습니다','Thử chọn mục khác hoặc ngày khác.':'다른 항목이나 날짜를 선택해 보세요.','Giờ vào = lần quét sớm nhất ở':'출근 = 가장 이른 태그:','· Giờ ra = lần quét trễ nhất ở':'· 퇴근 = 가장 늦은 태그:','· Trễ sau':'· 지각 기준','về sớm trước':'조퇴 기준',', về sớm trước':', 조퇴 기준','Chưa tải được thư viện Excel, thử tải lại trang':'엑셀 라이브러리를 불러오지 못했습니다. 새로고침해 주세요','Xác nhận phiếu lương':'급여명세서 확인','Xác nhận':'확인','Để sau':'나중에','Xác nhận phiếu lương?':'급여명세서를 확인하시겠습니까?','Đã xác nhận phiếu lương':'급여명세서를 확인했습니다','Kế toán đã nhận được xác nhận.':'회계팀에 확인이 전달되었습니다.','Kiểu chữ':'글꼴','Cỡ chữ':'글자 크기','Mặc định':'기본','Có chân':'세리프','Đơn cách':'고정폭','Nhỏ':'작게','Vừa':'보통','Lớn':'크게','Rất lớn':'아주 크게','Khổng lồ':'최대','• Danh sách':'• 목록','1. Danh sách':'1. 번호 목록','Link':'링크','Xoá định dạng':'서식 지우기','Viết nội dung thông báo…':'공지 내용을 입력하세요…','Giờ họp theo bước 15 phút (:00, :15, :30, :45)':'회의 시간은 15분 단위입니다 (:00, :15, :30, :45)','Bạn chỉ xem được chấm công của mình':'본인 출퇴근 기록만 볼 수 있습니다','Chỉ người được cấp quyền mới xem chấm công toàn công ty':'권한이 있는 사람만 전사 출퇴근 현황을 볼 수 있습니다','Chỉ xác nhận được phiếu lương mới nhất':'최신 급여명세서만 확인할 수 있습니다','Bạn đã xác nhận phiếu lương tháng này rồi':'이번 달 급여명세서를 이미 확인했습니다','Dữ liệu chấm công tự động cập nhật từ khóa cửa TTLock khoảng 10 phút/lần.':'출퇴근 기록은 TTLock 도어락에서 약 10분마다 자동 업데이트됩니다.','Dữ liệu chấm công tự động cập nhật từ khóa cửa.':'출퇴근 기록은 도어락에서 자동 업데이트됩니다.','Chọn tối đa 3 tháng mỗi lần':'한 번에 최대 3개월까지 선택할 수 있습니다','Chọn ngày hợp lệ':'올바른 날짜를 선택하세요',
@@ -2320,15 +2323,19 @@ VIEWS.admin = async el => {
     const list = await call('adm.employees');
     const draw = q => {
       q = (q || '').toLowerCase();
-      const rows = list.filter(e => !q || (e.name + e.id + e.dept).toLowerCase().includes(q));
-      $('#ad-l').innerHTML = `<table class="tbl"><thead><tr><th>Nhân viên</th><th>Quyền</th><th>Link phiếu lương</th><th>Email phê duyệt</th><th>Trạng thái</th><th>Đăng nhập</th><th></th></tr></thead><tbody>${rows.map(e => `<tr data-id="${esc(e.id)}">
+      const rank = e => /XO[AÁ]/i.test(e.status) ? 2 : /NGHỈ/i.test(e.status) ? 1 : 0;
+      const rows = list.filter(e => !q || (e.name + e.id + e.dept).toLowerCase().includes(q)).sort((a, b) => rank(a) - rank(b));
+      $('#ad-l').innerHTML = `<table class="tbl"><thead><tr><th>Nhân viên</th><th>Quyền</th><th>Link phiếu lương</th><th>Email phê duyệt</th><th>Trạng thái</th><th>Đăng nhập</th><th></th></tr></thead><tbody>${rows.map(e => rank(e) === 2
+        ? `<tr data-id="${esc(e.id)}" class="emp-off"><td><b>${esc(e.name)}</b><div class="small muted">${esc(e.id)} · ${esc(e.dept)}</div></td><td colspan="4"><span class="pill bad">Đã xoá khỏi hệ thống</span> <span class="small muted">Mã này không đăng nhập được nữa. Lịch sử chấm công, đơn từ vẫn được giữ.</span></td><td></td>
+            <td><button class="btn sm ghost" data-restore>${ic('refresh')}Khôi phục</button></td></tr>`
+        : `<tr data-id="${esc(e.id)}" class="${rank(e) === 1 ? 'emp-off' : ''}">
         <td><b>${esc(e.name)}</b><div class="small muted">${esc(e.id)} · ${esc(e.dept)}</div></td>
         <td><div class="row" style="gap:6px">${ROLES.map(([k, l]) => `<label class="check small"><input type="checkbox" data-role="${k}" ${e.roles.toUpperCase().split(/[,\s]+/).includes(k) ? 'checked' : ''}>${l}</label>`).join('')}</div></td>
         <td><input class="input" data-pay value="${esc(e.payslip)}" placeholder="https:\/\/…" style="min-width:200px"></td>
         <td><input class="input" data-ae value="${esc(e.approvalEmail || '')}" placeholder="tự lấy theo mã NV" style="min-width:190px" title="Chỉ điền khi người này duyệt bằng email vai trò (vd sếp dùng hr@)"></td>
         <td><select class="select" data-st style="width:auto"><option ${e.status !== 'NGHỈ VIỆC' ? 'selected' : ''}>ĐANG LÀM</option><option ${e.status === 'NGHỈ VIỆC' ? 'selected' : ''}>NGHỈ VIỆC</option></select></td>
         <td class="small">${e.hasPw ? `<span class="pill ok">Đã đổi pass</span>` : `<span class="pill warn">Pass mặc định</span>`}<div class="muted">${esc(e.lastLogin)}</div></td>
-        <td><div class="row" style="gap:6px;flex-wrap:nowrap"><button class="btn sm primary" data-save>Lưu</button><button class="btn sm ghost" data-reset title="Đặt lại về 123456">Reset pass</button>${S.links.canImp && e.id !== S.user.id ? `<button class="btn sm soft" data-imp title="Xem intranet giống như người này thấy (chỉ xem)">${ic('eye')}Xem với tư cách</button>` : ''}</div></td></tr>`).join('')}</tbody></table>`;
+        <td><div class="row" style="gap:6px;flex-wrap:nowrap"><button class="btn sm primary" data-save>Lưu</button><button class="btn sm ghost" data-reset title="Đặt lại về 123456">Reset pass</button>${e.id !== S.user.id ? `<button class="btn sm danger" data-del title="Xoá khỏi hệ thống – mã này không đăng nhập được nữa">${ic('trash')}Xoá</button>` : ''}${S.links.canImp && e.id !== S.user.id && rank(e) === 0 ? `<button class="btn sm soft" data-imp title="Xem intranet giống như người này thấy (chỉ xem)">${ic('eye')}Xem với tư cách</button>` : ''}</div></td></tr>`).join('')}</tbody></table>`;
     };
     draw();
     $('#ad-q').oninput = e => draw(e.target.value);
@@ -2336,6 +2343,17 @@ VIEWS.admin = async el => {
     $('#ad-l').onclick = async e => {
       const tr = e.target.closest('tr[data-id]'); if (!tr) return; const id = tr.dataset.id;
       if (e.target.closest('[data-imp]')) return startImp(id, e.target.closest('[data-imp]'));
+      if (e.target.closest('[data-del]') || e.target.closest('[data-restore]')) {
+        const restore = !!e.target.closest('[data-restore]'), it = list.find(x => x.id === id);
+        const m = modal(restore ? 'Khôi phục nhân viên?' : 'Xoá nhân viên khỏi hệ thống?',
+          restore ? `<p style="margin:0"><b>${esc(it.name)}</b> (${esc(id)}) sẽ đăng nhập lại được với mật khẩu mặc định <b>123456</b> và phải đổi mật khẩu ngay.</p>`
+                  : `<p style="margin:0"><b>${esc(it.name)}</b> (${esc(id)}) sẽ <b>không đăng nhập được nữa</b>, nếu đang đăng nhập sẽ bị thoát ngay. Mật khẩu và quyền bị xoá. Lịch sử chấm công, đơn từ vẫn giữ để tra cứu. Có thể khôi phục lại sau.</p>`,
+          `<button class="btn ghost" data-close>Huỷ</button><button class="btn ${restore ? 'primary' : 'danger'}" id="dl-go">${restore ? 'Khôi phục' : 'Xoá'}</button>`);
+        $('#dl-go', m.el).onclick = async ev => { busy(ev.currentTarget, true, '…');
+          try { await call('adm.deleteEmployee', { id, restore }); it.status = restore ? 'ĐANG LÀM' : 'ĐÃ XOÁ'; if (!restore) it.roles = ''; m.close(); toast(restore ? 'Đã khôi phục' : 'Đã xoá khỏi hệ thống'); draw($('#ad-q').value); }
+          catch(err) { toast(err.message, 'err'); busy(ev.currentTarget, false); } };
+        return;
+      }
       if (e.target.closest('[data-save]')) {
         const btn = e.target.closest('[data-save]'); busy(btn, true, '…');
         const roles = $$('[data-role]', tr).filter(x => x.checked).map(x => x.dataset.role).join(',');
