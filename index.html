@@ -632,6 +632,12 @@ kbd{font:600 11px var(--fb);background:var(--surface-3);color:var(--text-2);bord
 .ann.flash{box-shadow:0 0 0 3px var(--brand);border-radius:18px;transition:box-shadow .3s}
 .as-list{max-height:55vh;overflow:auto}.as-r{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 4px;border-top:1px solid var(--line)}
 .as-em{font-size:18px;padding:12px 4px 4px}.as-em b{font-size:13px}
+.adm-tbl td{vertical-align:middle}
+.adm-tbl td.nm{min-width:190px}.adm-tbl td.nm b{white-space:nowrap}
+.adm-roles{display:grid;grid-template-columns:repeat(2,auto);gap:4px 12px;min-width:170px}.adm-roles .check{white-space:nowrap}
+.adm-em{display:grid;gap:6px;min-width:220px;max-width:260px}.adm-em label{display:grid;gap:2px}.adm-em span{font-size:11px;color:var(--muted);font-weight:600}
+.input.sm,.select.sm{height:34px;padding:6px 10px;font-size:13px;border-radius:10px}
+.adm-act{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;min-width:200px}.adm-act .btn{justify-content:center;white-space:nowrap}.adm-act .full{grid-column:1/-1}
 .demo-flag{position:fixed;left:50%;transform:translateX(-50%);bottom:12px;z-index:95;background:var(--text);color:var(--bg);font-size:12px;padding:7px 14px;border-radius:999px;opacity:.88;pointer-events:none;box-shadow:var(--shadow)}
 @media (max-width:640px){.demo-flag{display:none}}
 </style>
@@ -698,7 +704,7 @@ window.addEventListener('unhandledrejection', e => showFatal('Lỗi: ' + (e.reas
    Dữ liệu người dùng nhập (tên, nội dung thông báo, lý do…) giữ nguyên. */
 let LANG = store.get('ibvn_lang') === 'ko' ? 'ko' : 'vi';
 const KO = {
-'Bỏ cảm xúc':'반응 취소','Thả cảm xúc':'반응 남기기','Đã sao chép link thông báo':'공지 링크를 복사했습니다','Link thông báo':'공지 링크','Gửi lại email':'이메일 재발송','Đóng':'닫기','Chưa ai xem':'아직 아무도 보지 않았습니다','Mọi người đã xem hết':'모두 확인했습니다','Chưa ai thả cảm xúc':'아직 반응이 없습니다','Email nhận thông báo':'알림 이메일','Gửi email thông báo cho toàn bộ nhân viên (kèm link xem trên intranet)':'전 직원에게 이메일 알림 보내기 (인트라넷 링크 포함)','Đang đăng & gửi email…':'게시 및 이메일 발송 중…',
+'Nhận thông báo':'알림 수신','Phê duyệt':'결재','Thao tác':'작업','Xem như NV':'직원으로 보기','Bỏ cảm xúc':'반응 취소','Thả cảm xúc':'반응 남기기','Đã sao chép link thông báo':'공지 링크를 복사했습니다','Link thông báo':'공지 링크','Gửi lại email':'이메일 재발송','Đóng':'닫기','Chưa ai xem':'아직 아무도 보지 않았습니다','Mọi người đã xem hết':'모두 확인했습니다','Chưa ai thả cảm xúc':'아직 반응이 없습니다','Email nhận thông báo':'알림 이메일','Gửi email thông báo cho toàn bộ nhân viên (kèm link xem trên intranet)':'전 직원에게 이메일 알림 보내기 (인트라넷 링크 포함)','Đang đăng & gửi email…':'게시 및 이메일 발송 중…',
 'Xoá':'삭제','Khôi phục':'복구','Đã xoá khỏi hệ thống':'시스템에서 삭제됨','Xoá nhân viên khỏi hệ thống?':'직원을 시스템에서 삭제하시겠습니까?','Khôi phục nhân viên?':'직원을 복구하시겠습니까?','Đã khôi phục':'복구되었습니다','Mã này không đăng nhập được nữa. Lịch sử chấm công, đơn từ vẫn được giữ.':'이 사번으로 더 이상 로그인할 수 없습니다. 출퇴근·신청 기록은 유지됩니다.',
 'Xem với tư cách':'다른 직원으로 보기','Thoát':'나가기','Bạn không có quyền xem với tư cách người khác':'다른 직원으로 볼 권한이 없습니다',
 'Gửi tới':'받는 사람','Góp ý chung':'일반 의견','Ý kiến lên CEO':'CEO에게 의견','Gửi CEO':'CEO에게','Chỉ CEO đọc được ý kiến này.':'CEO만 이 의견을 볼 수 있습니다.','Góp ý về intranet, công việc chung. Ban quản trị đọc và phản hồi.':'인트라넷 및 업무 전반에 대한 의견입니다. 관리자가 확인 후 답변합니다.','(không ghi tên bạn, và bạn cũng không xem lại được ý kiến này)':'(이름이 기록되지 않으며, 본인도 다시 볼 수 없습니다)','Bạn không có quyền xem mục này':'이 항목을 볼 권한이 없습니다',
@@ -2381,18 +2387,18 @@ VIEWS.admin = async el => {
       q = (q || '').toLowerCase();
       const rank = e => /XO[AÁ]/i.test(e.status) ? 2 : /NGHỈ/i.test(e.status) ? 1 : 0;
       const rows = list.filter(e => !q || (e.name + e.id + e.dept).toLowerCase().includes(q)).sort((a, b) => rank(a) - rank(b));
-      $('#ad-l').innerHTML = `<table class="tbl"><thead><tr><th>Nhân viên</th><th>Quyền</th><th>Link phiếu lương</th><th>Email nhận thông báo</th><th>Email phê duyệt</th><th>Trạng thái</th><th>Đăng nhập</th><th></th></tr></thead><tbody>${rows.map(e => rank(e) === 2
-        ? `<tr data-id="${esc(e.id)}" class="emp-off"><td><b>${esc(e.name)}</b><div class="small muted">${esc(e.id)} · ${esc(e.dept)}</div></td><td colspan="5"><span class="pill bad">Đã xoá khỏi hệ thống</span> <span class="small muted">Mã này không đăng nhập được nữa. Lịch sử chấm công, đơn từ vẫn được giữ.</span></td><td></td>
-            <td><button class="btn sm ghost" data-restore>${ic('refresh')}Khôi phục</button></td></tr>`
+      $('#ad-l').innerHTML = `<table class="tbl adm-tbl"><thead><tr><th>Nhân viên</th><th>Quyền</th><th>Email</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>${rows.map(e => rank(e) === 2
+        ? `<tr data-id="${esc(e.id)}" class="emp-off"><td class="nm"><b>${esc(e.name)}</b><div class="small muted">${esc(e.id)} · ${esc(e.dept)}</div></td><td colspan="3"><span class="pill bad">Đã xoá khỏi hệ thống</span><div class="small muted" style="margin-top:4px">Mã này không đăng nhập được nữa. Lịch sử chấm công, đơn từ vẫn được giữ.</div></td>
+            <td><div class="adm-act"><button class="btn sm ghost full" data-restore>${ic('refresh')}Khôi phục</button></div></td></tr>`
         : `<tr data-id="${esc(e.id)}" class="${rank(e) === 1 ? 'emp-off' : ''}">
-        <td><b>${esc(e.name)}</b><div class="small muted">${esc(e.id)} · ${esc(e.dept)}</div></td>
-        <td><div class="row" style="gap:6px">${ROLES.map(([k, l]) => `<label class="check small"><input type="checkbox" data-role="${k}" ${e.roles.toUpperCase().split(/[,\s]+/).includes(k) ? 'checked' : ''}>${l}</label>`).join('')}</div></td>
-        <td><input class="input" data-pay value="${esc(e.payslip)}" placeholder="https:\/\/…" style="min-width:200px"></td>
-        <td><input class="input" data-em value="${esc(e.email || '')}" placeholder="ten@insidegroup.co.kr" style="min-width:190px" title="Email nhận thông báo từ intranet. Để trống thì dùng Email phê duyệt hoặc email bên web phê duyệt (theo mã NV)"></td>
-        <td><input class="input" data-ae value="${esc(e.approvalEmail || '')}" placeholder="tự lấy theo mã NV" style="min-width:190px" title="Chỉ điền khi người này duyệt bằng email vai trò (vd sếp dùng hr@)"></td>
-        <td><select class="select" data-st style="width:auto"><option ${e.status !== 'NGHỈ VIỆC' ? 'selected' : ''}>ĐANG LÀM</option><option ${e.status === 'NGHỈ VIỆC' ? 'selected' : ''}>NGHỈ VIỆC</option></select></td>
-        <td class="small">${e.hasPw ? `<span class="pill ok">Đã đổi pass</span>` : `<span class="pill warn">Pass mặc định</span>`}<div class="muted">${esc(e.lastLogin)}</div></td>
-        <td><div class="row" style="gap:6px;flex-wrap:nowrap"><button class="btn sm primary" data-save>Lưu</button><button class="btn sm ghost" data-reset title="Đặt lại về 123456">Reset pass</button>${e.id !== S.user.id ? `<button class="btn sm danger" data-del title="Xoá khỏi hệ thống – mã này không đăng nhập được nữa">${ic('trash')}Xoá</button>` : ''}${S.links.canImp && e.id !== S.user.id && rank(e) === 0 ? `<button class="btn sm soft" data-imp title="Xem intranet giống như người này thấy (chỉ xem)">${ic('eye')}Xem với tư cách</button>` : ''}</div></td></tr>`).join('')}</tbody></table>`;
+        <td class="nm"><b>${esc(e.name)}</b><div class="small muted">${esc(e.id)} · ${esc(e.dept)}</div></td>
+        <td><div class="adm-roles">${ROLES.map(([k, l]) => `<label class="check small"><input type="checkbox" data-role="${k}" ${e.roles.toUpperCase().split(/[,\s]+/).includes(k) ? 'checked' : ''}>${l}</label>`).join('')}</div></td>
+        <td><div class="adm-em"><input type="hidden" data-pay value="${esc(e.payslip)}">
+          <label><span>Nhận thông báo</span><input class="input sm" data-em value="${esc(e.email || '')}" placeholder="ten@insidegroup.co.kr" title="Email nhận thông báo từ intranet. Để trống thì dùng Email phê duyệt hoặc email bên web phê duyệt (theo mã NV)"></label>
+          <label><span>Phê duyệt</span><input class="input sm" data-ae value="${esc(e.approvalEmail || '')}" placeholder="tự lấy theo mã NV" title="Chỉ điền khi người này duyệt bằng email vai trò (vd sếp dùng hr@)"></label></div></td>
+        <td><select class="select sm" data-st><option ${e.status !== 'NGHỈ VIỆC' ? 'selected' : ''}>ĐANG LÀM</option><option ${e.status === 'NGHỈ VIỆC' ? 'selected' : ''}>NGHỈ VIỆC</option></select>
+          <div class="small" style="margin-top:6px">${e.hasPw ? `<span class="pill ok">Đã đổi pass</span>` : `<span class="pill warn">Pass mặc định</span>`}</div><div class="small muted" style="margin-top:2px">${esc(e.lastLogin)}</div></td>
+        <td><div class="adm-act"><button class="btn sm primary" data-save>Lưu</button><button class="btn sm ghost" data-reset title="Đặt lại về 123456">Reset pass</button>${e.id !== S.user.id ? `<button class="btn sm danger" data-del title="Xoá khỏi hệ thống – mã này không đăng nhập được nữa">${ic('trash')}Xoá</button>` : ''}${S.links.canImp && e.id !== S.user.id && rank(e) === 0 ? `<button class="btn sm soft" data-imp title="Xem intranet giống như người này thấy (chỉ xem)">${ic('eye')}Xem như NV</button>` : ''}</div></td></tr>`).join('')}</tbody></table>`;
     };
     draw();
     $('#ad-q').oninput = e => draw(e.target.value);
