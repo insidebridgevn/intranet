@@ -540,7 +540,7 @@ kbd{font:600 11px var(--fb);background:var(--surface-3);color:var(--text-2);bord
 .ps-hero .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;background:rgba(255,255,255,.22);padding:5px 12px;border-radius:999px}
 .ps-hero .eyebrow svg{width:15px;height:15px}
 .ps-k{margin-top:14px;font-size:13px;opacity:.9}
-.ps-big{font-family:var(--fd);font-size:clamp(34px,4.6vw,54px);font-weight:700;letter-spacing:-.03em;line-height:1.05}
+.ps-big{font-family:var(--fd);font-size:clamp(24px,3vw,34px);font-weight:700;letter-spacing:-.03em;line-height:1.05}
 .ps-big small{font-size:.32em;margin-left:8px;opacity:.85;font-family:var(--fb);letter-spacing:0}
 .ps-who{margin-top:8px;font-size:13px;opacity:.92}
 .ps-mini{display:grid;grid-template-columns:repeat(2,minmax(130px,1fr));gap:10px}
@@ -638,6 +638,28 @@ kbd{font:600 11px var(--fb);background:var(--surface-3);color:var(--text-2);bord
 .adm-em{display:grid;gap:6px;min-width:220px;max-width:260px}.adm-em label{display:grid;gap:2px}.adm-em span{font-size:11px;color:var(--muted);font-weight:600}
 .input.sm,.select.sm{height:34px;padding:6px 10px;font-size:13px;border-radius:10px}
 .adm-act{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;min-width:200px}.adm-act .btn{justify-content:center;white-space:nowrap}.adm-act .full{grid-column:1/-1}
+.hr-alarm{display:flex;gap:12px;align-items:flex-start;padding:14px 18px;border-radius:18px;background:var(--bad-bg);color:var(--bad);border:1px solid rgba(214,69,61,.25)}
+.hr-alarm svg{width:20px;height:20px;flex:none;margin-top:2px}.hr-alarm.clk{cursor:pointer}
+.tbl tr.hr-bad td{background:rgba(214,69,61,.07)}.tbl tr.hr-bad td:first-child{box-shadow:inset 3px 0 0 #D6453D}
+.ds-g{border-top:1px solid var(--line)}.ds-g summary{display:flex;align-items:center;gap:10px;padding:14px 20px;cursor:pointer;list-style:none}.ds-g summary::-webkit-details-marker{display:none}
+.ds-g summary svg{width:16px;height:16px;transition:transform .2s}.ds-g[open] summary svg{transform:rotate(90deg)}.ds-g .req-item{margin:0 12px 10px}
+.att-ed{display:flex;gap:6px;align-items:flex-start;margin-top:4px;font-size:11.5px;color:var(--info);line-height:1.35}.att-ed svg{width:12px;height:12px;flex:none;margin-top:2px}
+.pin-card{max-width:360px;margin:20px auto;padding:28px 24px;text-align:center}.pin-card h3{margin:10px 0 4px;font-family:var(--fd)}
+.pin-ico{width:52px;height:52px;margin:0 auto;border-radius:16px;display:grid;place-items:center;background:var(--brand-soft);color:var(--brand-ink)}.pin-ico svg{width:24px;height:24px}
+.pin-dots{display:flex;justify-content:center;gap:14px;margin:14px 0 18px}.pin-dots span{width:14px;height:14px;border-radius:50%;border:2px solid var(--brand);transition:background .15s}.pin-dots span.on{background:var(--brand)}
+.pin-dots.shake{animation:shake .35s}@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.pin-keys{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:260px;margin:0 auto}.pin-keys button{height:54px;border-radius:16px;border:1px solid var(--line);background:var(--surface);font:600 20px var(--fd);color:var(--text);cursor:pointer}
+.pin-keys button:active{background:var(--brand-soft)}
+@media (max-width:640px){
+  body{zoom:.86}
+  .top .ttl,.topbar .ttl,header .ttl{display:none}
+  .ph h2{font-size:24px}.ph h2 .pic{width:38px;height:38px;border-radius:12px}.ph p{font-size:13px}
+  .hero h2{font-size:30px}.big-clock{font-size:44px}.hero .qa button{padding:8px 12px;font-size:13px}
+  .card-h{padding:14px 16px}.card-b{padding:14px 16px}
+  .stat .v span,.ca-card .v span{font-size:22px}
+  .ps-big{font-size:26px}
+  .tbl th,.tbl td{padding:9px 10px}
+}
 .demo-flag{position:fixed;left:50%;transform:translateX(-50%);bottom:12px;z-index:95;background:var(--text);color:var(--bg);font-size:12px;padding:7px 14px;border-radius:999px;opacity:.88;pointer-events:none;box-shadow:var(--shadow)}
 @media (max-width:640px){.demo-flag{display:none}}
 </style>
@@ -704,6 +726,7 @@ window.addEventListener('unhandledrejection', e => showFatal('Lỗi: ' + (e.reas
    Dữ liệu người dùng nhập (tên, nội dung thông báo, lý do…) giữ nguyên. */
 let LANG = store.get('ibvn_lang') === 'ko' ? 'ko' : 'vi';
 const KO = {
+'Đánh giá ứng viên':'후보자 평가','Nhân sự team & thời hạn hợp đồng':'팀원 및 계약 기간','Toàn bộ nhân sự':'전체 직원','Nhân sự team của bạn':'우리 팀 직원','Chỉ người sắp hết hạn':'만료 임박만','Loại hợp đồng':'계약 유형','Bắt đầu':'시작','Kết thúc':'종료','Còn lại':'남은 기간','Sắp đến thời gian review':'리뷰 시기 임박','Không thời hạn / chưa có':'기간 없음 / 미입력','Hợp đồng lao động':'근로계약','Số hợp đồng':'계약 번호','Ngày bắt đầu':'시작일','Ngày kết thúc':'종료일','Không thời hạn':'무기한','Đơn của nhân viên':'직원 신청서','Chọn nhân viên':'직원 선택','Sửa giờ chấm công':'출퇴근 시간 수정','Lý do sửa':'수정 사유','Đã sửa giờ chấm công':'출퇴근 시간을 수정했습니다','Tạo mã xem lương':'급여 조회 비밀번호 만들기','Nhập mã xem lương':'급여 조회 비밀번호 입력','Nhập mã 4 số của bạn':'4자리 비밀번호를 입력하세요','Đã tạo mã xem lương':'비밀번호를 만들었습니다','Reset mã lương':'급여 비밀번호 초기화','Nhập lại mã một lần nữa để xác nhận':'확인을 위해 한 번 더 입력하세요','Hai lần nhập không khớp, nhập lại từ đầu':'두 번 입력이 일치하지 않습니다. 다시 입력하세요','Quên mã? Báo admin đặt lại mã xem lương.':'비밀번호를 잊으셨나요? 관리자에게 초기화를 요청하세요.','Phiếu lương là thông tin riêng tư. Tạo mã 4 số, từ lần sau phải nhập mã mới xem được lương.':'급여명세서는 개인 정보입니다. 4자리 비밀번호를 만들면 다음부터 입력해야 볼 수 있습니다.','Đã sửa tay':'수동 수정',
 'Nhận thông báo':'알림 수신','Phê duyệt':'결재','Thao tác':'작업','Xem như NV':'직원으로 보기','Bỏ cảm xúc':'반응 취소','Thả cảm xúc':'반응 남기기','Đã sao chép link thông báo':'공지 링크를 복사했습니다','Link thông báo':'공지 링크','Gửi lại email':'이메일 재발송','Đóng':'닫기','Chưa ai xem':'아직 아무도 보지 않았습니다','Mọi người đã xem hết':'모두 확인했습니다','Chưa ai thả cảm xúc':'아직 반응이 없습니다','Email nhận thông báo':'알림 이메일','Gửi email thông báo cho toàn bộ nhân viên (kèm link xem trên intranet)':'전 직원에게 이메일 알림 보내기 (인트라넷 링크 포함)','Đang đăng & gửi email…':'게시 및 이메일 발송 중…',
 'Xoá':'삭제','Khôi phục':'복구','Đã xoá khỏi hệ thống':'시스템에서 삭제됨','Xoá nhân viên khỏi hệ thống?':'직원을 시스템에서 삭제하시겠습니까?','Khôi phục nhân viên?':'직원을 복구하시겠습니까?','Đã khôi phục':'복구되었습니다','Mã này không đăng nhập được nữa. Lịch sử chấm công, đơn từ vẫn được giữ.':'이 사번으로 더 이상 로그인할 수 없습니다. 출퇴근·신청 기록은 유지됩니다.',
 'Xem với tư cách':'다른 직원으로 보기','Thoát':'나가기','Bạn không có quyền xem với tư cách người khác':'다른 직원으로 볼 권한이 없습니다',
@@ -834,6 +857,8 @@ const KO = {
 const KO_WD = { 'Thứ hai':'월요일','Thứ ba':'화요일','Thứ tư':'수요일','Thứ năm':'목요일','Thứ sáu':'금요일','Thứ bảy':'토요일','Chủ nhật':'일요일','Hôm nay':'오늘','T2':'월','T3':'화','T4':'수','T5':'목','T6':'금','T7':'토','CN':'일' };
 Object.assign(KO, KO_WD);
 const KO_RX = [
+  [/^Còn (\d+) ngày$/, '$1일 남음'], [/^Đã hết hạn (\d+) ngày$/, '만료 $1일 경과'], [/^(\d+) nhân sự sắp hết hạn hợp đồng.*$/, '계약 만료 임박 직원 $1명'], [/^(\d+) đơn$/, '$1건'],
+  [/^Đã sửa bởi (.+?) lúc (.+)$/, '$1 수정 · $2'],
   [/^(\d+) đã xem$/, '$1명 확인'], [/^Ai đã xem · (.+)$/, '확인한 사람 · $1'], [/^Đã xem \((\d+)\)$/, '확인 ($1)'], [/^Chưa xem \((\d+)\)$/, '미확인 ($1)'], [/^Cảm xúc \((\d+)\)$/, '반응 ($1)'],
   [/^Đã gửi email tới (\d+) địa chỉ(.*)$/, '이메일 $1건 발송$2'],
   [/^Đang xem với tư cách (.+?) – chỉ xem.*$/, '$1(으)로 보는 중 – 보기 전용입니다. 나가기를 눌러 본인 계정으로 돌아가세요.'],
@@ -948,11 +973,26 @@ const vnDate = s => { const d = parseISO(s); return d ? `${pad(d.getDate())}/${p
 const vnDateTime = s => { const d = parseISO(s); return d ? `${pad(d.getHours())}:${pad(d.getMinutes())} · ${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}` : ''; };
 const initials = n => { const p = String(n||'').trim().split(/\s+/); return ((p.length>1 ? p[p.length-2][0] : '') + (p[p.length-1]||'?')[0]).toUpperCase(); };
 const shortName = n => String(n||'').trim().split(/\s+/).pop();
-const has = r => S.user && (S.user.roles.includes('ADMIN') || S.user.roles.includes(r));
+const has = r => S.user && (r === 'HRVIEW' ? (S.user.roles.includes('ADMIN') || S.user.roles.includes('LEADER') || !!(S.links && S.links.hrAll)) : (S.user.roles.includes('ADMIN') || S.user.roles.includes(r)));
 const vi = s => String(s||'').split(' / ')[0];
 const ago = s => { const d = parseISO(s); if(!d) return ''; const m = Math.round((Date.now()-d)/60000); if(m<1) return 'vừa xong'; if(m<60) return m+' phút trước'; const h=Math.round(m/60); if(h<24) return h+' giờ trước'; const dd=Math.round(h/24); return dd<31 ? dd+' ngày trước' : vnDate(s); };
 
+// Bộ nhớ tạm cho các lệnh chỉ đọc: chuyển qua lại giữa các trang không phải chờ máy chủ; lệnh ghi bất kỳ sẽ xoá bộ nhớ tạm
+const READ_CACHE = { home:1, 'ann.list':1, 'room.list':1, 'req.my':1, 'bday.list':1, 'att.get':1, 'att.report':1, 'hr.team':1, 'fb.my':1, 'fb.all':1, 'att.emps':1, 'req.emps':1, 'adm.employees':1, 'adm.config':1, 'att.unmatched':1, 'att.batches':1 };
+const CACHE = {}, INFLIGHT = {};
 function call(action, payload){
+  if (READ_CACHE[action]) {
+    const k = action + '|' + JSON.stringify(payload || {});
+    const c = CACHE[k]; if (c && Date.now() - c.t < 45000) return Promise.resolve(c.v);
+    if (INFLIGHT[k]) return INFLIGHT[k];
+    const pr = INFLIGHT[k] = call0(action, payload).then(v => { CACHE[k] = { t: Date.now(), v }; delete INFLIGHT[k]; return v; }, err => { delete INFLIGHT[k]; throw err; });
+    return pr;
+  }
+  if (action !== 'ann.seen' && action !== 'me') Object.keys(CACHE).forEach(k => delete CACHE[k]);
+  return call0(action, payload);
+}
+function prefetch(){ const n = new Date(), m = `${n.getFullYear()}-${pad(n.getMonth()+1)}`; ['ann.list', 'req.my'].forEach(a => call(a).catch(() => {})); if (S.user) call('att.get', { month:m, empId:S.user.id }).catch(() => {}); }
+function call0(action, payload){
   return new Promise((resolve, reject) => {
     const done = r => {
       if (r && r.ok) return resolve(r.data);
@@ -1028,7 +1068,8 @@ const NAV = [
   { group:'Tiện ích', items:[
     { key:'muahang', label:'Mua hàng nội bộ', icon:'bag', sub:'Đặt mua sản phẩm giá nội bộ', desc:'Đặt mua sản phẩm giá nhân viên' },
     { key:'tuyendung', label:'Tuyển dụng', icon:'briefcase', sub:'Vị trí đang tuyển tại IBVN', desc:'Vị trí đang tuyển, giới thiệu ứng viên' },
-    { key:'danhgia', label:'Đánh giá nhân sự', icon:'users', role:'LEADER', sub:'Đánh giá ứng viên & nhân sự — dành cho Leader', desc:'Dành cho Leader' },
+    { key:'danhgia', label:'Đánh giá ứng viên', icon:'briefcase', role:'HRVIEW', sub:'Đánh giá ứng viên cho vị trí tuyển dụng — Leader & quản lý', desc:'Ứng viên cho vị trí tuyển dụng' },
+    { key:'nhansu', label:'Đánh giá nhân sự', icon:'users', role:'HRVIEW', sub:'Nhân sự team & thời hạn hợp đồng', desc:'Hạn hợp đồng, nhắc review' },
     { key:'gopy', label:'Góp ý trang web', icon:'message', sub:'Gửi ý kiến để intranet tốt hơn', desc:'Báo lỗi, đề xuất tính năng' } ]},
   { group:'Quản trị', role:'ADMIN', items:[
     { key:'admin', label:'Quản trị hệ thống', icon:'shield', role:'ADMIN', sub:'Nhân viên, quyền, liên kết' } ]}
@@ -1097,7 +1138,7 @@ function render(){
   renderShell();
 }
 
-function logoutLocal(){ S.token=null; S.user=null; store.del('ibvn_token'); render(); }
+function logoutLocal(){ Object.keys(CACHE).forEach(k => delete CACHE[k]); S.payPin = ''; S.token=null; S.user=null; store.del('ibvn_token'); render(); }
 async function logout(){ if (S.user && S.user.imp) return stopImp(); try { await call('logout', { token:S.token }); } catch(e){} logoutLocal(); }
 
 /* ---------- Login ---------- */
@@ -1212,7 +1253,7 @@ function renderForceChange(){
 }
 
 /* ---------- Shell ---------- */
-const HUE = { home:'peach', thongbao:'rose', luong:'mint', chamcong:'sky', phonghop:'lilac', dontu:'peach', duyet:'mint', muahang:'sand', tuyendung:'sky', danhgia:'lilac', gopy:'rose', admin:'sand', caidat:'peach' };
+const HUE = { nhansu:'rose', home:'peach', thongbao:'rose', luong:'mint', chamcong:'sky', phonghop:'lilac', dontu:'peach', duyet:'mint', muahang:'sand', tuyendung:'sky', danhgia:'lilac', gopy:'rose', admin:'sand', caidat:'peach' };
 const groupOf = key => (NAV.find(g => g.items.some(i => i.key === key)) || { group:'Tài khoản' }).group;
 const nrm = s => String(s||'').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').toLowerCase();
 
@@ -1270,7 +1311,7 @@ function tickClock(){
 function renderNav(){
   const unread = unreadCount();
   const nav = $('#nav'); if (!nav) return;
-  nav.innerHTML = NAV.filter(g => !g.role || has(g.role)).map(g => `<h6>${esc(g.group)}</h6>` + g.items.map(it => {
+  nav.innerHTML = NAV.filter(g => !g.role || has(g.role)).map(g => `<h6>${esc(g.group)}</h6>` + g.items.filter(it => !it.role || has(it.role)).map(it => {
     const locked = it.role && !has(it.role);
     const badge = it.key === 'thongbao' && unread ? `<span class="badge">${unread}</span><span class="badge-dot"></span>` : '';
     return `<a data-go="${it.key}" class="${S.page === it.key ? 'on' : ''}" title="${esc(it.label)}">${ic(it.icon)}<span class="lbl">${esc(it.label)}</span>${badge}${locked ? `<span class="lock">${ic('lock')}</span>` : ''}</a>`;
@@ -1436,6 +1477,9 @@ VIEWS.home = async el => {
   loadBd();
   const d = await call('home');
   S.ann = mergeAnn(d.announcements);
+  if (d.hrAlerts && d.hrAlerts.length) { const hb = document.createElement('section'); hb.className = 'b12 hr-alarm clk'; hb.dataset.go = 'nhansu';
+    hb.innerHTML = `${ic('info')}<div><b>${d.hrAlerts.length} nhân sự sắp hết hạn hợp đồng</b><div class="small">${d.hrAlerts.slice(0, 5).map(x => esc(x.name) + ' (' + esc(dLeft(x.daysLeft)).toLowerCase() + ')').join(' · ')} — bấm để xem và lên lịch review</div></div>`;
+    const bento = $('.bento'); if (bento) bento.insertBefore(hb, bento.children[1] || null); }
   const seen = lastSeenAnn(), unread = unreadCount();
   const today = isoDate(now), todayEv = (d.events || []).filter(e => e.start.slice(0, 10) === today);
   const ls = d.lastScan;
@@ -1453,6 +1497,7 @@ VIEWS.home = async el => {
   $('#h-ann').innerHTML = ann.length ? ann.map(a => `<div class="ann-mini ${a.date > seen ? 'new' : ''}" data-go="thongbao"><span class="bul"></span><div><b>${esc(a.title)}</b><span>${a.pinned ? 'Đã ghim · ' : ''}${esc(a.cat)} · ${ago(a.date)}</span></div></div>`).join('')
     : `<div class="empty" style="padding:22px">Chưa có thông báo</div>`;
   renderNav();
+  setTimeout(prefetch, 400);
 };
 const mergeAnn = list => { const m = {}; (S.ann||[]).concat(list||[]).forEach(a => m[a.id] = a); return Object.values(m); };
 const hhmm = s => String(s).slice(11, 16);
@@ -1622,10 +1667,26 @@ VIEWS.thongbao = async el => {
 /* ---------- Bảng lương ---------- */
 VIEWS.luong = async el => {
   el.innerHTML = skel(3, 120);
-  const d = await call('payslip');
+  let d = null;
+  if (S.payPin) { try { d = await call('payslip', { pin:S.payPin }); } catch(err) { if (!/PIN|Sai mã|khóa/i.test(err.message)) throw err; S.payPin = ''; } }
+  if (!d) {
+    const ps = await call('payslip.pinStatus');
+    if (!el.isConnected) return;
+    if (!ps.hasPin) {
+      await pinPad(el, { mode:'create', title:'Tạo mã xem lương', sub:'Phiếu lương là thông tin riêng tư. Tạo mã 4 số, từ lần sau phải nhập mã mới xem được lương.',
+        submit: v => call('payslip.setPin', { pin:v }).then(() => { S.payPin = v; }) });
+      toast('Đã tạo mã xem lương');
+    } else {
+      await pinPad(el, { mode:'enter', title:'Nhập mã xem lương', sub:'Nhập mã 4 số của bạn', foot:'Quên mã? Báo admin đặt lại mã xem lương.',
+        submit: v => call('payslip', { pin:v }).then(r => { S.payPin = v; d = r; }) });
+    }
+    if (!el.isConnected) return;
+    el.innerHTML = skel(3, 120);
+    if (!d) d = await call('payslip', { pin:S.payPin });
+  }
   const months = d.months || [], conf = d.confirmed || {}, win = d.confirmWindow || { from:1, to:5, open:false };
   if (!months.length) { el.innerHTML = `<div class="card"><div class="empty"><div class="ico">${ic('wallet')}</div><b>Chưa có phiếu lương</b>Phiếu lương sẽ hiện ở đây khi kế toán phát hành lương tháng.</div></div>`; return; }
-  let cur = 0, hide = store.get('ibvn_hide_money') === '1';
+  let cur = 0, hide = true;   // mặc định che số, bấm "Hiện số tiền" mới hiện
   const money = v => hide ? '•••••••' : Math.round(Number(v) || 0).toLocaleString('vi-VN');
   const numv = v => v === '' || v == null ? '—' : String(Math.round(Number(v) * 100) / 100).replace('.', ',');
   const mLabel = ym => `Tháng ${+ym.slice(5)}/${ym.slice(0, 4)}`;
@@ -1672,7 +1733,7 @@ VIEWS.luong = async el => {
       const m = modal('Xác nhận phiếu lương?', `<p style="margin:0">Bạn xác nhận đã kiểm tra và đồng ý với phiếu lương <b>${esc(mLabel(D.thang))}</b>, thực nhận <b>${Math.round(Number(D.thucNhan) || 0).toLocaleString('vi-VN')} VND</b>. Xác nhận sẽ được gửi về kế toán và không huỷ được.</p>`,
         `<button class="btn ghost" data-close>Để sau</button><button class="btn primary" id="ps-ok2">Xác nhận</button>`);
       $('#ps-ok2', m.el).onclick = async ev => { busy(ev.currentTarget, true, 'Đang gửi…');
-        try { const r = await call('payslip.confirm', { month: D.thang }); conf[D.thang] = r.time; m.close(); toast('Đã xác nhận phiếu lương'); draw(); }
+        try { const r = await call('payslip.confirm', { month: D.thang, pin: S.payPin }); conf[D.thang] = r.time; m.close(); toast('Đã xác nhận phiếu lương'); draw(); }
         catch(err) { toast(err.message, 'err'); busy(ev.currentTarget, false); } };
     };
     $('#ps-t').onclick = e => { const c = e.target.closest('.chip'); if (c) $$('#ps-t .chip').forEach(x => x.classList.toggle('on', x === c)); };
@@ -1719,9 +1780,111 @@ VIEWS.tuyendung = async el => {
     <a class="btn lg white" href="${esc(S.links.tuyendung)}" target="_blank" rel="noopener">${ic('ext')}Mở trang tuyển dụng</a></div></div>`;
 };
 VIEWS.danhgia = async el => {
-  if (!has('LEADER')) { el.innerHTML = `<div class="card"><div class="empty"><div class="ico">${ic('lock')}</div><b>Chỉ dành cho Leader</b>Trang đánh giá ứng viên và nhân sự chỉ mở cho trưởng nhóm và quản lý.</div></div>`; return; }
-  embedView(el, { title:'Đánh giá ứng viên & nhân sự', icon:'users', url:S.links.danhgia, missing:'Admin vào Quản trị › Liên kết, điền LINK_DANH_GIA để mở trang này.' });
+  if (!has('HRVIEW')) { el.innerHTML = `<div class="card"><div class="empty"><div class="ico">${ic('lock')}</div><b>Chỉ dành cho Leader và quản lý</b>Trang đánh giá ứng viên chỉ mở cho trưởng nhóm và quản lý.</div></div>`; return; }
+  embedView(el, { title:'Đánh giá ứng viên', icon:'briefcase', url:S.links.danhgia, missing:'Admin vào Quản trị › Liên kết, điền LINK_DANH_GIA để mở trang này.' });
 };
+
+/* ---------- Đánh giá nhân sự (hạn hợp đồng) ---------- */
+const dLeft = n => n == null ? '' : n < 0 ? `Đã hết hạn ${-n} ngày` : n === 0 ? 'Hết hạn hôm nay' : `Còn ${n} ngày`;
+VIEWS.nhansu = async el => {
+  if (!has('HRVIEW')) { el.innerHTML = errBox('Bạn không có quyền vào trang này'); return; }
+  el.innerHTML = skel(4, 60);
+  const d = await call('hr.team');
+  let q = '', only = false;
+  const draw = () => {
+    const warnList = d.list.filter(x => x.daysLeft != null && x.daysLeft <= d.warn);
+    const rows = d.list.filter(x => (!only || (x.daysLeft != null && x.daysLeft <= d.warn)) && (!q || (x.name + x.id + x.dept + x.position).toLowerCase().includes(q)));
+    el.innerHTML = `<div class="stack">
+      ${warnList.length ? `<div class="hr-alarm">${ic('info')}<div><b>${warnList.length} nhân sự sắp hết hạn hợp đồng (≤ ${d.warn} ngày)</b><div class="small">Cần lên lịch review: ${warnList.slice(0, 6).map(x => esc(x.name)).join(', ')}${warnList.length > 6 ? '…' : ''}</div></div></div>` : ''}
+      <div class="card"><div class="card-h" style="flex-wrap:wrap;gap:10px"><h3><span class="hi">${ic('users')}</span>${d.all ? 'Toàn bộ nhân sự' : 'Nhân sự team của bạn'} <span class="small muted" style="font-weight:500">(${d.list.length} người)</span></h3><span class="spacer"></span>
+        <input class="input sm" id="hr-q" placeholder="Tìm tên, mã NV, bộ phận…" style="max-width:240px" value="${esc(q)}">
+        <label class="check small"><input type="checkbox" id="hr-only" ${only ? 'checked' : ''}> Chỉ người sắp hết hạn</label></div>
+        ${rows.length ? `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Nhân viên</th><th>Bộ phận / chức vụ</th><th>Loại hợp đồng</th><th>Bắt đầu</th><th>Kết thúc</th><th>Còn lại</th></tr></thead><tbody>
+          ${rows.map(x => { const bad = x.daysLeft != null && x.daysLeft <= d.warn; return `<tr class="${bad ? 'hr-bad' : ''}"><td><div class="row" style="gap:10px;flex-wrap:nowrap">${avatarHtml(x)}<div><b>${esc(x.name)}</b><div class="small muted">${esc(x.id)}</div></div></div></td>
+            <td>${esc(x.dept)}<div class="small muted">${esc(x.position)}</div></td><td class="small">${esc(x.type || '—')}${x.no ? `<div class="muted">${esc(x.no)}</div>` : ''}</td>
+            <td class="tnum">${x.start ? vnDate(x.start) : '—'}</td><td class="tnum"><b>${x.end ? vnDate(x.end) : '—'}</b></td>
+            <td>${x.end ? `<span class="pill ${bad ? 'bad' : x.daysLeft <= d.warn * 2 ? 'warn' : 'ok'}">${bad ? ic('info') : ''}${esc(dLeft(x.daysLeft))}</span>${bad ? '<div class="small" style="color:var(--bad);margin-top:4px">Sắp đến thời gian review</div>' : ''}` : '<span class="small muted">Không thời hạn / chưa có</span>'}</td></tr>`; }).join('')}</tbody></table></div>`
+          : `<div class="empty"><div class="ico">${ic('users')}</div><b>Không có nhân sự</b>${d.all ? '' : 'Danh sách theo bộ phận của bạn trong Danh Sách NV.'}</div>`}</div>
+      <p class="small muted">Dữ liệu hợp đồng lấy từ tab Danh Sách NV (file đơn từ), tự cập nhật mỗi giờ.</p></div>`;
+    const qi = $('#hr-q', el); qi.oninput = () => { q = qi.value.toLowerCase(); const pos = qi.selectionStart; draw(); const n = $('#hr-q', el); n.focus(); try { n.setSelectionRange(pos, pos); } catch(e){} };
+    $('#hr-only', el).onchange = e => { only = e.target.checked; draw(); };
+  };
+  draw();
+};
+
+/* ---------- Đơn từ của nhân viên (người có quyền) ---------- */
+async function drawStaffReq(b){
+  b.innerHTML = `<div class="stack"><div class="card"><div class="card-b row" style="gap:10px;padding-top:16px;flex-wrap:wrap"><label class="small muted" for="ds-emp">Chọn nhân viên</label>
+    <select class="select" id="ds-emp" style="max-width:360px"><option value="">— Chọn nhân viên —</option></select></div></div><div id="ds-b"></div></div>`;
+  const emps = await call('req.emps');
+  $('#ds-emp').innerHTML = '<option value="">— Chọn nhân viên —</option>' + emps.map(e => `<option value="${esc(e.id)}">${esc(e.name)} · ${esc(e.id)}${e.dept ? ' · ' + esc(e.dept) : ''}</option>`).join('');
+  $('#ds-emp').onchange = async e => {
+    const id = e.target.value, box = $('#ds-b');
+    if (!id) { box.innerHTML = ''; return; }
+    box.innerHTML = skel(3, 50);
+    try {
+      const list = await call('req.my', { empId: id });
+      if (!list.length) { box.innerHTML = `<div class="card"><div class="empty"><div class="ico">${ic('file')}</div><b>Chưa có đơn nào</b></div></div>`; return; }
+      const groups = {}; list.forEach(r => (groups[r.label] = groups[r.label] || []).push(r));
+      const st = r => r.status === 'sent' ? '<span class="pill ok">Đã ghi nhận</span>' : r.status === 'cancel' ? '<span class="pill">Đã huỷ</span>' : r.status === 'reject' ? '<span class="pill bad">Không duyệt</span>' : `<span class="pill warn">${esc(r.statusText)}</span>`;
+      box.innerHTML = `<div class="card"><div class="card-h"><h3><span class="hi">${ic('file')}</span>${list.length} đơn</h3></div>
+        ${Object.keys(groups).map((g, gi) => `<details class="ds-g"><summary><b>${esc(g)}</b><span class="pill brand">${groups[g].length} đơn</span><span class="spacer"></span>${ic('chevR')}</summary>
+          ${groups[g].map((r, i) => `<div class="req-item clk" data-g="${gi}" data-i="${i}"><div class="bd"><div class="row" style="gap:8px">${st(r)}<span class="small muted">${r.sent ? 'Gửi lúc ' + vnDateTime(r.sent) : esc(r.statusText)}</span></div>
+            <div class="dt">${esc(r.detail)}</div>${r.reason ? `<div class="rs">“${esc(r.reason)}”</div>` : ''}</div><button class="btn sm soft">${ic('eye')}Chi tiết</button></div>`).join('')}</details>`).join('')}</div>`;
+      const keys = Object.keys(groups);
+      box.onclick = ev => {
+        const it = ev.target.closest('.req-item'); if (!it || ev.target.closest('a')) return;
+        const r = groups[keys[+it.dataset.g]][+it.dataset.i];
+        const rows = (r.fields || []).map(f => `<dt>${esc(LANG === 'ko' && f.ko ? f.ko : f.vi)}</dt><dd>${/^https?:[\/][\/]/.test(f.v) ? `<a href="${esc(f.v)}" target="_blank" rel="noopener">${esc(f.v)}</a>` : esc(LANG === 'ko' ? (f.v.split(' / ')[1] || f.v) : vi(f.v))}</dd>`).join('');
+        modal(r.label, `<div class="row" style="gap:8px">${st(r)}</div><dl class="kv" style="margin:0">${rows || `<dt>Nội dung</dt><dd>${esc(r.detail)}</dd>`}</dl>`, '<button class="btn primary" data-close>Đóng</button>');
+      };
+    } catch(err) { box.innerHTML = errBox(err.message); }
+  };
+}
+
+/* ---------- Sửa giờ chấm công ---------- */
+function attEditModal(o, done){
+  const m = modal('Sửa giờ chấm công', `<div class="small muted" style="margin-bottom:10px"><b>${esc(o.name)}</b> · ${esc(o.id)} · ${vnDate(o.date)}</div>
+    <div class="row" style="flex-wrap:nowrap"><div class="field" style="flex:1"><label for="ae-i">Giờ vào</label><input class="input" type="time" id="ae-i" value="${esc((o.ci || '').slice(0, 5))}"></div>
+    <div class="field" style="flex:1"><label for="ae-o">Giờ ra</label><input class="input" type="time" id="ae-o" value="${esc((o.co || '').slice(0, 5))}"></div></div>
+    <div class="field"><label for="ae-r">Lý do sửa <span class="req">*</span></label><textarea class="textarea" id="ae-r" style="min-height:70px" placeholder="vd: Quên quét vân tay, đã có đơn quên chấm công…"></textarea></div>
+    <span class="small muted">Giờ đã sửa sẽ thay giờ lấy từ khóa cửa ở mọi nơi: trang của nhân viên, tab Toàn công ty, file Excel.</span>`,
+    '<button class="btn ghost" data-close>Huỷ</button><button class="btn primary" id="ae-s">Lưu</button>');
+  $('#ae-s', m.el).onclick = async ev => {
+    busy(ev.currentTarget, true, 'Đang lưu…');
+    try { await call('att.edit', { date:o.date, empId:o.id, in:$('#ae-i', m.el).value, out:$('#ae-o', m.el).value, reason:$('#ae-r', m.el).value }); m.close(); toast('Đã sửa giờ chấm công'); done && done(); }
+    catch(err) { toast(err.message, 'err'); busy(ev.currentTarget, false); }
+  };
+}
+const editNote = ed => ed ? `<div class="att-ed">${ic('edit')}Đã sửa bởi ${esc(ed.by)} lúc ${esc(String(ed.at).slice(11, 16))} ${esc(vnDate(String(ed.at).slice(0, 10)))} · ${esc(ed.reason)}</div>` : '';
+
+/* ---------- Mã PIN xem lương ---------- */
+function pinPad(el, opts){
+  return new Promise(resolve => {
+    let val = '', first = '';
+    const draw = (msg, err) => {
+      el.innerHTML = `<div class="card pin-card"><div class="pin-ico">${ic('lock')}</div><h3>${esc(opts.title)}</h3><p class="muted small" style="margin:0 0 10px">${esc(msg || opts.sub)}</p>
+        <div class="pin-dots ${err ? 'shake' : ''}">${[0,1,2,3].map(i => `<span class="${i < val.length ? 'on' : ''}"></span>`).join('')}</div>
+        <div class="pin-keys">${[1,2,3,4,5,6,7,8,9,'',0,'⌫'].map(k => k === '' ? '<span></span>' : `<button type="button" data-k="${k}">${k}</button>`).join('')}</div>
+        ${opts.foot ? `<p class="small muted" style="margin:12px 0 0">${opts.foot}</p>` : ''}</div>`;
+      el.querySelector('.pin-keys').onclick = e => { const b = e.target.closest('[data-k]'); if (!b) return; press(b.dataset.k); };
+    };
+    const press = async k => {
+      if (k === '⌫') { val = val.slice(0, -1); draw(); return; }
+      if (val.length >= 4) return;
+      val += k; draw();
+      if (val.length < 4) return;
+      if (opts.mode === 'create' && !first) { first = val; val = ''; draw('Nhập lại mã một lần nữa để xác nhận'); return; }
+      if (opts.mode === 'create' && first !== val) { first = ''; val = ''; draw('Hai lần nhập không khớp, nhập lại từ đầu', true); return; }
+      const v = val; val = '';
+      try { await opts.submit(v); document.removeEventListener('keydown', kb); resolve(v); }
+      catch(err) { first = ''; draw(err.message, true); }
+    };
+    const kb = e => { if (!el.isConnected) { document.removeEventListener('keydown', kb); return; } if (/^\d$/.test(e.key)) press(e.key); else if (e.key === 'Backspace') press('⌫'); };
+    document.addEventListener('keydown', kb);
+    draw();
+  });
+}
 
 /* ---------- Chấm công ---------- */
 VIEWS.chamcong = async el => {
@@ -1755,7 +1918,7 @@ VIEWS.chamcong = async el => {
     }
     let days = [];
     const typeShort = t => vi(t).replace('Mở khóa bằng ', '').replace('Mở khóa với ', '');
-    const detail = x => `<div class="day-detail"><div class="row" style="margin-bottom:6px"><b style="font-family:var(--fd);font-size:16px">${WDL[parseISO(x.date).getDay()]}, ${vnDate(x.date)}</b><span class="spacer"></span><span class="pill">${x.scans.length} lượt quét</span></div>
+    const detail = x => `<div class="day-detail"><div class="row" style="margin-bottom:6px"><b style="font-family:var(--fd);font-size:16px">${WDL[parseISO(x.date).getDay()]}, ${vnDate(x.date)}</b><span class="spacer"></span><span class="pill">${x.scans.length} lượt quét</span></div>${x.edit ? `<div style="margin-bottom:6px">${editNote(x.edit)}<div class="small">Giờ vào/ra đã sửa: <b>${esc((x.edit.in || '—').slice(0, 5))}</b> → <b>${esc((x.edit.out || '—').slice(0, 5))}</b></div></div>` : ''}
       ${x.scans.map(s => `<div class="scan"><span class="sd ${s.ok ? '' : 'bad'}"></span><span class="mono">${s.time.slice(0,5)}</span><span>${esc(s.type)}</span>${s.ok ? '' : '<span class="pill bad">Thất bại</span>'}${s.lock ? `<span class="spacer"></span><span class="pill">${esc(s.lock)}</span>` : ''}</div>`).join('')}</div>`;
     const paint = () => {
       const box = $('#cc-days');
@@ -1764,7 +1927,7 @@ VIEWS.chamcong = async el => {
       if (view === 'list') {
         const total = days.reduce((n, x) => n + x.scans.length, 0);
         box.innerHTML = days.length ? `<div class="small muted" style="padding:0 20px 8px">${total} lượt quét trong tháng</div><div class="tbl-wrap"><table class="tbl att-scan"><thead><tr><th>Ngày</th><th>Giờ quét</th><th>Cách mở</th><th>Khóa</th><th>Kết quả</th></tr></thead><tbody>
-          ${days.map(x => { const dt = parseISO(x.date); return `<tr class="d-h"><td colspan="5"><b>${WDL[dt.getDay()]}, ${vnDate(x.date)}</b><span class="small muted"> · Vào ${x.first ? x.first.time.slice(0,5) : '—'} · Ra ${x.last ? x.last.time.slice(0,5) : '—'} · ${x.scans.length} lượt</span></td></tr>`
+          ${days.map(x => { const dt = parseISO(x.date); return `<tr class="d-h"><td colspan="5"><b>${WDL[dt.getDay()]}, ${vnDate(x.date)}</b><span class="small muted"> · Vào ${x.first ? x.first.time.slice(0,5) : '—'} · Ra ${x.last ? x.last.time.slice(0,5) : '—'} · ${x.scans.length} lượt</span>${editNote(x.edit)}</td></tr>`
             + x.scans.map(sc => `<tr><td class="small muted">${pad(dt.getDate())}/${pad(dt.getMonth()+1)}</td><td class="tnum"><b>${esc(sc.time)}</b></td><td>${esc(typeShort(sc.type).replace(/^./, c => c.toUpperCase()))}</td><td>${sc.lock ? `<span class="pill">${esc(sc.lock)}</span>` : '—'}</td><td>${sc.ok ? '<span class="pill ok">Thành công</span>' : '<span class="pill bad">Thất bại</span>'}</td></tr>`).join(''); }).join('')}
           </tbody></table></div>` : `<div class="empty">Chưa có dữ liệu tháng này</div>`;
         return;
@@ -1791,13 +1954,17 @@ VIEWS.chamcong = async el => {
       $('#cc-upd').textContent = d.updated ? `Cập nhật lần cuối lúc ${vnDateTime(d.updated)}${d.upTo ? ' · dữ liệu có đến ngày ' + vnDate(d.upTo) : ''}` : 'Chưa có lần cập nhật nào';
       if (d.note) $('#cc-note').textContent = d.note;
       const RU = d.rule || null, nk = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[đĐ]/g, 'D').toUpperCase().trim();
-      days = d.days.map(x => { const ok = x.scans.filter(s => s.ok);
+      const ED = d.edits || {};
+      d.days = d.days.concat(Object.keys(ED).filter(k => !d.days.some(x => x.date === k)).map(k => ({ date:k, scans:[] }))).sort((a, b) => a.date < b.date ? -1 : 1);
+      days = d.days.map(x => { const r0 = dayFirstLast(x); const ed = ED[x.date]; if (!ed) return r0;
+        return { ...r0, edit: ed, first: ed.in ? { time: ed.in, type: 'Đã sửa tay', ok: true, lock: '' } : r0.first, last: ed.out ? { time: ed.out, type: 'Đã sửa tay', ok: true, lock: '' } : r0.last }; });
+      function dayFirstLast(x){ const ok = x.scans.filter(s => s.ok);
         if (RU && x.date >= RU.vanTayTu) {   // từ ngày áp dụng: vào = vân tay ở cổng ngoài, ra = vân tay ở cổng trong
           const fp = ok.filter(s => /VAN TAY/.test(nk(s.type)));
           const ins = fp.filter(s => nk(s.lock) === nk(RU.khoaVao)), outs = fp.filter(s => nk(s.lock) === nk(RU.khoaRa));
           return { ...x, first: ins[0] || null, last: outs.length ? outs[outs.length - 1] : null };
         }
-        return { ...x, first: ok[0], last: ok.length > 1 ? ok[ok.length-1] : null }; });
+        return { ...x, first: ok[0], last: ok.length > 1 ? ok[ok.length-1] : null }; }
       const work = days.filter(x => x.first), single = days.filter(x => x.first && !x.last).length;
       const ins = work.map(x => toMin(x.first.time)).sort((a, b) => a - b);
       const hrs = work.filter(x => x.last).map(x => (toMin(x.last.time) - toMin(x.first.time)) / 60);
@@ -1916,12 +2083,14 @@ VIEWS.chamcong = async el => {
         <div class="v"><span>${n}</span><small>người</small></div><div class="small muted">${tot ? Math.round(n / tot * 100) : 0}% / ${tot} người${one ? '' : ` · ${c} lượt`}</div></div></button>`; }).join('');
       const rows = LIST.filter(x => filt === 'all' || x.flags.includes(filt)).sort((a, b) => a.day === b.day ? (a.e.name < b.e.name ? -1 : 1) : (a.day < b.day ? 1 : -1));
       $('#ca-lt').textContent = filt === 'all' ? `Chi tiết (${rows.length} dòng)` : `${(KINDS.find(k => k.k === filt) || {}).l} (${rows.length} lượt)`;
-      $('#ca-list').innerHTML = rows.length ? `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Ngày</th><th>Nhân viên</th><th>Bộ phận</th><th>Giờ vào</th><th>Giờ ra</th><th>Tổng giờ</th><th>Trạng thái</th></tr></thead><tbody>
+      $('#ca-list').innerHTML = rows.length ? `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Ngày</th><th>Nhân viên</th><th>Bộ phận</th><th>Giờ vào</th><th>Giờ ra</th><th>Tổng giờ</th><th>Trạng thái</th>${R.canEdit ? '<th></th>' : ''}</tr></thead><tbody>
         ${rows.slice(0, 1500).map(x => `<tr><td class="tnum">${WD[parseISO(x.day).getDay()]} ${vnDate(x.day).slice(0, 5)}</td><td><b>${esc(x.e.name)}</b><div class="small muted">${esc(x.e.id)}</div></td><td class="small">${esc(x.e.dept)}</td>
           <td class="tnum ${x.flags.includes('late') ? 'bad-t' : ''}">${x.ci ? x.ci.slice(0, 5) : '—'}</td><td class="tnum ${x.flags.includes('early') ? 'bad-t' : ''}">${x.co ? x.co.slice(0, 5) : '—'}</td><td class="tnum">${attHms(x.hrs) || '—'}</td>
-          <td>${x.flags.map(f => `<span class="pill ${LAB[f][1]}">${LAB[f][0]}</span>`).join(' ')}</td></tr>`).join('')}</tbody></table></div>`
+          <td>${x.flags.map(f => `<span class="pill ${LAB[f][1]}">${LAB[f][0]}</span>`).join(' ')}${editNote(x.edit)}</td>${R.canEdit ? `<td><button class="btn sm ghost" data-ed="${esc(x.e.id)}|${x.day}">${ic('edit')}Sửa</button></td>` : ''}</tr>`).join('')}</tbody></table></div>`
         : `<div class="empty"><div class="ico">${ic('check')}</div><b>Không có dòng nào</b>Thử chọn mục khác hoặc ngày khác.</div>`;
     };
+    $('#ca-list').onclick = e => { const b = e.target.closest('[data-ed]'); if (!b) return; const [id, day] = b.dataset.ed.split('|'); const x = LIST.find(y => y.e.id === id && y.day === day);
+      attEditModal({ id, name: x ? x.e.name : id, date: day, ci: x ? x.ci : '', co: x ? x.co : '' }, load); };
     $('#ca-sum').onclick = e => { const b = e.target.closest('[data-f]'); if (!b) return; filt = b.dataset.f === 'all' || filt === b.dataset.f ? 'all' : b.dataset.f; paint(); };
     $('#ca-x').onclick = () => { if (!R) return; if (!window.XLSX) return toast('Chưa tải được thư viện Excel, thử tải lại trang', 'err'); exportAtt(R, LIST); };
     const load = async () => {
@@ -1961,7 +2130,7 @@ function attBuild(R){
         if (b != null && b < ra && !(isToday && attSecs(R.now) < ra)) flags.push('early');   // hôm nay chưa tới giờ tan làm → chưa tính về sớm
         if (!flags.length && (ci || co)) flags.push('ok');
       }
-      out.push({ day, e, ci, co, hrs: a != null && b != null && b > a ? b - a : null, flags });
+      out.push({ day, e, ci, co, hrs: a != null && b != null && b > a ? b - a : null, flags, edit: r ? r[5] || null : null });
     });
   });
   return out;
@@ -1971,9 +2140,9 @@ function exportAtt(R, LIST){
   const nm = { ok:'Đúng giờ', late:'Đi trễ', early:'Về sớm', noin:'Quên check-in', noout:'Quên check-out', absent:'Không có dữ liệu' };
   const daySheet = [['IBVN – Tình trạng chấm công theo kỳ'], ['Kỳ', per],
     ['Giờ vào = quét sớm nhất ở ' + R.khoaVao + '; giờ ra = quét trễ nhất ở ' + R.khoaRa + '; trễ sau ' + R.gioVao + ', về sớm trước ' + R.gioRa], [],
-    ['Ngày', 'Mã nhân viên', 'Họ và tên', 'Chức vụ', 'Bộ phận', 'Giờ vào làm', 'Giờ tan làm', 'Tổng giờ', 'Trạng thái']];
+    ['Ngày', 'Mã nhân viên', 'Họ và tên', 'Chức vụ', 'Bộ phận', 'Giờ vào làm', 'Giờ tan làm', 'Tổng giờ', 'Trạng thái', 'Ghi chú sửa giờ']];
   LIST.slice().sort((a, b) => a.e.name === b.e.name ? (a.day < b.day ? -1 : 1) : (a.e.name < b.e.name ? -1 : 1))
-    .forEach(x => daySheet.push([x.day.replace(/-/g, ''), x.e.id, x.e.name, x.e.position, x.e.dept, x.ci, x.co, attHms(x.hrs), x.flags.map(f => nm[f]).join(', ')]));
+    .forEach(x => daySheet.push([x.day.replace(/-/g, ''), x.e.id, x.e.name, x.e.position, x.e.dept, x.ci, x.co, attHms(x.hrs), x.flags.map(f => nm[f]).join(', '), x.edit ? 'Sửa bởi ' + x.edit.by + ' lúc ' + x.edit.at + ' – ' + x.edit.reason : '']));
   const empSheet = [['IBVN – Tình trạng chấm công theo nhân viên'], ['Kỳ', per], [],
     ['Mã nhân viên', 'Họ và tên', 'Chức vụ', 'Bộ phận', 'Số ngày có chấm công', 'Giờ vào trung bình', 'Giờ tan trung bình', 'Tổng giờ làm', 'Đi trễ (lần)', 'Về sớm (lần)', 'Quên check-in', 'Quên check-out', 'Không có dữ liệu (ngày)']];
   R.emps.forEach(e => {
@@ -2177,7 +2346,7 @@ const DTH = { nghi:'peach', tre:'sky', ot:'lilac', quen:'rose', congtac:'mint', 
 const fmtNum = n => String(Math.round(n * 10) / 10).replace('.', '.');
 
 VIEWS.dontu = async el => {
-  el.innerHTML = `<div class="stack"><div class="row"><div class="seg" id="dt-tab"><button class="on" data-t="new">Tạo đơn</button><button data-t="my">Đơn của tôi</button></div>
+  el.innerHTML = `<div class="stack"><div class="row"><div class="seg" id="dt-tab"><button class="on" data-t="new">Tạo đơn</button><button data-t="my">Đơn của tôi</button>${S.links.dtAll ? '<button data-t="staff">Đơn của nhân viên</button>' : ''}</div>
     <div class="spacer"></div>${S.links.dontu ? `<a class="btn sm ghost" href="${esc(S.links.dontu)}" target="_blank" rel="noopener">${ic('ext')}Web đơn từ cũ</a>` : ''}</div><div id="dt-b"></div></div>`;
   const b = $('#dt-b');
   let type = (S.pre && S.pre.dontu) || ''; const startTab = (S.pre && S.pre.dontuTab) || 'new'; S.pre = null;
@@ -2274,7 +2443,7 @@ VIEWS.dontu = async el => {
       const it = e.target.closest('.req-item'); if (it) showDetail(list[+it.dataset.i]);
     };
   };
-  const switchTab = t => { $$('#dt-tab button').forEach(x => x.classList.toggle('on', x.dataset.t === t)); (t === 'my' ? drawMy : async () => drawNew())().catch(err => b.innerHTML = errBox(err.message)); };
+  const switchTab = t => { $$('#dt-tab button').forEach(x => x.classList.toggle('on', x.dataset.t === t)); (t === 'my' ? drawMy : t === 'staff' ? () => drawStaffReq(b) : async () => drawNew())().catch(err => b.innerHTML = errBox(err.message)); };
   $('#dt-tab').onclick = e => { const x = e.target.closest('button'); if (x) switchTab(x.dataset.t); };
   if (startTab === 'my') switchTab('my'); else drawNew();
 };
@@ -2334,6 +2503,9 @@ VIEWS.caidat = async el => {
         <div style="min-width:0;flex:1"><b style="font-size:19px;font-family:var(--fd)">${esc(S.user.name)}</b><div class="muted">${esc(S.user.position)}</div>
           <div class="row" style="gap:6px;margin-top:8px"><span class="pill brand">${esc(S.user.id)}</span><span class="pill">${esc(S.user.dept)}</span>${S.user.roles.map(r => `<span class="pill info">${esc(roleName[r] || r)}</span>`).join('')}</div>
           ${S.user.avatar ? '<button class="btn sm ghost" id="av-del" style="margin-top:10px">Bỏ ảnh đại diện</button>' : ''}</div></div></div>
+      ${S.user.contract && (S.user.contract.type || S.user.contract.end) ? `<div class="card"><div class="card-h"><h3><span class="hi">${ic('file')}</span>Hợp đồng lao động</h3></div><div class="card-b"><dl class="kv" style="margin:0">
+        <dt>Loại hợp đồng</dt><dd>${esc(S.user.contract.type || '—')}</dd>${S.user.contract.no ? `<dt>Số hợp đồng</dt><dd>${esc(S.user.contract.no)}</dd>` : ''}
+        <dt>Ngày bắt đầu</dt><dd>${S.user.contract.start ? vnDate(S.user.contract.start) : '—'}</dd><dt>Ngày kết thúc</dt><dd><b>${S.user.contract.end ? vnDate(S.user.contract.end) : 'Không thời hạn'}</b>${S.user.contract.end ? ` <span class="pill ${S.user.contract.daysLeft <= 30 ? 'bad' : 'ok'}">${esc(dLeft(S.user.contract.daysLeft))}</span>` : ''}</dd></dl></div></div>` : ''}
       <div class="card"><div class="card-h"><h3><span class="hi">${ic('cake')}</span>Thông tin cá nhân</h3></div><form class="card-b stack" id="st-pf">
         <div class="field"><label for="st-bd">Ngày sinh</label><input class="input" type="date" id="st-bd" value="${esc(S.user.birthday || '')}" max="${isoDate(new Date())}"><span class="small muted">Trang chủ chỉ hiện ngày và tháng sinh nhật, không hiện năm sinh.</span></div>
         <button class="btn primary" id="st-pfb">Lưu thông tin</button></form></div>
@@ -2398,7 +2570,7 @@ VIEWS.admin = async el => {
           <label><span>Phê duyệt</span><input class="input sm" data-ae value="${esc(e.approvalEmail || '')}" placeholder="tự lấy theo mã NV" title="Chỉ điền khi người này duyệt bằng email vai trò (vd sếp dùng hr@)"></label></div></td>
         <td><select class="select sm" data-st><option ${e.status !== 'NGHỈ VIỆC' ? 'selected' : ''}>ĐANG LÀM</option><option ${e.status === 'NGHỈ VIỆC' ? 'selected' : ''}>NGHỈ VIỆC</option></select>
           <div class="small" style="margin-top:6px">${e.hasPw ? `<span class="pill ok">Đã đổi pass</span>` : `<span class="pill warn">Pass mặc định</span>`}</div><div class="small muted" style="margin-top:2px">${esc(e.lastLogin)}</div></td>
-        <td><div class="adm-act"><button class="btn sm primary" data-save>Lưu</button><button class="btn sm ghost" data-reset title="Đặt lại về 123456">Reset pass</button>${e.id !== S.user.id ? `<button class="btn sm danger" data-del title="Xoá khỏi hệ thống – mã này không đăng nhập được nữa">${ic('trash')}Xoá</button>` : ''}${S.links.canImp && e.id !== S.user.id && rank(e) === 0 ? `<button class="btn sm soft" data-imp title="Xem intranet giống như người này thấy (chỉ xem)">${ic('eye')}Xem như NV</button>` : ''}</div></td></tr>`).join('')}</tbody></table>`;
+        <td><div class="adm-act"><button class="btn sm primary" data-save>Lưu</button><button class="btn sm ghost" data-reset title="Đặt lại về 123456">Reset pass</button><button class="btn sm ghost" data-rpin title="Xoá mã 4 số xem lương – nhân viên sẽ tạo mã mới">Reset mã lương</button>${e.id !== S.user.id ? `<button class="btn sm danger" data-del title="Xoá khỏi hệ thống – mã này không đăng nhập được nữa">${ic('trash')}Xoá</button>` : ''}${S.links.canImp && e.id !== S.user.id && rank(e) === 0 ? `<button class="btn sm soft" data-imp title="Xem intranet giống như người này thấy (chỉ xem)">${ic('eye')}Xem như NV</button>` : ''}</div></td></tr>`).join('')}</tbody></table>`;
     };
     draw();
     $('#ad-q').oninput = e => draw(e.target.value);
@@ -2406,6 +2578,7 @@ VIEWS.admin = async el => {
     $('#ad-l').onclick = async e => {
       const tr = e.target.closest('tr[data-id]'); if (!tr) return; const id = tr.dataset.id;
       if (e.target.closest('[data-imp]')) return startImp(id, e.target.closest('[data-imp]'));
+      if (e.target.closest('[data-rpin]')) { const bt = e.target.closest('[data-rpin]'); if (!confirm('Xoá mã xem lương của ' + id + '? Nhân viên sẽ tạo mã mới khi vào Bảng lương.')) return; busy(bt, true, '…'); try { await call('adm.resetPin', { id }); toast('Đã reset mã xem lương'); } catch(err) { toast(err.message, 'err'); } busy(bt, false); return; }
       if (e.target.closest('[data-del]') || e.target.closest('[data-restore]')) {
         const restore = !!e.target.closest('[data-restore]'), it = list.find(x => x.id === id);
         const m = modal(restore ? 'Khôi phục nhân viên?' : 'Xoá nhân viên khỏi hệ thống?',

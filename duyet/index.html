@@ -516,7 +516,18 @@ p("apv_no_google")?s():_("GOOGLE")})()})();</script>
       if (typeof k !== 'string') return undefined;
       return function () {
         var args = Array.prototype.slice.call(arguments);
-        post(k, args).then(function (r) {
+        var p0 = post(k, args);
+        // phiên cũ hết hạn mà còn vé intranet → đăng nhập lại bằng vé rồi tải tiếp, người dùng không thấy gì
+        if (k === 'api_loadApp' && TICKET) p0 = p0.then(function (r) {
+          if (r && r.ok || !/AUTH_REQUIRED/.test(r && r.error || '')) return r;
+          var t = TICKET; TICKET = '';
+          return post('api_ssoLogin', [t]).then(function (x) {
+            if (!x || !x.ok) return r;
+            try { sessionStorage.setItem('apv_token', x.data.token); } catch (e) {}
+            return post('api_loadApp', [x.data.token]);
+          });
+        });
+        p0.then(function (r) {
           if (r && r.ok) { if (s) s(r.data, u); }
           else if (f) f(new Error(r ? r.error : 'Có lỗi xảy ra'), u);
         }, function (e) { if (f) f(e, u); });
@@ -534,19 +545,26 @@ p("apv_no_google")?s():_("GOOGLE")})()})();</script>
   // vé đăng nhập chỉ dùng 1 lần: xoá khỏi thanh địa chỉ để tải lại trang không dùng lại vé cũ
   if (params.sso) { try { var q = new URLSearchParams(location.search); q.delete('sso'); history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : '') + location.hash); } catch (e) {} }
   if (params.embed === '1') document.documentElement.classList.add('embed');
+  // đã có phiên phê duyệt trong tab này → bỏ qua bước đổi vé (nhanh hơn 1 lượt gọi máy chủ); vé chỉ dùng khi phiên hết hạn
+  var TICKET = params.sso || '', hasTok = false;
+  try { hasTok = !!sessionStorage.getItem('apv_token'); } catch (e) {}
   function start(pb) {
     pb = pb || {};
     if (pb.title) document.title = pb.title;
-    window.__BOOT__ = { route: { tab: params.tab || '', code: params.code || '' }, brand: pb.brand || {}, sso: params.sso || '',
+    window.__BOOT__ = { route: { tab: params.tab || '', code: params.code || '' }, brand: pb.brand || {}, sso: hasTok ? '' : (params.sso || ''),
                         embed: params.embed === '1', ssoOnly: !!pb.ssoOnly, intranet: pb.intranet || '' };
-    try { localStorage.setItem('apv_brand', JSON.stringify(pb)); } catch (e) {}
+    if (pb && pb.brand) try { localStorage.setItem('apv_brand', JSON.stringify(pb)); } catch (e) {}
     var s = document.createElement('script');
     s.text = document.getElementById('login-src').textContent;
     document.body.appendChild(s);
   }
   var cached = null;
   try { cached = JSON.parse(localStorage.getItem('apv_brand') || 'null'); } catch (e) {}
-  post('api_publicBoot', []).then(function (r) { start(r && r.ok ? r.data : cached); }, function () { start(cached); });
+  if (cached) {   // đã có thông tin công khai lưu sẵn → mở ngay, cập nhật lại phía sau
+    if (!hasTok && params.sso) TICKET = '';
+    start(cached);
+    post('api_publicBoot', []).then(function (r) { if (r && r.ok) try { localStorage.setItem('apv_brand', JSON.stringify(r.data)); } catch (e) {} }, function () {});
+  } else post('api_publicBoot', []).then(function (r) { start(r && r.ok ? r.data : null); }, function () { start(null); });
 })();
 </script>
 </body>
