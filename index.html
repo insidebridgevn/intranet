@@ -1932,7 +1932,7 @@ VIEWS.chamcong = async el => {
 };
 
 const attSecs = t => { const m = String(t || '').trim().match(/(\d{1,2}):(\d{2})(?::(\d{2}))?$/); return m ? (+m[1]) * 3600 + (+m[2]) * 60 + (+(m[3] || 0)) : null; };
-const attHM = t => String(t || '').trim().replace(/^.*\s/, '').slice(0, 5);
+const attHM = t => { const m = String(t || '').match(/(\d{1,2}):(\d{2})/); return m ? pad(+m[1]) + ':' + m[2] : ''; };
 const attHms = n => n == null ? '' : `${pad(Math.floor(n / 3600))}:${pad(Math.floor(n % 3600 / 60))}`;
 function attBuild(R){
   const wd = String(R.workDays).split(/[^0-9]+/).filter(Boolean).map(Number);
