@@ -1532,7 +1532,7 @@ async function annStatsModal(a){
   if (!a) return;
   const m = modal('Ai đã xem · ' + a.title, `<div id="as-b">${skel(4, 36)}</div>`, `${has('HR') ? '<button class="btn ghost" id="as-mail">Gửi lại email</button>' : ''}<button class="btn primary" data-close>Đóng</button>`);
   const mb = $('#as-mail', m.el);
-  if (mb) mb.onclick = async ev => { busy(ev.currentTarget, true, 'Đang gửi…'); try { const r = await call('ann.resend', { id:a.id }); toast(`Đã gửi email tới ${r.sent} địa chỉ${r.missing ? ` · ${r.missing} người chưa có email` : ''}`); } catch(err) { toast(err.message, 'err'); } busy(ev.currentTarget, false); };
+  if (mb) mb.onclick = async ev => { if (!confirm('Gửi lại email thông báo này cho TOÀN BỘ nhân viên?')) return; busy(ev.currentTarget, true, 'Đang gửi…'); try { const r = await call('ann.resend', { id:a.id }); toast(`Đã gửi email tới ${r.sent} địa chỉ${r.missing ? ` · ${r.missing} người chưa có email` : ''}`); } catch(err) { toast(err.message, 'err'); } busy(ev.currentTarget, false); };
   try {
     const d = await call('ann.stats', { id:a.id });
     const seen = d.emps.filter(e => e.seenAt).sort((x, y) => x.seenAt < y.seenAt ? 1 : -1), not = d.emps.filter(e => !e.seenAt);
@@ -1585,10 +1585,11 @@ VIEWS.thongbao = async el => {
       <div class="field"><label>Nội dung</label>${rteHtml()}</div>
       <div class="row"><div class="field" style="flex:1"><label>Loại</label><select class="select" id="an-c">${['Chung','Nhân sự','Sự kiện','Khẩn'].map(c => `<option ${a.cat===c?'selected':''}>${c}</option>`).join('')}</select></div>
       <label class="check" style="margin-top:22px"><input type="checkbox" id="an-p" ${a.pinned?'checked':''}> Ghim lên đầu</label></div>
-      ${a.id ? '' : `<label class="check"><input type="checkbox" id="an-m" checked> Gửi email thông báo cho toàn bộ nhân viên (kèm link xem trên intranet)</label>`}`,
+      ${a.id ? '' : `<label class="check"><input type="checkbox" id="an-m"> Gửi email thông báo cho toàn bộ nhân viên (kèm link xem trên intranet)</label>`}`,
       `<button class="btn ghost" data-close>Huỷ</button><button class="btn primary" id="an-s">${a.id ? 'Lưu' : 'Đăng'}</button>`);
     rteInit($('#an-ed', m.el), a.body || '');
     $('#an-s', m.el).onclick = async ev => { busy(ev.currentTarget, true); try { const em = !a.id && $('#an-m') && $('#an-m').checked; busy(ev.currentTarget, true, em ? 'Đang đăng & gửi email…' : 'Đang lưu…');
+      if (em && !confirm('Đăng và gửi email cho TOÀN BỘ nhân viên?')) { busy(ev.currentTarget, false); return; }
       const r = await call('ann.save', { id:a.id, title:$('#an-t').value, body:rteValue($('#an-ed', m.el)), cat:$('#an-c').value, pinned:$('#an-p').checked, email: em });
       if (Array.isArray(r)) S.ann = r; else { S.ann = r.list;
         if (r.mailError) toast('Đã đăng, nhưng chưa gửi được email: ' + r.mailError, 'err');
