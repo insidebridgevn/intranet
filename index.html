@@ -660,6 +660,7 @@ kbd{font:600 11px var(--fb);background:var(--surface-3);color:var(--text-2);bord
   .ps-big{font-size:26px}
   .tbl th,.tbl td{padding:9px 10px}
 }
+.ml-to{display:flex;flex-wrap:wrap;gap:6px;padding:0 20px 14px}
 .demo-flag{position:fixed;left:50%;transform:translateX(-50%);bottom:12px;z-index:95;background:var(--text);color:var(--bg);font-size:12px;padding:7px 14px;border-radius:999px;opacity:.88;pointer-events:none;box-shadow:var(--shadow)}
 @media (max-width:640px){.demo-flag{display:none}}
 </style>
@@ -726,7 +727,7 @@ window.addEventListener('unhandledrejection', e => showFatal('Lỗi: ' + (e.reas
    Dữ liệu người dùng nhập (tên, nội dung thông báo, lý do…) giữ nguyên. */
 let LANG = store.get('ibvn_lang') === 'ko' ? 'ko' : 'vi';
 const KO = {
-'Tất cả tháng':'전체 월','Tháng này không có đơn nào':'이번 달 신청서가 없습니다','Đánh giá ứng viên':'후보자 평가','Nhân sự team & thời hạn hợp đồng':'팀원 및 계약 기간','Toàn bộ nhân sự':'전체 직원','Nhân sự team của bạn':'우리 팀 직원','Chỉ người sắp hết hạn':'만료 임박만','Loại hợp đồng':'계약 유형','Bắt đầu':'시작','Kết thúc':'종료','Còn lại':'남은 기간','Sắp đến thời gian review':'리뷰 시기 임박','Không thời hạn / chưa có':'기간 없음 / 미입력','Hợp đồng lao động':'근로계약','Số hợp đồng':'계약 번호','Ngày bắt đầu':'시작일','Ngày kết thúc':'종료일','Không thời hạn':'무기한','Đơn của nhân viên':'직원 신청서','Chọn nhân viên':'직원 선택','Sửa giờ chấm công':'출퇴근 시간 수정','Lý do sửa':'수정 사유','Đã sửa giờ chấm công':'출퇴근 시간을 수정했습니다','Tạo mã xem lương':'급여 조회 비밀번호 만들기','Nhập mã xem lương':'급여 조회 비밀번호 입력','Nhập mã 4 số của bạn':'4자리 비밀번호를 입력하세요','Đã tạo mã xem lương':'비밀번호를 만들었습니다','Reset mã lương':'급여 비밀번호 초기화','Nhập lại mã một lần nữa để xác nhận':'확인을 위해 한 번 더 입력하세요','Hai lần nhập không khớp, nhập lại từ đầu':'두 번 입력이 일치하지 않습니다. 다시 입력하세요','Quên mã? Báo admin đặt lại mã xem lương.':'비밀번호를 잊으셨나요? 관리자에게 초기화를 요청하세요.','Phiếu lương là thông tin riêng tư. Tạo mã 4 số, từ lần sau phải nhập mã mới xem được lương.':'급여명세서는 개인 정보입니다. 4자리 비밀번호를 만들면 다음부터 입력해야 볼 수 있습니다.','Đã sửa tay':'수동 수정',
+'Email đã gửi':'발송 이메일','Email đã gửi từ intranet':'인트라넷 발송 이메일','Chưa có email nào':'발송된 이메일이 없습니다','Tất cả tháng':'전체 월','Tháng này không có đơn nào':'이번 달 신청서가 없습니다','Đánh giá ứng viên':'후보자 평가','Nhân sự team & thời hạn hợp đồng':'팀원 및 계약 기간','Toàn bộ nhân sự':'전체 직원','Nhân sự team của bạn':'우리 팀 직원','Chỉ người sắp hết hạn':'만료 임박만','Loại hợp đồng':'계약 유형','Bắt đầu':'시작','Kết thúc':'종료','Còn lại':'남은 기간','Sắp đến thời gian review':'리뷰 시기 임박','Không thời hạn / chưa có':'기간 없음 / 미입력','Hợp đồng lao động':'근로계약','Số hợp đồng':'계약 번호','Ngày bắt đầu':'시작일','Ngày kết thúc':'종료일','Không thời hạn':'무기한','Đơn của nhân viên':'직원 신청서','Chọn nhân viên':'직원 선택','Sửa giờ chấm công':'출퇴근 시간 수정','Lý do sửa':'수정 사유','Đã sửa giờ chấm công':'출퇴근 시간을 수정했습니다','Tạo mã xem lương':'급여 조회 비밀번호 만들기','Nhập mã xem lương':'급여 조회 비밀번호 입력','Nhập mã 4 số của bạn':'4자리 비밀번호를 입력하세요','Đã tạo mã xem lương':'비밀번호를 만들었습니다','Reset mã lương':'급여 비밀번호 초기화','Nhập lại mã một lần nữa để xác nhận':'확인을 위해 한 번 더 입력하세요','Hai lần nhập không khớp, nhập lại từ đầu':'두 번 입력이 일치하지 않습니다. 다시 입력하세요','Quên mã? Báo admin đặt lại mã xem lương.':'비밀번호를 잊으셨나요? 관리자에게 초기화를 요청하세요.','Phiếu lương là thông tin riêng tư. Tạo mã 4 số, từ lần sau phải nhập mã mới xem được lương.':'급여명세서는 개인 정보입니다. 4자리 비밀번호를 만들면 다음부터 입력해야 볼 수 있습니다.','Đã sửa tay':'수동 수정',
 'Nhận thông báo':'알림 수신','Phê duyệt':'결재','Thao tác':'작업','Xem như NV':'직원으로 보기','Bỏ cảm xúc':'반응 취소','Thả cảm xúc':'반응 남기기','Đã sao chép link thông báo':'공지 링크를 복사했습니다','Link thông báo':'공지 링크','Gửi lại email':'이메일 재발송','Đóng':'닫기','Chưa ai xem':'아직 아무도 보지 않았습니다','Mọi người đã xem hết':'모두 확인했습니다','Chưa ai thả cảm xúc':'아직 반응이 없습니다','Email nhận thông báo':'알림 이메일','Gửi email thông báo cho toàn bộ nhân viên (kèm link xem trên intranet)':'전 직원에게 이메일 알림 보내기 (인트라넷 링크 포함)','Đang đăng & gửi email…':'게시 및 이메일 발송 중…',
 'Xoá':'삭제','Khôi phục':'복구','Đã xoá khỏi hệ thống':'시스템에서 삭제됨','Xoá nhân viên khỏi hệ thống?':'직원을 시스템에서 삭제하시겠습니까?','Khôi phục nhân viên?':'직원을 복구하시겠습니까?','Đã khôi phục':'복구되었습니다','Mã này không đăng nhập được nữa. Lịch sử chấm công, đơn từ vẫn được giữ.':'이 사번으로 더 이상 로그인할 수 없습니다. 출퇴근·신청 기록은 유지됩니다.',
 'Xem với tư cách':'다른 직원으로 보기','Thoát':'나가기','Bạn không có quyền xem với tư cách người khác':'다른 직원으로 볼 권한이 없습니다',
@@ -857,6 +858,7 @@ const KO = {
 const KO_WD = { 'Thứ hai':'월요일','Thứ ba':'화요일','Thứ tư':'수요일','Thứ năm':'목요일','Thứ sáu':'금요일','Thứ bảy':'토요일','Chủ nhật':'일요일','Hôm nay':'오늘','T2':'월','T3':'화','T4':'수','T5':'목','T6':'금','T7':'토','CN':'일' };
 Object.assign(KO, KO_WD);
 const KO_RX = [
+  [/^(\d+) người nhận(.*)$/, '수신자 $1명$2'], [/^\((\d+) lần gửi\)$/, '($1회 발송)'],
   [/^Còn (\d+) ngày$/, '$1일 남음'], [/^Đã hết hạn (\d+) ngày$/, '만료 $1일 경과'], [/^(\d+) nhân sự sắp hết hạn hợp đồng.*$/, '계약 만료 임박 직원 $1명'], [/^(\d+) đơn$/, '$1건'],
   [/^Đã sửa bởi (.+?) lúc (.+)$/, '$1 수정 · $2'],
   [/^(\d+) đã xem$/, '$1명 확인'], [/^Ai đã xem · (.+)$/, '확인한 사람 · $1'], [/^Đã xem \((\d+)\)$/, '확인 ($1)'], [/^Chưa xem \((\d+)\)$/, '미확인 ($1)'], [/^Cảm xúc \((\d+)\)$/, '반응 ($1)'],
@@ -2560,7 +2562,7 @@ function resizeImage(file, size){
 /* ---------- Quản trị ---------- */
 VIEWS.admin = async el => {
   if (!has('ADMIN')) { el.innerHTML = errBox('Bạn không có quyền vào trang này'); return; }
-  el.innerHTML = `<div class="stack"><div class="row"><div class="seg" id="ad-t"><button class="on" data-t="nv">Nhân viên & quyền</button><button data-t="cfg">Liên kết & cấu hình</button></div></div><div id="ad-b"></div></div>`;
+  el.innerHTML = `<div class="stack"><div class="row"><div class="seg" id="ad-t"><button class="on" data-t="nv">Nhân viên & quyền</button><button data-t="cfg">Liên kết & cấu hình</button><button data-t="mail">Email đã gửi</button></div></div><div id="ad-b"></div></div>`;
   const b = $('#ad-b');
   const ROLES = [['ADMIN','Admin'],['LEADER','Leader'],['ACCOUNTING','Kế toán'],['HR','Nhân sự']];
   const drawNV = async () => {
@@ -2620,7 +2622,25 @@ VIEWS.admin = async el => {
     $('#cf-l').innerHTML = items.filter(i => !hidden.includes(i.key)).map(i => `<div class="field"><label>${esc(i.desc || i.key)} <span class="muted small">· ${esc(i.key)}</span></label><input class="input" data-cfg="${esc(i.key)}" value="${esc(i.value)}"></div>`).join('');
     $('#cf-s').onclick = async e => { busy(e.currentTarget, true, 'Đang lưu…'); try { await call('adm.saveConfig', { items: $$('[data-cfg]').map(x => ({ key: x.dataset.cfg, value: x.value.trim() })) }); const d = await call('me'); S.links = d.links; toast('Đã lưu cấu hình'); } catch(err) { toast(err.message, 'err'); } busy(e.currentTarget, false); };
   };
-  $('#ad-t').onclick = e => { const x = e.target.closest('button'); if (!x) return; $$('#ad-t button').forEach(y => y.classList.toggle('on', y === x)); (x.dataset.t === 'cfg' ? drawCfg : drawNV)().catch(err => b.innerHTML = errBox(err.message)); };
+  const drawMail = async () => {
+    b.innerHTML = `<div class="card">${skel(5, 56)}</div>`;
+    const list = await call('adm.mailLog');
+    if (!list.length) { b.innerHTML = `<div class="card"><div class="empty"><div class="ico">${ic('message')}</div><b>Chưa có email nào</b>Email gửi từ intranet (noreply) sẽ được ghi lại ở đây.</div></div>`; return; }
+    let q = '';
+    const paint = () => {
+      const rows = list.filter(g => !q || (g.subject + ' ' + g.to.map(t => t.email).join(' ')).toLowerCase().includes(q));
+      $('#ml-l').innerHTML = rows.map((g, i) => { const ok = g.to.filter(t => t.ok).length, bad = g.to.length - ok;
+        return `<details class="ds-g"><summary><div style="min-width:0;flex:1"><b>${esc(g.subject)}</b><div class="small muted">${esc(g.time.slice(11, 16))} · ${esc(vnDate(g.time.slice(0, 10)))} · ${esc(g.kind)}</div></div>
+          <span class="pill ${bad ? 'warn' : 'ok'}">${g.to.length} người nhận${bad ? ` · ${bad} lỗi` : ''}</span>${ic('chevR')}</summary>
+          <div class="ml-to">${g.to.map(t => `<span class="pill ${t.ok ? '' : 'bad'}" title="${esc(t.result)}">${esc(t.email)}</span>`).join('')}</div></details>`; }).join('') || '<div class="empty">Không tìm thấy</div>';
+    };
+    b.innerHTML = `<div class="card"><div class="card-h" style="flex-wrap:wrap;gap:10px"><h3><span class="hi">${ic('message')}</span>Email đã gửi từ intranet <span class="small muted" style="font-weight:500">(${list.length} lần gửi)</span></h3><span class="spacer"></span>
+      <input class="input sm" id="ml-q" placeholder="Tìm tiêu đề hoặc email…" style="max-width:260px"></div><div id="ml-l"></div>
+      <p class="small muted" style="padding:10px 20px 16px;margin:0">Mỗi dòng là một lần gửi, bấm vào để xem danh sách người nhận. Email gửi qua Apps Script không hiện trong mục Đã gửi của Gmail nên chỉ xem được ở đây; email gửi trước khi có nhật ký (tối 03/11) không có trong danh sách.</p></div>`;
+    $('#ml-q').oninput = e => { q = e.target.value.toLowerCase(); paint(); };
+    paint();
+  };
+  $('#ad-t').onclick = e => { const x = e.target.closest('button'); if (!x) return; $$('#ad-t button').forEach(y => y.classList.toggle('on', y === x)); (x.dataset.t === 'cfg' ? drawCfg : x.dataset.t === 'mail' ? drawMail : drawNV)().catch(err => b.innerHTML = errBox(err.message)); };
   await drawNV();
 };
 
