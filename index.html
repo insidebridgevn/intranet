@@ -726,7 +726,7 @@ window.addEventListener('unhandledrejection', e => showFatal('Lỗi: ' + (e.reas
    Dữ liệu người dùng nhập (tên, nội dung thông báo, lý do…) giữ nguyên. */
 let LANG = store.get('ibvn_lang') === 'ko' ? 'ko' : 'vi';
 const KO = {
-'Đánh giá ứng viên':'후보자 평가','Nhân sự team & thời hạn hợp đồng':'팀원 및 계약 기간','Toàn bộ nhân sự':'전체 직원','Nhân sự team của bạn':'우리 팀 직원','Chỉ người sắp hết hạn':'만료 임박만','Loại hợp đồng':'계약 유형','Bắt đầu':'시작','Kết thúc':'종료','Còn lại':'남은 기간','Sắp đến thời gian review':'리뷰 시기 임박','Không thời hạn / chưa có':'기간 없음 / 미입력','Hợp đồng lao động':'근로계약','Số hợp đồng':'계약 번호','Ngày bắt đầu':'시작일','Ngày kết thúc':'종료일','Không thời hạn':'무기한','Đơn của nhân viên':'직원 신청서','Chọn nhân viên':'직원 선택','Sửa giờ chấm công':'출퇴근 시간 수정','Lý do sửa':'수정 사유','Đã sửa giờ chấm công':'출퇴근 시간을 수정했습니다','Tạo mã xem lương':'급여 조회 비밀번호 만들기','Nhập mã xem lương':'급여 조회 비밀번호 입력','Nhập mã 4 số của bạn':'4자리 비밀번호를 입력하세요','Đã tạo mã xem lương':'비밀번호를 만들었습니다','Reset mã lương':'급여 비밀번호 초기화','Nhập lại mã một lần nữa để xác nhận':'확인을 위해 한 번 더 입력하세요','Hai lần nhập không khớp, nhập lại từ đầu':'두 번 입력이 일치하지 않습니다. 다시 입력하세요','Quên mã? Báo admin đặt lại mã xem lương.':'비밀번호를 잊으셨나요? 관리자에게 초기화를 요청하세요.','Phiếu lương là thông tin riêng tư. Tạo mã 4 số, từ lần sau phải nhập mã mới xem được lương.':'급여명세서는 개인 정보입니다. 4자리 비밀번호를 만들면 다음부터 입력해야 볼 수 있습니다.','Đã sửa tay':'수동 수정',
+'Tất cả tháng':'전체 월','Tháng này không có đơn nào':'이번 달 신청서가 없습니다','Đánh giá ứng viên':'후보자 평가','Nhân sự team & thời hạn hợp đồng':'팀원 및 계약 기간','Toàn bộ nhân sự':'전체 직원','Nhân sự team của bạn':'우리 팀 직원','Chỉ người sắp hết hạn':'만료 임박만','Loại hợp đồng':'계약 유형','Bắt đầu':'시작','Kết thúc':'종료','Còn lại':'남은 기간','Sắp đến thời gian review':'리뷰 시기 임박','Không thời hạn / chưa có':'기간 없음 / 미입력','Hợp đồng lao động':'근로계약','Số hợp đồng':'계약 번호','Ngày bắt đầu':'시작일','Ngày kết thúc':'종료일','Không thời hạn':'무기한','Đơn của nhân viên':'직원 신청서','Chọn nhân viên':'직원 선택','Sửa giờ chấm công':'출퇴근 시간 수정','Lý do sửa':'수정 사유','Đã sửa giờ chấm công':'출퇴근 시간을 수정했습니다','Tạo mã xem lương':'급여 조회 비밀번호 만들기','Nhập mã xem lương':'급여 조회 비밀번호 입력','Nhập mã 4 số của bạn':'4자리 비밀번호를 입력하세요','Đã tạo mã xem lương':'비밀번호를 만들었습니다','Reset mã lương':'급여 비밀번호 초기화','Nhập lại mã một lần nữa để xác nhận':'확인을 위해 한 번 더 입력하세요','Hai lần nhập không khớp, nhập lại từ đầu':'두 번 입력이 일치하지 않습니다. 다시 입력하세요','Quên mã? Báo admin đặt lại mã xem lương.':'비밀번호를 잊으셨나요? 관리자에게 초기화를 요청하세요.','Phiếu lương là thông tin riêng tư. Tạo mã 4 số, từ lần sau phải nhập mã mới xem được lương.':'급여명세서는 개인 정보입니다. 4자리 비밀번호를 만들면 다음부터 입력해야 볼 수 있습니다.','Đã sửa tay':'수동 수정',
 'Nhận thông báo':'알림 수신','Phê duyệt':'결재','Thao tác':'작업','Xem như NV':'직원으로 보기','Bỏ cảm xúc':'반응 취소','Thả cảm xúc':'반응 남기기','Đã sao chép link thông báo':'공지 링크를 복사했습니다','Link thông báo':'공지 링크','Gửi lại email':'이메일 재발송','Đóng':'닫기','Chưa ai xem':'아직 아무도 보지 않았습니다','Mọi người đã xem hết':'모두 확인했습니다','Chưa ai thả cảm xúc':'아직 반응이 없습니다','Email nhận thông báo':'알림 이메일','Gửi email thông báo cho toàn bộ nhân viên (kèm link xem trên intranet)':'전 직원에게 이메일 알림 보내기 (인트라넷 링크 포함)','Đang đăng & gửi email…':'게시 및 이메일 발송 중…',
 'Xoá':'삭제','Khôi phục':'복구','Đã xoá khỏi hệ thống':'시스템에서 삭제됨','Xoá nhân viên khỏi hệ thống?':'직원을 시스템에서 삭제하시겠습니까?','Khôi phục nhân viên?':'직원을 복구하시겠습니까?','Đã khôi phục':'복구되었습니다','Mã này không đăng nhập được nữa. Lịch sử chấm công, đơn từ vẫn được giữ.':'이 사번으로 더 이상 로그인할 수 없습니다. 출퇴근·신청 기록은 유지됩니다.',
 'Xem với tư cách':'다른 직원으로 보기','Thoát':'나가기','Bạn không có quyền xem với tư cách người khác':'다른 직원으로 볼 권한이 없습니다',
@@ -1815,16 +1815,27 @@ VIEWS.nhansu = async el => {
 /* ---------- Đơn từ của nhân viên (người có quyền) ---------- */
 async function drawStaffReq(b){
   b.innerHTML = `<div class="stack"><div class="card"><div class="card-b row" style="gap:10px;padding-top:16px;flex-wrap:wrap"><label class="small muted" for="ds-emp">Chọn nhân viên</label>
-    <select class="select" id="ds-emp" style="max-width:360px"><option value="">— Chọn nhân viên —</option></select></div></div><div id="ds-b"></div></div>`;
+    <select class="select" id="ds-emp" style="max-width:360px"><option value="">— Chọn nhân viên —</option></select>
+    <select class="select" id="ds-m" style="max-width:200px" aria-label="Tháng"></select></div></div><div id="ds-b"></div></div>`;
+  const curM = `${pad(new Date().getMonth()+1)}/${new Date().getFullYear()}`;
+  let month = curM, all = [];
+  const mOpts = () => { const ms = [...new Set(all.map(r => r.month).filter(Boolean).concat([curM]))].sort((a, b) => b.slice(3) + b.slice(0, 2) < a.slice(3) + a.slice(0, 2) ? -1 : 1);
+    $('#ds-m').innerHTML = `<option value="">Tất cả tháng</option>` + ms.map(m => `<option value="${m}" ${m === month ? 'selected' : ''}>Tháng ${+m.slice(0, 2)}/${m.slice(3)}</option>`).join(''); if (!month) $('#ds-m').value = ''; };
+  mOpts();
+  $('#ds-m').onchange = e => { month = e.target.value; paintStaff(); };
   const emps = await call('req.emps');
   $('#ds-emp').innerHTML = '<option value="">— Chọn nhân viên —</option>' + emps.map(e => `<option value="${esc(e.id)}">${esc(e.name)} · ${esc(e.id)}${e.dept ? ' · ' + esc(e.dept) : ''}</option>`).join('');
   $('#ds-emp').onchange = async e => {
     const id = e.target.value, box = $('#ds-b');
     if (!id) { box.innerHTML = ''; return; }
     box.innerHTML = skel(3, 50);
-    try {
-      const list = await call('req.my', { empId: id });
-      if (!list.length) { box.innerHTML = `<div class="card"><div class="empty"><div class="ico">${ic('file')}</div><b>Chưa có đơn nào</b></div></div>`; return; }
+    try { all = await call('req.my', { empId: id }); mOpts(); paintStaff(); } catch(err) { box.innerHTML = errBox(err.message); }
+  };
+  function paintStaff(){
+    const box = $('#ds-b'); if (!$('#ds-emp').value) return;
+    {
+      const list = all.filter(r => !month || r.month === month);
+      if (!list.length) { box.innerHTML = `<div class="card"><div class="empty"><div class="ico">${ic('file')}</div><b>${month ? 'Tháng này không có đơn nào' : 'Chưa có đơn nào'}</b>${month ? 'Chọn "Tất cả tháng" để xem các tháng khác.' : ''}</div></div>`; return; }
       const groups = {}; list.forEach(r => (groups[r.label] = groups[r.label] || []).push(r));
       const st = r => r.status === 'sent' ? '<span class="pill ok">Đã ghi nhận</span>' : r.status === 'cancel' ? '<span class="pill">Đã huỷ</span>' : r.status === 'reject' ? '<span class="pill bad">Không duyệt</span>' : `<span class="pill warn">${esc(r.statusText)}</span>`;
       box.innerHTML = `<div class="card"><div class="card-h"><h3><span class="hi">${ic('file')}</span>${list.length} đơn</h3></div>
@@ -1838,8 +1849,8 @@ async function drawStaffReq(b){
         const rows = (r.fields || []).map(f => `<dt>${esc(LANG === 'ko' && f.ko ? f.ko : f.vi)}</dt><dd>${/^https?:[\/][\/]/.test(f.v) ? `<a href="${esc(f.v)}" target="_blank" rel="noopener">${esc(f.v)}</a>` : esc(LANG === 'ko' ? (f.v.split(' / ')[1] || f.v) : vi(f.v))}</dd>`).join('');
         modal(r.label, `<div class="row" style="gap:8px">${st(r)}</div><dl class="kv" style="margin:0">${rows || `<dt>Nội dung</dt><dd>${esc(r.detail)}</dd>`}</dl>`, '<button class="btn primary" data-close>Đóng</button>');
       };
-    } catch(err) { box.innerHTML = errBox(err.message); }
-  };
+    }
+  }
 }
 
 /* ---------- Sửa giờ chấm công ---------- */
