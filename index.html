@@ -2212,7 +2212,7 @@ function attBuild(R){
         if (b != null && b < Ra && !(isToday && now < Ra)) flags.push('early');   // hôm nay chưa tới giờ tan làm → chưa tính về sớm
         if (!flags.length && (ci || co)) flags.push('ok');
       }
-      const need = flags.some(f => DT_NEED[f]), m = need ? dtMatch((R.dt || {})[e.id + '|' + day], flags) : { dts: [], miss: [] }, dts = m.dts, miss = m.miss;
+      const need = !!R.dtAt && flags.some(f => DT_NEED[f]), m = need ? dtMatch((R.dt || {})[e.id + '|' + day], flags) : { dts: [], miss: [] }, dts = m.dts, miss = m.miss;
       if (miss.length) flags.push('nodt');
       out.push({ day, e, ci, co, hrs: a != null && b != null && b > a ? b - a : null, flags, edit: r ? r[5] || null : null, slot: fx ? (sl && ci ? sl.l : 'Linh hoạt') : '', need, dts, miss });
     });
