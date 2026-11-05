@@ -195,7 +195,8 @@ svg.i{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-widt
 .nav{flex:1;overflow:auto;padding:4px 14px 12px;scrollbar-width:thin}
 .nav h6{margin:16px 12px 6px;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700;white-space:nowrap}
 .nav a{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:14px;color:var(--text-2);text-decoration:none;font-weight:500;cursor:pointer;position:relative;white-space:nowrap;transition:background .15s,color .15s,transform .15s}
-.nav a:hover{background:var(--surface);color:var(--text);transform:translateX(2px)}
+.nav a:hover{background:var(--surface);color:var(--text)}
+@media (hover:hover){.nav a:hover{transform:translateX(2px)}}
 .nav a.on{background:var(--grad);color:#fff;font-weight:600;box-shadow:var(--glow)}
 .nav a .badge{margin-left:auto;background:var(--grad);color:#fff;font-size:11px;font-weight:700;border-radius:10px;padding:1px 8px}
 .nav a.on .badge{background:rgba(255,255,255,.3)}
@@ -238,6 +239,14 @@ kbd{font:600 11px var(--fb);background:var(--surface-3);color:var(--text-2);bord
   .app,.app.collapsed{grid-template-columns:minmax(0,1fr);--sbw:300px}
   .sb{position:fixed;left:0;top:0;bottom:0;height:auto;width:300px;margin:10px;transform:translateX(-110%);transition:transform .28s cubic-bezier(.2,.8,.2,1);box-shadow:var(--shadow-lg);background:var(--surface)}
   .app.mopen .sb{transform:none}
+  .sb{width:min(320px,calc(100vw - 48px));margin:0;border-radius:0 24px 24px 0;top:0;bottom:0;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);overscroll-behavior:contain;touch-action:pan-y}
+  .nav{-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding-bottom:20px}
+  .nav a{min-height:48px;padding:12px 14px;font-size:15px;gap:14px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none}
+  .nav a:active{background:var(--brand-soft)}
+  .nav h6{margin-top:18px}
+  .sb-foot a{min-height:48px;touch-action:manipulation}
+  #sb-toggle{min-width:44px;min-height:44px}
+  body.nav-lock{overflow:hidden}
   .app.mopen .scrim{display:block;position:fixed;inset:0;background:rgba(40,15,0,.35);backdrop-filter:blur(3px);z-index:25}
   .app.collapsed .lbl,.app.collapsed .me .who,.app.collapsed .me .gear,.app.collapsed .sb-top .name,.app.collapsed .nav a .badge{display:revert}
   .app.collapsed .nav h6{display:block;height:auto;margin:16px 12px 6px;background:none;font-size:10.5px}
@@ -655,7 +664,7 @@ kbd{font:600 11px var(--fb);background:var(--surface-3);color:var(--text-2);bord
 .pin-keys{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:260px;margin:0 auto}.pin-keys button{height:54px;border-radius:16px;border:1px solid var(--line);background:var(--surface);font:600 20px var(--fd);color:var(--text);cursor:pointer}
 .pin-keys button:active{background:var(--brand-soft)}
 @media (max-width:640px){
-  body{zoom:.86}
+  .page{zoom:.88}
   .top .ttl,.topbar .ttl,header .ttl{display:none}
   .ph h2{font-size:24px}.ph h2 .pic{width:38px;height:38px;border-radius:12px}.ph p{font-size:13px}
   .hero h2{font-size:30px}.big-clock{font-size:44px}.hero .qa button{padding:8px 12px;font-size:13px}
@@ -1178,7 +1187,7 @@ function getStartPage(){
 }
 
 function render(){
-  BOOTED = true; window.__BOOTED = true;
+  BOOTED = true; window.__BOOTED = true; document.body.classList.remove('nav-lock');
   if (!S.token || !S.user) return renderLogin();
   if (S.user.mustChange) return renderForceChange();
   renderShell();
@@ -1334,10 +1343,10 @@ function renderShell(){
   </div>`;
   $('#sb-toggle').onclick = () => {
     const app = $('#app');
-    if (matchMedia('(max-width:960px)').matches) app.classList.toggle('mopen');
+    if (matchMedia('(max-width:960px)').matches) setMOpen(!app.classList.contains('mopen'));
     else { app.classList.toggle('collapsed'); store.set('ibvn_sb', app.classList.contains('collapsed') ? '1' : '0'); }
   };
-  $('#scrim').onclick = () => $('#app').classList.remove('mopen');
+  $('#scrim').onclick = () => setMOpen(false);
   $('#sb-out').onclick = logout;
   $('#open-k').onclick = openPalette;
   $('#th-tg').onclick = () => { store.set('ibvn_theme2', isDark() ? 'light' : 'dark'); applyTheme(); $('#th-tg').innerHTML = ic(isDark() ? 'sun' : 'moon'); };
@@ -1376,6 +1385,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') $('#modal-root').innerHTML = '';
 });
 
+function setMOpen(v){ const app = $('#app'); if (app) app.classList.toggle('mopen', !!v); document.body.classList.toggle('nav-lock', !!v && !!app); }
 function go(key, noPush){
   if (!PAGE[key]) key = 'home';
   S.page = key;
@@ -1385,7 +1395,7 @@ function go(key, noPush){
     else if (location.hash.slice(1) !== key) { try { location.hash = key; } catch(e){} }
   }
   const app = $('#app'); if (!app) return;
-  app.classList.remove('mopen');
+  setMOpen(false);
   $('#pg-crumb').textContent = 'IBVN · ' + groupOf(key);
   $('#pg-title').textContent = p.label;
   renderNav();
