@@ -1146,7 +1146,9 @@ async function boot(){
     S.user = fast.d.user; S.links = fast.d.links;
     render(); impBanner(); bootNav();
     call('me').then(d => { const was = JSON.stringify({ u:S.user, l:S.links }); S.user = d.user; S.links = d.links; meSave(d);
-      if (JSON.stringify({ u:S.user, l:S.links }) !== was) { if (S.user.mustChange || !LAST_TOUCH) render(); else { renderNav(); impBanner(); } } }).catch(() => {});
+      if (JSON.stringify({ u:S.user, l:S.links }) !== was) {   // thông tin tài khoản có thay đổi (hợp đồng, quyền, ảnh…) → vẽ lại, trừ khi đang gõ / mở hộp thoại
+        const ae = document.activeElement, busyNow = (ae && /INPUT|TEXTAREA|SELECT/.test(ae.tagName)) || ($('#modal-root') && $('#modal-root').innerHTML.trim());
+        if (S.user.mustChange || !busyNow) { const y = window.scrollY; render(); impBanner(); requestAnimationFrame(() => window.scrollTo(0, y)); } else { renderNav(); impBanner(); } } }).catch(() => {});
     return;
   }
   if (S.token) {
