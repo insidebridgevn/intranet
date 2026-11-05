@@ -428,6 +428,9 @@ kbd{font:600 11px var(--fb);background:var(--surface-3);color:var(--text-2);bord
 .cal .c:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:var(--line-2)}
 .cal .c.out{opacity:0;pointer-events:none}
 .cal .c.we{background:transparent;border-style:dashed}
+.cal .c .cf{display:flex;flex-wrap:wrap;gap:3px;margin-top:auto}.cal .c .cf b{font-size:10px;font-weight:700;padding:1px 6px;border-radius:999px;background:var(--warn-bg,#fff3d6);color:var(--warn,#b7791f)}.cal .c .cf b.no{background:var(--bad-bg,#fde4e4);color:var(--bad)}.cal .c .cf b.okd{background:var(--ok-bg,#dff5e8);color:var(--ok)}.cal .c .cf b.off{background:var(--brand-soft,#ffe9dc);color:var(--brand)}
+@media (max-width:640px){.cal .c .cf b{font-size:9px;padding:0 4px}}
+.cc-flags{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:0 20px 10px;font-size:12.5px}
 .cal .c .n{font-weight:700;font-size:13px;display:flex;justify-content:space-between;align-items:center}
 .cal .c .n i{font-style:normal;font-size:10.5px;font-weight:600;color:var(--muted)}
 .cal .c .tm{font-variant-numeric:tabular-nums;font-size:13px;font-weight:600;display:flex;align-items:center;gap:5px}
@@ -1958,7 +1961,7 @@ VIEWS.chamcong = async el => {
         <span class="spacer"></span>
         <div class="seg" id="cc-v"><button data-v="cal">${ic('calendar')}Lịch</button><button data-v="chart">${ic('chart')}Biểu đồ</button><button data-v="list">${ic('menu')}Danh sách</button></div>
       </div>
-      <div class="small muted" id="cc-upd" style="padding:0 20px 8px"></div>
+      <div class="small muted" id="cc-upd" style="padding:0 20px 8px"></div><div class="cc-flags" id="cc-fl"></div>
       <div id="cc-days">${skel(5,44)}</div></div></div>`;
     $$('#cc-v button').forEach(b => b.classList.toggle('on', b.dataset.v === view));
     $('#cc-prev').onclick = () => { const d = parseISO(month+'-01'); d.setMonth(d.getMonth()-1); month = isoDate(d).slice(0,7); sel = ''; load(); };
@@ -1968,9 +1971,15 @@ VIEWS.chamcong = async el => {
       call('att.emps').then(list => { $('#cc-emp').innerHTML = `<option value="${esc(S.user.id)}">Của tôi</option>` + list.filter(e => e.id !== S.user.id).map(e => `<option value="${esc(e.id)}">${esc(e.name)} · ${esc(e.id)}</option>`).join(''); $('#cc-emp').value = empId; }).catch(() => {});
       $('#cc-emp').onchange = e => { empId = e.target.value; sel = ''; load(); };
     }
-    let days = [];
+    let days = [], BL = {};
     const typeShort = t => vi(t).replace('Mở khóa bằng ', '').replace('Mở khóa với ', '');
-    const detail = x => `<div class="day-detail"><div class="row" style="margin-bottom:6px"><b style="font-family:var(--fd);font-size:16px">${WDL[parseISO(x.date).getDay()]}, ${vnDate(x.date)}</b><span class="spacer"></span><span class="pill">${x.scans.length} lượt quét</span></div>${x.edit ? `<div style="margin-bottom:6px">${editNote(x.edit)}<div class="small">Giờ vào/ra đã sửa: <b>${esc((x.edit.in || '—').slice(0, 5))}</b> → <b>${esc((x.edit.out || '—').slice(0, 5))}</b></div></div>` : ''}
+    const PRE = { late:'tre', early:'tre', noin:'quen', noout:'quen', absent:'nghi' };
+    const statusHtml = (iso, mine) => { const b = BL[iso]; if (!b) return '';
+      const pills = b.flags.filter(f => f !== 'nodt' && f !== 'ok' && f !== 'off').map(f => `<span class="pill ${f === 'absent' ? '' : 'warn'}">${esc(({ late:'Đi trễ', early:'Về sớm', noin:'Quên check-in', noout:'Quên check-out', absent:'Không có dữ liệu' })[f])}</span>`).join(' ');
+      const ok = b.flags.includes('ok') ? '<span class="pill ok">Đúng giờ</span>' : '';
+      const btn = mine && b.miss.length ? ` <button class="btn sm soft" data-pre="${PRE[b.miss[0]]}">${ic('file')}Làm đơn</button>` : '';
+      return `<div style="margin:2px 0 8px">${ok}${pills}${b.offTag ? ` <span class="pill brand">${esc(b.offTag)}</span>` : ''}${b.slot && b.slot !== 'Linh hoạt' ? ` <span class="pill">${ic('clock')}${esc(b.slot)}</span>` : ''}${dtNote(b)}${btn}</div>`; };
+    const detail = x => `<div class="day-detail"><div class="row" style="margin-bottom:6px"><b style="font-family:var(--fd);font-size:16px">${WDL[parseISO(x.date).getDay()]}, ${vnDate(x.date)}</b><span class="spacer"></span><span class="pill">${x.scans.length} lượt quét</span></div>${statusHtml(x.date, empId === S.user.id)}${x.edit ? `<div style="margin-bottom:6px">${editNote(x.edit)}<div class="small">Giờ vào/ra đã sửa: <b>${esc((x.edit.in || '—').slice(0, 5))}</b> → <b>${esc((x.edit.out || '—').slice(0, 5))}</b></div></div>` : ''}
       ${x.scans.map(s => `<div class="scan"><span class="sd ${s.ok ? '' : 'bad'}"></span><span class="mono">${s.time.slice(0,5)}</span><span>${esc(s.type)}</span>${s.ok ? '' : '<span class="pill bad">Thất bại</span>'}${s.lock ? `<span class="spacer"></span><span class="pill">${esc(s.lock)}</span>` : ''}</div>`).join('')}</div>`;
     const paint = () => {
       const box = $('#cc-days');
@@ -1979,13 +1988,18 @@ VIEWS.chamcong = async el => {
       if (view === 'list') {
         const total = days.reduce((n, x) => n + x.scans.length, 0);
         box.innerHTML = days.length ? `<div class="small muted" style="padding:0 20px 8px">${total} lượt quét trong tháng</div><div class="tbl-wrap"><table class="tbl att-scan"><thead><tr><th>Ngày</th><th>Giờ quét</th><th>Cách mở</th><th>Khóa</th><th>Kết quả</th></tr></thead><tbody>
-          ${days.map(x => { const dt = parseISO(x.date); return `<tr class="d-h"><td colspan="5"><b>${WDL[dt.getDay()]}, ${vnDate(x.date)}</b><span class="small muted"> · Vào ${x.first ? x.first.time.slice(0,5) : '—'} · Ra ${x.last ? x.last.time.slice(0,5) : '—'} · ${x.scans.length} lượt</span>${editNote(x.edit)}</td></tr>`
+          ${days.map(x => { const dt = parseISO(x.date); return `<tr class="d-h"><td colspan="5"><b>${WDL[dt.getDay()]}, ${vnDate(x.date)}</b><span class="small muted"> · Vào ${x.first ? x.first.time.slice(0,5) : '—'} · Ra ${x.last ? x.last.time.slice(0,5) : '—'} · ${x.scans.length} lượt</span>${editNote(x.edit)}${statusHtml(x.date, empId === S.user.id)}</td></tr>`
             + x.scans.map(sc => `<tr><td class="small muted">${pad(dt.getDate())}/${pad(dt.getMonth()+1)}</td><td class="tnum"><b>${esc(sc.time)}</b></td><td>${esc(typeShort(sc.type).replace(/^./, c => c.toUpperCase()))}</td><td>${sc.lock ? `<span class="pill">${esc(sc.lock)}</span>` : '—'}</td><td>${sc.ok ? '<span class="pill ok">Thành công</span>' : '<span class="pill bad">Thất bại</span>'}</td></tr>`).join(''); }).join('')}
           </tbody></table></div>` : `<div class="empty">Chưa có dữ liệu tháng này</div>`;
         return;
       }
       const [y, m] = month.split('-').map(Number), first = new Date(y, m - 1, 1), n = new Date(y, m, 0).getDate(), start = (first.getDay() + 6) % 7;
       const map = {}; days.forEach(x => map[x.date] = x);
+      const calFlags = iso => { const b = BL[iso]; if (!b) return ''; const t = [];
+        if (b.flags.includes('late')) t.push('<b>Trễ</b>'); if (b.flags.includes('early')) t.push('<b>Sớm</b>');
+        if (b.flags.includes('absent')) t.push('<b class="no">Vắng</b>'); if (b.offTag) t.push(`<b class="off">${b.offTag === 'Nghỉ buổi sáng' ? 'Off sáng' : b.offTag === 'Nghỉ buổi chiều' ? 'Off chiều' : 'Nghỉ'}</b>`);
+        if (b.need) t.push(b.miss.length ? '<b class="no">Chưa đơn</b>' : '<b class="okd">✓ Đơn</b>');
+        return t.length ? `<div class="cf">${t.join('')}</div>` : ''; };
       const todayIso = isoDate(new Date());
       let cells = ['T2','T3','T4','T5','T6','T7','CN'].map(w => `<div class="wd">${w}</div>`).join('');
       for (let i = 0; i < start; i++) cells += '<div class="c out"></div>';
@@ -1993,10 +2007,10 @@ VIEWS.chamcong = async el => {
         const iso = `${y}-${pad(m)}-${pad(d)}`, dt = new Date(y, m - 1, d), x = map[iso], we = dt.getDay() === 0 || dt.getDay() === 6;
         const cls = [we ? 'we' : '', x && x.first ? (x.last ? 'ok' : 'single') : '', iso === todayIso ? 'today' : '', sel === iso ? 'sel' : ''].join(' ');
         cells += `<div class="c ${cls}" data-d="${iso}"><div class="n">${d}<i>${x ? x.scans.length + ' lượt' : ''}</i></div>
-          ${x && x.first ? `<div class="tm in">${ic('arrowR')}${x.first.time.slice(0,5)}</div>${x.last ? `<div class="tm outt">${ic('logout')}${x.last.time.slice(0,5)}</div>` : '<span class="pill warn" style="padding:1px 6px;font-size:10.5px">Thiếu ra</span>'}` : ''}</div>`;
+          ${x && x.first ? `<div class="tm in">${ic('arrowR')}${x.first.time.slice(0,5)}</div>${x.last ? `<div class="tm outt">${ic('logout')}${x.last.time.slice(0,5)}</div>` : '<span class="pill warn" style="padding:1px 6px;font-size:10.5px">Thiếu ra</span>'}` : ''}${calFlags(iso)}</div>`;
       }
-      box.innerHTML = `<div class="cal" id="cc-cal">${cells}</div><div id="cc-det">${sel && map[sel] ? detail(map[sel]) : ''}</div>`;
-      $('#cc-cal').onclick = e => { const c = e.target.closest('.c[data-d]'); if (!c || !map[c.dataset.d]) return; sel = sel === c.dataset.d ? '' : c.dataset.d; paint(); };
+      box.innerHTML = `<div class="cal" id="cc-cal">${cells}</div><div id="cc-det">${sel && (map[sel] || BL[sel]) ? detail(map[sel] || { date: sel, scans: [] }) : ''}</div>`;
+      $('#cc-cal').onclick = e => { const c = e.target.closest('.c[data-d]'); if (!c || (!map[c.dataset.d] && !BL[c.dataset.d])) return; sel = sel === c.dataset.d ? '' : c.dataset.d; paint(); };
     };
     const load = async () => {
       const [y, m] = month.split('-');
@@ -2027,6 +2041,17 @@ VIEWS.chamcong = async el => {
         <div class="stat hu-sky"><div class="ic">${ic('clock')}</div><div><div class="k">Trung bình mỗi ngày</div><div class="v">${avg ? avg.toFixed(1).replace('.0','') : '—'}<small>giờ</small></div></div></div>
         <div class="stat hu-peach"><div class="ic">${ic('sun')}</div><div><div class="k">Vào sớm nhất</div><div class="v">${fm(ins[0])}</div></div></div>
         <div class="stat hu-sand" ${single ? 'data-pre="quen" style="cursor:pointer" title="Làm đơn quên chấm công"' : ''}><div class="ic">${ic('fingerprint')}</div><div><div class="k">Ngày thiếu giờ ra</div><div class="v"><span data-count="${single}">0</span><small>${single ? 'làm đơn →' : 'ngày'}</small></div></div></div>`;
+      BL = {};
+      if (d.set) {   // tính trễ / sớm / đã làm đơn theo đúng quy tắc trang toàn công ty
+        const [yy, mm] = month.split('-').map(Number), last = new Date(yy, mm, 0).getDate();
+        const R2 = { ...d.set, from: month + '-01', to: month + '-' + pad(last), emps: [{ id: d.empId, name: '' }],
+          rows: days.map(x => [x.date, d.empId, x.first ? x.first.time : '', x.last ? x.last.time : '', x.scans.length, x.edit || null]) };
+        R2.gioVao = attHM(R2.gioVao) || '08:00'; R2.gioRa = attHM(R2.gioRa) || '17:00';
+        attBuild(R2).forEach(x => BL[x.day] = x);
+      }
+      const L = Object.values(BL), cnt = f => L.filter(x => x.flags.includes(f)).length, nod = L.filter(x => x.miss.length).length;
+      $('#cc-fl').innerHTML = L.length ? `<span class="muted">Tháng này:</span> <span class="pill ${cnt('late') ? 'warn' : ''}">Đi trễ ${cnt('late')}</span><span class="pill ${cnt('early') ? 'warn' : ''}">Về sớm ${cnt('early')}</span><span class="pill">Quên chấm công ${cnt('noin') + cnt('noout')}</span>`
+        + (d.set && d.set.dtAt ? (nod ? `<span class="pill bad">${ic('info')}${nod} ngày chưa làm đơn</span>` : '<span class="pill ok">Đã đủ đơn</span>') + `<span class="small muted">· đơn từ cập nhật ${esc(d.set.dtAt.slice(11, 16) + ' ' + vnDate(d.set.dtAt.slice(0, 10)))}</span>` : '') : '';
       countUp($('#cc-sum'));
       paint();
     };
@@ -2123,7 +2148,7 @@ VIEWS.chamcong = async el => {
     const KINDS = [
       { k:'ok', l:'Đúng giờ', hue:'mint' }, { k:'late', l:'Đi trễ', hue:'peach' }, { k:'early', l:'Về sớm', hue:'peach' },
       { k:'noin', l:'Quên check-in', hue:'rose' }, { k:'noout', l:'Quên check-out', hue:'rose' }, { k:'absent', l:'Không có dữ liệu', hue:'sky' }, { k:'nodt', l:'Chưa làm đơn', hue:'rose' } ];
-    const LAB = { ok:['Đúng giờ','ok'], late:['Đi trễ','warn'], early:['Về sớm','warn'], noin:['Quên check-in','bad'], noout:['Quên check-out','bad'], absent:['Không có dữ liệu',''] };
+    const LAB = { ok:['Đúng giờ','ok'], late:['Đi trễ','warn'], early:['Về sớm','warn'], noin:['Quên check-in','bad'], noout:['Quên check-out','bad'], absent:['Không có dữ liệu',''], off:['Nghỉ phép','brand'] };
     const paint = () => {
       const people = k => new Set(LIST.filter(x => x.flags.includes(k)).map(x => x.e.id)).size;
       const times = k => LIST.filter(x => x.flags.includes(k)).length;
@@ -2140,7 +2165,7 @@ VIEWS.chamcong = async el => {
       $('#ca-list').innerHTML = rows.length ? `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Ngày</th><th>Nhân viên</th><th>Bộ phận</th><th>Giờ vào</th><th>Giờ ra</th><th>Tổng giờ</th><th>Trạng thái</th>${R.canEdit ? '<th></th>' : ''}</tr></thead><tbody>
         ${rows.slice(0, 1500).map(x => `<tr><td class="tnum">${WD[parseISO(x.day).getDay()]} ${vnDate(x.day).slice(0, 5)}</td><td><b>${esc(x.e.name)}</b><div class="small muted">${esc(x.e.id)}</div></td><td class="small">${esc(x.e.dept)}${x.slot ? `<div><span class="pill brand" style="font-size:10.5px;padding:1px 7px;margin-top:3px">${ic('clock')}${esc(x.slot)}</span></div>` : ''}</td>
           <td class="tnum ${x.flags.includes('late') ? 'bad-t' : ''}">${x.ci ? x.ci.slice(0, 5) : '—'}</td><td class="tnum ${x.flags.includes('early') ? 'bad-t' : ''}">${x.co ? x.co.slice(0, 5) : '—'}</td><td class="tnum">${attHms(x.hrs) || '—'}</td>
-          <td>${x.flags.filter(f => LAB[f]).map(f => `<span class="pill ${LAB[f][1]}">${LAB[f][0]}</span>`).join(' ')}${dtNote(x)}${editNote(x.edit)}</td>${R.canEdit ? `<td><button class="btn sm ghost" data-ed="${esc(x.e.id)}|${x.day}">${ic('edit')}Sửa</button></td>` : ''}</tr>`).join('')}</tbody></table></div>`
+          <td>${x.flags.filter(f => LAB[f] && !(f === 'off')).map(f => `<span class="pill ${LAB[f][1]}">${LAB[f][0]}</span>`).join(' ')}${x.offTag ? ` <span class="pill brand">${esc(x.offTag)}</span>` : ''}${dtNote(x)}${editNote(x.edit)}</td>${R.canEdit ? `<td><button class="btn sm ghost" data-ed="${esc(x.e.id)}|${x.day}">${ic('edit')}Sửa</button></td>` : ''}</tr>`).join('')}</tbody></table></div>`
         : `<div class="empty"><div class="ico">${ic('check')}</div><b>Không có dòng nào</b>Thử chọn mục khác hoặc ngày khác.</div>`;
     };
     $('#ca-list').onclick = e => { const b = e.target.closest('[data-ed]'); if (!b) return; const [id, day] = b.dataset.ed.split('|'); const x = LIST.find(y => y.e.id === id && y.day === day);
@@ -2174,13 +2199,15 @@ const dtNorm = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g,
 const DT_FOR = { late: d => d.t === 'tre' && /TRE/.test(dtNorm(d.k)), early: d => d.t === 'tre' && /SOM/.test(dtNorm(d.k)), noin: d => d.t === 'quen', noout: d => d.t === 'quen', absent: () => false };
 const DT_NM = { late:'đi trễ', early:'về sớm', noin:'quên check-in', noout:'quên check-out', absent:'nghỉ' };
 /** Từng lỗi phải có đơn tương ứng; đơn Xin nghỉ ngày đó tính cho mọi lỗi */
-function dtMatch(list, flags){
+function dtMatch(list, flags, fullOff){
   list = list || [];
   const off = list.filter(d => d.t === 'nghi'), dts = off.slice(), miss = [];
   flags.filter(f => DT_NEED[f]).forEach(f => {
     const hit = list.filter(DT_FOR[f]);
     hit.forEach(d => { if (!dts.includes(d)) dts.push(d); });
-    if (!hit.length && !off.length) miss.push(f);
+    // đơn nghỉ cả ngày → mọi lỗi đều có đơn; nghỉ nửa buổi → chỉ tính cho thiếu quét / không có dữ liệu (trễ, sớm đã tính theo buổi)
+    const offOk = off.length && (fullOff || f === 'absent' || f === 'noin' || f === 'noout');
+    if (!hit.length && !offOk) miss.push(f);
   });
   return { dts, miss };
 }
@@ -2191,6 +2218,7 @@ const dtText = x => !x.need ? '' : [x.dts.length ? 'Đã làm đơn: ' + x.dts.m
 function attBuild(R){
   const wd = String(R.workDays).split(/[^0-9]+/).filter(Boolean).map(Number);
   const vao = attSecs(R.gioVao), ra = attSecs(R.gioRa), by = {};
+  const chieu = attSecs(R.gioChieu || '13:30'), trua = attSecs(R.gioTrua || '12:00');
   const slots = attSlots(R.flexSlots), flex = new Set(slots.length ? (R.flexIds || []) : []), som = (Number(R.flexEarly) || 0) * 60;
   R.rows.forEach(r => by[r[1] + '|' + r[0]] = r);
   const days = [];
@@ -2199,12 +2227,18 @@ function attBuild(R){
   days.forEach(day => {
     const dow = parseISO(day).getDay() || 7, work = wd.includes(dow), isToday = day === R.today;
     R.emps.forEach(e => {
-      const r = by[e.id + '|' + day], fx = flex.has(e.id);
+      const key = e.id + '|' + day, r = by[key], fx = flex.has(e.id), dl = R.dtAt ? (R.dt || {})[key] || [] : [];
+      const offs = dl.filter(d => d.t === 'nghi'), offK = offs.map(d => dtNorm(d.k));
+      const amOff = offK.some(k => /SANG/.test(k)), pmOff = offK.some(k => /CHIEU/.test(k)), fullOff = offs.length > 0 && !amOff && !pmOff;
       const ci = r ? r[2] : '', co = r ? r[3] : '', a = attSecs(ci), b = attSecs(co), flags = [];
-      const sl = fx ? attPickSlot(slots, a, som) : null, V = sl ? sl.i : vao, Ra = sl ? sl.o : ra;
-      const lastV = fx ? slots[slots.length - 1].i : vao;   // giờ linh hoạt: qua khung vào cuối cùng mà chưa quét mới tính không có dữ liệu
+      const sl = fx ? attPickSlot(slots, a, som) : null;
+      let V = sl ? sl.i : vao, Ra = sl ? sl.o : ra;
+      if (amOff) V = Math.max(V, chieu);   // nghỉ buổi sáng → vào trước giờ bắt đầu buổi chiều không tính trễ
+      if (pmOff) Ra = Math.min(Ra, trua);  // nghỉ buổi chiều → ra từ giờ hết buổi sáng không tính về sớm
+      const lastV = amOff ? V : fx ? slots[slots.length - 1].i : vao;
       if (!r && (!work || (isToday && now < lastV))) return;
-      if (!r) flags.push('absent');
+      if (!r && fullOff) flags.push('off');
+      else if (!r) flags.push('absent');
       else {
         if (!ci) flags.push('noin');
         if (!co && !(isToday && now < Ra + 3600)) flags.push('noout');
@@ -2212,16 +2246,17 @@ function attBuild(R){
         if (b != null && b < Ra && !(isToday && now < Ra)) flags.push('early');   // hôm nay chưa tới giờ tan làm → chưa tính về sớm
         if (!flags.length && (ci || co)) flags.push('ok');
       }
-      const need = !!R.dtAt && flags.some(f => DT_NEED[f]), m = need ? dtMatch((R.dt || {})[e.id + '|' + day], flags) : { dts: [], miss: [] }, dts = m.dts, miss = m.miss;
+      const need = !!R.dtAt && flags.some(f => DT_NEED[f]), m = need ? dtMatch(dl, flags, fullOff) : { dts: [], miss: [] }, dts = m.dts, miss = m.miss;
       if (miss.length) flags.push('nodt');
-      out.push({ day, e, ci, co, hrs: a != null && b != null && b > a ? b - a : null, flags, edit: r ? r[5] || null : null, slot: fx ? (sl && ci ? sl.l : 'Linh hoạt') : '', need, dts, miss });
+      const offTag = offs.length ? (amOff && pmOff ? 'Nghỉ cả ngày' : amOff ? 'Nghỉ buổi sáng' : pmOff ? 'Nghỉ buổi chiều' : 'Nghỉ phép') : '';
+      out.push({ day, e, ci, co, hrs: a != null && b != null && b > a ? b - a : null, flags, edit: r ? r[5] || null : null, slot: fx ? (sl && ci ? sl.l : 'Linh hoạt') : '', need, dts, miss, offTag });
     });
   });
   return out;
 }
 function exportAtt(R, LIST){
   const per = `${vnDate(R.from)} ~ ${vnDate(R.to)}`;
-  const nm = { ok:'Đúng giờ', late:'Đi trễ', early:'Về sớm', noin:'Quên check-in', noout:'Quên check-out', absent:'Không có dữ liệu' };
+  const nm = { ok:'Đúng giờ', late:'Đi trễ', early:'Về sớm', noin:'Quên check-in', noout:'Quên check-out', absent:'Không có dữ liệu', off:'Nghỉ phép' };
   const daySheet = [['IBVN – Tình trạng chấm công theo kỳ'], ['Kỳ', per],
     ['Giờ vào = quét sớm nhất ở ' + R.khoaVao + '; giờ ra = quét trễ nhất ở ' + R.khoaRa + '; trễ sau ' + R.gioVao + ', về sớm trước ' + R.gioRa], [],
     ['Ngày', 'Mã nhân viên', 'Họ và tên', 'Chức vụ', 'Bộ phận', 'Khung giờ', 'Giờ vào làm', 'Giờ tan làm', 'Tổng giờ', 'Trạng thái', 'Đơn từ', 'Ghi chú sửa giờ']];
