@@ -643,6 +643,7 @@ kbd{font:600 11px var(--fb);background:var(--surface-3);color:var(--text-2);bord
 .tbl tr.hr-bad td{background:rgba(214,69,61,.07)}.tbl tr.hr-bad td:first-child{box-shadow:inset 3px 0 0 #D6453D}
 .ds-g{border-top:1px solid var(--line)}.ds-g summary{display:flex;align-items:center;gap:10px;padding:14px 20px;cursor:pointer;list-style:none}.ds-g summary::-webkit-details-marker{display:none}
 .ds-g summary svg{width:16px;height:16px;transition:transform .2s}.ds-g[open] summary svg{transform:rotate(90deg)}.ds-g .req-item{margin:0 12px 10px}
+.att-dt{display:flex;gap:6px;align-items:flex-start;margin-top:4px;font-size:11.5px;line-height:1.35;font-weight:600}.att-dt.ok{color:var(--ok)}.att-dt.no{color:var(--bad)}.att-dt span{font-weight:500;opacity:.9}
 .att-ed{display:flex;gap:6px;align-items:flex-start;margin-top:4px;font-size:11.5px;color:var(--info);line-height:1.35}.att-ed svg{width:12px;height:12px;flex:none;margin-top:2px}
 .pin-card{max-width:360px;margin:20px auto;padding:28px 24px;text-align:center}.pin-card h3{margin:10px 0 4px;font-family:var(--fd)}
 .pin-ico{width:52px;height:52px;margin:0 auto;border-radius:16px;display:grid;place-items:center;background:var(--brand-soft);color:var(--brand-ink)}.pin-ico svg{width:24px;height:24px}
@@ -2121,13 +2122,15 @@ VIEWS.chamcong = async el => {
       pick(); load(); };
     const KINDS = [
       { k:'ok', l:'Đúng giờ', hue:'mint' }, { k:'late', l:'Đi trễ', hue:'peach' }, { k:'early', l:'Về sớm', hue:'peach' },
-      { k:'noin', l:'Quên check-in', hue:'rose' }, { k:'noout', l:'Quên check-out', hue:'rose' }, { k:'absent', l:'Không có dữ liệu', hue:'sky' } ];
+      { k:'noin', l:'Quên check-in', hue:'rose' }, { k:'noout', l:'Quên check-out', hue:'rose' }, { k:'absent', l:'Không có dữ liệu', hue:'sky' }, { k:'nodt', l:'Chưa làm đơn', hue:'rose' } ];
     const LAB = { ok:['Đúng giờ','ok'], late:['Đi trễ','warn'], early:['Về sớm','warn'], noin:['Quên check-in','bad'], noout:['Quên check-out','bad'], absent:['Không có dữ liệu',''] };
     const paint = () => {
       const people = k => new Set(LIST.filter(x => x.flags.includes(k)).map(x => x.e.id)).size;
       const times = k => LIST.filter(x => x.flags.includes(k)).length;
       const tot = R.emps.length, one = R.from === R.to;
-      $('#ca-rule').innerHTML = `Giờ vào = lần quét sớm nhất ở <b>${esc(R.khoaVao)}</b> · Giờ ra = lần quét trễ nhất ở <b>${esc(R.khoaRa)}</b> · Trễ sau <b>${esc(R.gioVao)}</b>, về sớm trước <b>${esc(R.gioRa)}</b>${(R.flexIds || []).length && attSlots(R.flexSlots).length ? `<br>Giờ linh hoạt (${R.flexIds.length} người): khung <b>${esc(attSlots(R.flexSlots).map(x => x.l).join(' · '))}</b> – quét từ ${esc(String(R.flexEarly || 0))} phút trước giờ khung thì tính vào khung đó; trễ / về sớm tính theo khung` : ''}${R.vanTayTu && R.vanTayTu <= R.to ? `<br>Từ ${esc(vnDate(R.vanTayTu))}: chỉ tính quét <b>vân tay</b> (thẻ từ không tính giờ vào/ra)` : ''}`;
+      $('#ca-rule').innerHTML = `Giờ vào = lần quét sớm nhất ở <b>${esc(R.khoaVao)}</b> · Giờ ra = lần quét trễ nhất ở <b>${esc(R.khoaRa)}</b> · Trễ sau <b>${esc(R.gioVao)}</b>, về sớm trước <b>${esc(R.gioRa)}</b>${(R.flexIds || []).length && attSlots(R.flexSlots).length ? `<br>Giờ linh hoạt (${R.flexIds.length} người): khung <b>${esc(attSlots(R.flexSlots).map(x => x.l).join(' · '))}</b> – quét từ ${esc(String(R.flexEarly || 0))} phút trước giờ khung thì tính vào khung đó; trễ / về sớm tính theo khung` : ''}${R.vanTayTu && R.vanTayTu <= R.to ? `<br>Từ ${esc(vnDate(R.vanTayTu))}: chỉ tính quét <b>vân tay</b> (thẻ từ không tính giờ vào/ra)` : ''}<br>Đơn từ nhân sự đồng bộ ${R.dtAt ? 'lúc <b>' + esc(R.dtAt.slice(11, 16) + ' ' + vnDate(R.dtAt.slice(0, 10))) + '</b>' : '<b>chưa có</b>'} (tự động mỗi nửa ngày) · <a href="#" id="ca-dts" style="font-weight:700">Đồng bộ ngay</a>`;
+      $('#ca-dts').onclick = async ev => { ev.preventDefault(); const a = ev.currentTarget; a.textContent = 'Đang đồng bộ…'; a.style.pointerEvents = 'none';
+        try { const r = await call('att.dtSync'); toast(`Đã đồng bộ ${r.count} đơn`); load(); } catch(err) { toast(err.message, 'err'); a.textContent = 'Đồng bộ ngay'; a.style.pointerEvents = ''; } };
       const present = new Set(LIST.filter(x => x.ci || x.co).map(x => x.e.id)).size;
       $('#ca-sum').innerHTML = `<button class="stat hu-lilac ca-card ${filt === 'all' ? 'on' : ''}" data-f="all"><div><div class="k">Tổng nhân viên</div>
         <div class="v"><span>${tot}</span><small>người</small></div><div class="small muted">Có chấm công: ${present} người</div></div></button>` + KINDS.map(K => { const n = people(K.k), c = times(K.k); return `<button class="stat hu-${K.hue} ca-card ${filt === K.k ? 'on' : ''}" data-f="${K.k}"><div><div class="k">${esc(K.l)}</div>
@@ -2137,7 +2140,7 @@ VIEWS.chamcong = async el => {
       $('#ca-list').innerHTML = rows.length ? `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Ngày</th><th>Nhân viên</th><th>Bộ phận</th><th>Giờ vào</th><th>Giờ ra</th><th>Tổng giờ</th><th>Trạng thái</th>${R.canEdit ? '<th></th>' : ''}</tr></thead><tbody>
         ${rows.slice(0, 1500).map(x => `<tr><td class="tnum">${WD[parseISO(x.day).getDay()]} ${vnDate(x.day).slice(0, 5)}</td><td><b>${esc(x.e.name)}</b><div class="small muted">${esc(x.e.id)}</div></td><td class="small">${esc(x.e.dept)}${x.slot ? `<div><span class="pill brand" style="font-size:10.5px;padding:1px 7px;margin-top:3px">${ic('clock')}${esc(x.slot)}</span></div>` : ''}</td>
           <td class="tnum ${x.flags.includes('late') ? 'bad-t' : ''}">${x.ci ? x.ci.slice(0, 5) : '—'}</td><td class="tnum ${x.flags.includes('early') ? 'bad-t' : ''}">${x.co ? x.co.slice(0, 5) : '—'}</td><td class="tnum">${attHms(x.hrs) || '—'}</td>
-          <td>${x.flags.map(f => `<span class="pill ${LAB[f][1]}">${LAB[f][0]}</span>`).join(' ')}${editNote(x.edit)}</td>${R.canEdit ? `<td><button class="btn sm ghost" data-ed="${esc(x.e.id)}|${x.day}">${ic('edit')}Sửa</button></td>` : ''}</tr>`).join('')}</tbody></table></div>`
+          <td>${x.flags.filter(f => LAB[f]).map(f => `<span class="pill ${LAB[f][1]}">${LAB[f][0]}</span>`).join(' ')}${dtNote(x)}${editNote(x.edit)}</td>${R.canEdit ? `<td><button class="btn sm ghost" data-ed="${esc(x.e.id)}|${x.day}">${ic('edit')}Sửa</button></td>` : ''}</tr>`).join('')}</tbody></table></div>`
         : `<div class="empty"><div class="ico">${ic('check')}</div><b>Không có dòng nào</b>Thử chọn mục khác hoặc ngày khác.</div>`;
     };
     $('#ca-list').onclick = e => { const b = e.target.closest('[data-ed]'); if (!b) return; const [id, day] = b.dataset.ed.split('|'); const x = LIST.find(y => y.e.id === id && y.day === day);
@@ -2165,6 +2168,26 @@ const attSlots = str => String(str || '').split(/[,;\n]+/).map(x => x.split('-')
   .map(x => ({ i: attSecs(x[0].trim()), o: attSecs(x[1].trim()), l: attHM(x[0]) + '–' + attHM(x[1]) })).sort((a, b) => a.i - b.i);
 /** Chọn khung theo giờ vào: quét từ (giờ khung − N phút) trở đi tính vào khung đó; vd N=15: 8:45 → khung 9h, 8:44 → khung 8h (trễ) */
 const attPickSlot = (slots, a, som) => { let k = slots[0]; if (a == null) return k; slots.forEach(x => { if (a >= x.i - som) k = x; }); return k; };
+/* Đối chiếu đơn từ: đi trễ ↔ đơn Đi trễ, về sớm ↔ đơn Về sớm, quên quét ↔ đơn Quên chấm công; đơn Xin nghỉ ngày đó tính cho mọi trường hợp */
+const DT_NEED = { late:1, early:1, noin:1, noout:1, absent:1 };
+const dtNorm = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[đĐ]/g, 'D').toUpperCase();
+const DT_FOR = { late: d => d.t === 'tre' && /TRE/.test(dtNorm(d.k)), early: d => d.t === 'tre' && /SOM/.test(dtNorm(d.k)), noin: d => d.t === 'quen', noout: d => d.t === 'quen', absent: () => false };
+const DT_NM = { late:'đi trễ', early:'về sớm', noin:'quên check-in', noout:'quên check-out', absent:'nghỉ' };
+/** Từng lỗi phải có đơn tương ứng; đơn Xin nghỉ ngày đó tính cho mọi lỗi */
+function dtMatch(list, flags){
+  list = list || [];
+  const off = list.filter(d => d.t === 'nghi'), dts = off.slice(), miss = [];
+  flags.filter(f => DT_NEED[f]).forEach(f => {
+    const hit = list.filter(DT_FOR[f]);
+    hit.forEach(d => { if (!dts.includes(d)) dts.push(d); });
+    if (!hit.length && !off.length) miss.push(f);
+  });
+  return { dts, miss };
+}
+const dtLabel = d => (d.t === 'nghi' ? 'Đơn nghỉ: ' + [d.k, d.tru].filter(Boolean).join(' · ') : [d.k, d.gio].filter(Boolean).join(' ') + (d.tru ? ' · ' + d.tru : '')) + (d.st && d.st !== 'Đã ghi nhận' ? ` (${d.st})` : '');
+const dtNote = x => !x.need ? '' : (x.dts.length ? `<div class="att-dt ok">${ic('check')}<div>Đã làm đơn <span>· ${x.dts.map(d => esc(dtLabel(d))).join(' / ')}</span></div></div>` : '')
+  + (x.miss.length ? `<div class="att-dt no">${ic('info')}<div>${x.dts.length ? 'Chưa làm đơn ' + x.miss.map(f => DT_NM[f]).join(', ') : 'Chưa làm đơn'}</div></div>` : '');
+const dtText = x => !x.need ? '' : [x.dts.length ? 'Đã làm đơn: ' + x.dts.map(dtLabel).join(' / ') : '', x.miss.length ? 'Chưa làm đơn ' + x.miss.map(f => DT_NM[f]).join(', ') : ''].filter(Boolean).join(' | ');
 function attBuild(R){
   const wd = String(R.workDays).split(/[^0-9]+/).filter(Boolean).map(Number);
   const vao = attSecs(R.gioVao), ra = attSecs(R.gioRa), by = {};
@@ -2189,7 +2212,9 @@ function attBuild(R){
         if (b != null && b < Ra && !(isToday && now < Ra)) flags.push('early');   // hôm nay chưa tới giờ tan làm → chưa tính về sớm
         if (!flags.length && (ci || co)) flags.push('ok');
       }
-      out.push({ day, e, ci, co, hrs: a != null && b != null && b > a ? b - a : null, flags, edit: r ? r[5] || null : null, slot: fx ? (sl && ci ? sl.l : 'Linh hoạt') : '' });
+      const need = flags.some(f => DT_NEED[f]), m = need ? dtMatch((R.dt || {})[e.id + '|' + day], flags) : { dts: [], miss: [] }, dts = m.dts, miss = m.miss;
+      if (miss.length) flags.push('nodt');
+      out.push({ day, e, ci, co, hrs: a != null && b != null && b > a ? b - a : null, flags, edit: r ? r[5] || null : null, slot: fx ? (sl && ci ? sl.l : 'Linh hoạt') : '', need, dts, miss });
     });
   });
   return out;
@@ -2199,21 +2224,21 @@ function exportAtt(R, LIST){
   const nm = { ok:'Đúng giờ', late:'Đi trễ', early:'Về sớm', noin:'Quên check-in', noout:'Quên check-out', absent:'Không có dữ liệu' };
   const daySheet = [['IBVN – Tình trạng chấm công theo kỳ'], ['Kỳ', per],
     ['Giờ vào = quét sớm nhất ở ' + R.khoaVao + '; giờ ra = quét trễ nhất ở ' + R.khoaRa + '; trễ sau ' + R.gioVao + ', về sớm trước ' + R.gioRa], [],
-    ['Ngày', 'Mã nhân viên', 'Họ và tên', 'Chức vụ', 'Bộ phận', 'Khung giờ', 'Giờ vào làm', 'Giờ tan làm', 'Tổng giờ', 'Trạng thái', 'Ghi chú sửa giờ']];
+    ['Ngày', 'Mã nhân viên', 'Họ và tên', 'Chức vụ', 'Bộ phận', 'Khung giờ', 'Giờ vào làm', 'Giờ tan làm', 'Tổng giờ', 'Trạng thái', 'Đơn từ', 'Ghi chú sửa giờ']];
   LIST.slice().sort((a, b) => a.e.name === b.e.name ? (a.day < b.day ? -1 : 1) : (a.e.name < b.e.name ? -1 : 1))
-    .forEach(x => daySheet.push([x.day.replace(/-/g, ''), x.e.id, x.e.name, x.e.position, x.e.dept, x.slot || '', x.ci, x.co, attHms(x.hrs), x.flags.map(f => nm[f]).join(', '), x.edit ? 'Sửa bởi ' + x.edit.by + ' lúc ' + x.edit.at + ' – ' + x.edit.reason : '']));
+    .forEach(x => daySheet.push([x.day.replace(/-/g, ''), x.e.id, x.e.name, x.e.position, x.e.dept, x.slot || '', x.ci, x.co, attHms(x.hrs), x.flags.filter(f => nm[f]).map(f => nm[f]).join(', '), dtText(x), x.edit ? 'Sửa bởi ' + x.edit.by + ' lúc ' + x.edit.at + ' – ' + x.edit.reason : '']));
   const empSheet = [['IBVN – Tình trạng chấm công theo nhân viên'], ['Kỳ', per], [],
-    ['Mã nhân viên', 'Họ và tên', 'Chức vụ', 'Bộ phận', 'Số ngày có chấm công', 'Giờ vào trung bình', 'Giờ tan trung bình', 'Tổng giờ làm', 'Đi trễ (lần)', 'Về sớm (lần)', 'Quên check-in', 'Quên check-out', 'Không có dữ liệu (ngày)']];
+    ['Mã nhân viên', 'Họ và tên', 'Chức vụ', 'Bộ phận', 'Số ngày có chấm công', 'Giờ vào trung bình', 'Giờ tan trung bình', 'Tổng giờ làm', 'Đi trễ (lần)', 'Về sớm (lần)', 'Quên check-in', 'Quên check-out', 'Không có dữ liệu (ngày)', 'Chưa làm đơn (lần)']];
   R.emps.forEach(e => {
     const L = LIST.filter(x => x.e.id === e.id);
     const ins = L.map(x => attSecs(x.ci)).filter(v => v != null), outs = L.map(x => attSecs(x.co)).filter(v => v != null);
     const avg = a => a.length ? attHms(Math.round(a.reduce((s, v) => s + v, 0) / a.length)) : '';
     const n = f => L.filter(x => x.flags.includes(f)).length;
-    empSheet.push([e.id, e.name, e.position, e.dept, L.filter(x => x.ci || x.co).length, avg(ins), avg(outs), attHms(L.reduce((s, x) => s + (x.hrs || 0), 0)), n('late'), n('early'), n('noin'), n('noout'), n('absent')]);
+    empSheet.push([e.id, e.name, e.position, e.dept, L.filter(x => x.ci || x.co).length, avg(ins), avg(outs), attHms(L.reduce((s, x) => s + (x.hrs || 0), 0)), n('late'), n('early'), n('noin'), n('noout'), n('absent'), n('nodt')]);
   });
   const wb = XLSX.utils.book_new();
-  const a = XLSX.utils.aoa_to_sheet(empSheet); a['!cols'] = [12, 26, 22, 22, 10, 12, 12, 12, 10, 10, 10, 10, 12].map(w => ({ wch: w })); a['!merges'] = [{ s:{ r:0, c:0 }, e:{ r:0, c:8 } }];
-  const b = XLSX.utils.aoa_to_sheet(daySheet); b['!cols'] = [10, 12, 26, 22, 22, 13, 10, 10, 9, 30, 40].map(w => ({ wch: w })); b['!merges'] = [{ s:{ r:0, c:0 }, e:{ r:0, c:8 } }];
+  const a = XLSX.utils.aoa_to_sheet(empSheet); a['!cols'] = [12, 26, 22, 22, 10, 12, 12, 12, 10, 10, 10, 10, 12, 12].map(w => ({ wch: w })); a['!merges'] = [{ s:{ r:0, c:0 }, e:{ r:0, c:8 } }];
+  const b = XLSX.utils.aoa_to_sheet(daySheet); b['!cols'] = [10, 12, 26, 22, 22, 13, 10, 10, 9, 30, 45, 40].map(w => ({ wch: w })); b['!merges'] = [{ s:{ r:0, c:0 }, e:{ r:0, c:8 } }];
   XLSX.utils.book_append_sheet(wb, a, 'Theo nhân viên');
   XLSX.utils.book_append_sheet(wb, b, 'Theo ngày');
   XLSX.writeFile(wb, `ChamCongToanCongTy_${R.from.replace(/-/g, '')}-${R.to.replace(/-/g, '')}.xlsx`);
