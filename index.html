@@ -982,15 +982,41 @@ const ago = s => { const d = parseISO(s); if(!d) return ''; const m = Math.round
 // Bộ nhớ tạm cho các lệnh chỉ đọc: chuyển qua lại giữa các trang không phải chờ máy chủ; lệnh ghi bất kỳ sẽ xoá bộ nhớ tạm
 const READ_CACHE = { home:1, 'ann.list':1, 'room.list':1, 'req.my':1, 'bday.list':1, 'att.get':1, 'att.report':1, 'hr.team':1, 'fb.my':1, 'fb.all':1, 'att.emps':1, 'req.emps':1, 'adm.employees':1, 'adm.config':1, 'att.unmatched':1, 'att.batches':1 };
 const CACHE = {}, INFLIGHT = {};
+// Lưu thêm vào máy (localStorage) cho vài trang hay mở: mở lại web là hiện ngay dữ liệu lần trước, rồi tự cập nhật ngầm
+const SWR = { home:1, 'ann.list':1, 'room.list':1, 'req.my':1, 'att.get':1 };
+const RC_KEY = 'ibvn_rc1';
+let RC = null, RC_T = 0;
+const rcLoad = () => { if (RC && RC.u === (S.user && S.user.id)) return RC; try { const o = JSON.parse(store.get(RC_KEY) || 'null'); RC = o && S.user && o.u === S.user.id ? o : { u: S.user && S.user.id, d: {} }; } catch(e) { RC = { u: S.user && S.user.id, d: {} }; } return RC; };
+const rcSave = () => { clearTimeout(RC_T); RC_T = setTimeout(() => { try { localStorage.setItem(RC_KEY, JSON.stringify(RC)); } catch(e) { try { RC.d = {}; localStorage.removeItem(RC_KEY); } catch(x){} } }, 300); };
+const rcClear = () => { RC = null; store.del(RC_KEY); };
+let LAST_TOUCH = 0;
+['pointerdown', 'keydown'].forEach(ev => document.addEventListener(ev, () => { LAST_TOUCH = Date.now(); }, true));
+function fetchRead(action, payload, k){
+  if (INFLIGHT[k]) return INFLIGHT[k];
+  return INFLIGHT[k] = call0(action, payload).then(v => {
+    CACHE[k] = { t: Date.now(), v }; delete INFLIGHT[k];
+    if (SWR[action] && S.user && !(S.user.imp)) { const rc = rcLoad(); rc.d[k] = { t: Date.now(), v }; rcSave(); }
+    return v;
+  }, err => { delete INFLIGHT[k]; throw err; });
+}
 function call(action, payload){
   if (READ_CACHE[action]) {
     const k = action + '|' + JSON.stringify(payload || {});
     const c = CACHE[k]; if (c && Date.now() - c.t < 45000) return Promise.resolve(c.v);
-    if (INFLIGHT[k]) return INFLIGHT[k];
-    const pr = INFLIGHT[k] = call0(action, payload).then(v => { CACHE[k] = { t: Date.now(), v }; delete INFLIGHT[k]; return v; }, err => { delete INFLIGHT[k]; throw err; });
-    return pr;
+    if (SWR[action] && S.user && !S.user.imp && !INFLIGHT[k]) {
+      const old = c || rcLoad().d[k];
+      if (old && Date.now() - old.t < 12 * 3600e3) {   // hiện dữ liệu cũ ngay, tải bản mới ngầm → có khác thì vẽ lại trang
+        const nav = S.nav, page = S.page, t0 = Date.now(), was = JSON.stringify(old.v);
+        fetchRead(action, payload, k).then(v => {
+          if (JSON.stringify(v) === was || S.nav !== nav || S.page !== page || LAST_TOUCH > t0 || $('#modal-root').innerHTML.trim()) return;
+          const y = window.scrollY; go(page, true); requestAnimationFrame(() => window.scrollTo(0, y));
+        }).catch(() => {});
+        return Promise.resolve(old.v);
+      }
+    }
+    return fetchRead(action, payload, k);
   }
-  if (action !== 'ann.seen' && action !== 'me') Object.keys(CACHE).forEach(k => delete CACHE[k]);
+  if (action !== 'ann.seen' && action !== 'me') { Object.keys(CACHE).forEach(k => delete CACHE[k]); rcClear(); }
   return call0(action, payload);
 }
 function prefetch(){ const n = new Date(), m = `${n.getFullYear()}-${pad(n.getMonth()+1)}`; ['ann.list', 'req.my'].forEach(a => call(a).catch(() => {})); if (S.user) call('att.get', { month:m, empId:S.user.id }).catch(() => {}); }
@@ -1110,15 +1136,27 @@ async function boot(){
   S.token = store.get('ibvn_token');
   const startPage = await getStartPage();
   if (startPage && PAGE[startPage]) S.page = startPage;
+  let fast = null; try { fast = JSON.parse(store.get('ibvn_me1') || 'null'); } catch(e) {}
+  if (S.token && fast && fast.tk === S.token && fast.d && fast.d.user && Date.now() - fast.t < 7 * 864e5) {
+    // mở lại web: dùng thông tin lần trước để vào thẳng trang, kiểm tra phiên ngầm phía sau
+    S.user = fast.d.user; S.links = fast.d.links;
+    render(); impBanner(); bootNav();
+    call('me').then(d => { const was = JSON.stringify({ u:S.user, l:S.links }); S.user = d.user; S.links = d.links; meSave(d);
+      if (JSON.stringify({ u:S.user, l:S.links }) !== was) { if (S.user.mustChange || !LAST_TOUCH) render(); else { renderNav(); impBanner(); } } }).catch(() => {});
+    return;
+  }
   if (S.token) {
-    try { const d = await call('me'); S.user = d.user; S.links = d.links; }
+    try { const d = await call('me'); S.user = d.user; S.links = d.links; meSave(d); }
     catch(e) {
       S.token = null; store.del('ibvn_token');
       const back = store.get('ibvn_token_admin');   // phiên xem với tư cách hết hạn → quay về tài khoản admin
       if (back) { store.del('ibvn_token_admin'); store.set('ibvn_token', back); S.token = back; try { const d = await call('me'); S.user = d.user; S.links = d.links; } catch(e2) { S.token = null; store.del('ibvn_token'); } }
     }
   }
-  render(); impBanner();
+  render(); impBanner(); bootNav();
+}
+const meSave = d => { try { localStorage.setItem('ibvn_me1', JSON.stringify({ tk:S.token, t:Date.now(), d })); } catch(e) { store.del('ibvn_me1'); } };
+function bootNav(){
   if (IS_GAS && google.script.history) google.script.history.setChangeHandler(e => { const p = e.location.parameter.page; if (p && PAGE[p] && p !== S.page) go(p, true); });
   window.addEventListener('hashchange', () => { if (IS_GAS) return; const p = location.hash.slice(1); if (p && PAGE[p] && p !== S.page) go(p, true); });
 }
@@ -1140,7 +1178,7 @@ function render(){
   renderShell();
 }
 
-function logoutLocal(){ Object.keys(CACHE).forEach(k => delete CACHE[k]); S.payPin = ''; S.token=null; S.user=null; store.del('ibvn_token'); render(); }
+function logoutLocal(){ Object.keys(CACHE).forEach(k => delete CACHE[k]); rcClear(); store.del('ibvn_me1'); S.payPin = ''; S.token=null; S.user=null; store.del('ibvn_token'); render(); }
 async function logout(){ if (S.user && S.user.imp) return stopImp(); try { await call('logout', { token:S.token }); } catch(e){} logoutLocal(); }
 
 /* ---------- Login ---------- */
@@ -1186,7 +1224,7 @@ function renderLogin(){
     try {
       const id = $('#l-id').value.trim().toUpperCase();
       const d = await call('login', { id, pw: $('#l-pw').value });
-      S.token = d.token; S.user = d.user; S.links = d.links;
+      S.token = d.token; S.user = d.user; S.links = d.links; meSave({ user:d.user, links:d.links });
       store.set('ibvn_lastid', id);
       if ($('#l-rem').checked) store.set('ibvn_token', d.token); else store.del('ibvn_token');
       render();
@@ -2527,7 +2565,7 @@ VIEWS.caidat = async el => {
     </div>
     <div class="card"><div class="card-h"><h3><span class="hi">${ic('lock')}</span>Đổi mật khẩu</h3></div><form class="card-b stack" id="st-pw">${pwForm('st')}<button class="btn primary" id="st-b">Cập nhật mật khẩu</button></form></div></div>`;
   bindPwForm('st');
-  const saveProfile = async (data, msg) => { const d = await call('profile.save', data); S.user = d.user; toast(msg); renderShell(); };
+  const saveProfile = async (data, msg) => { const d = await call('profile.save', data); S.user = d.user; meSave({ user:S.user, links:S.links }); toast(msg); renderShell(); };
   $('#av-btn').onclick = () => $('#av-file').click();
   $('#av-file').onchange = async e => {
     const f = e.target.files[0]; if (!f) return;
