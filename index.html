@@ -2728,7 +2728,6 @@ async function evOpen(el, id, keepTab){
     box.innerHTML = `<div class="stack"><div class="card"><div class="card-b row" style="padding-top:16px;gap:10px">
         <select class="select" id="ev-pick" style="max-width:320px">${shifts.map(s => { const n = tot(s.key), c = n.filter(x => x.in).length; return `<option value="${esc(s.key)}" ${pick === s.key ? 'selected' : ''}>${esc(shiftLabel(s))} · ${c}/${n.length} đã check-in</option>`; }).join('')}<option value="*" ${pick === '*' ? 'selected' : ''}>Tất cả ca</option></select>
         <span class="small muted">${wait} ca đang chờ xác nhận</span><span class="spacer"></span>
-        <button class="btn sm soft" id="ev-okall">${ic('check')}Xác nhận tất cả đã check-in</button>
         <button class="btn sm ghost" id="ev-sync" title="Đọc lại lịch và ghi tab 5. Chấm công trong file lịch">${ic('refresh')}Đồng bộ sheet</button></div></div>
       <div class="card">${rows.length ? `<div class="tbl-wrap"><table class="tbl"><thead><tr>${pick === '*' ? '<th>Ca</th>' : ''}<th>Nhân viên</th><th>Vai trò</th><th>Check-in</th><th>Check-out</th><th>Đối chiếu</th><th>Xác nhận</th><th></th></tr></thead><tbody>
         ${rows.map((x, i) => `<tr>${pick === '*' ? `<td class="small">${esc(evDay(x.date))}<div class="muted">${esc(x.type)}</div></td>` : ''}<td><b>${esc(x.name)}</b><div class="small muted">${esc(x.empId)}</div></td><td class="small">${esc(x.roleName)}</td>
@@ -2738,16 +2737,20 @@ async function evOpen(el, id, keepTab){
         : `<div class="empty"><b>Không có ai trong ca này</b></div>`}</div></div>`;
     $('#ev-pick', box).onchange = e => { pick = e.target.value; drawMgr(box); };
     $('#ev-sync', box).onclick = async e => { busy(e.currentTarget, true, 'Đang đồng bộ…'); try { const r = await call('ev.sync', { id }); toast(`Đã ghi ${r.rows} ca vào tab "5. Chấm công"`); D = await call('ev.get', { id, fresh: 1 }); draw(); } catch(err) { toast(err.message, 'err'); busy(e.currentTarget, false); } };
-    $('#ev-okall', box).onclick = e => { const items = rows.filter(x => x.in && x.status !== 'Đã xác nhận').map(x => ({ empId: x.empId, key: x.key }));
-      if (!items.length) return toast('Không có ca nào cần xác nhận', 'err');
-      if (!confirm(`Xác nhận ${items.length} ca đã check-in?`)) return;
-      act(() => call('ev.confirm', { id, ok: true, items }), e.currentTarget); };
-    box.querySelectorAll('[data-ok]').forEach(b => b.onclick = () => { const x = rows[+b.dataset.ok]; act(() => call('ev.confirm', { id, ok: true, items: [{ empId: x.empId, key: x.key }] }), b); });
+    box.querySelectorAll('[data-ok]').forEach(b => b.onclick = () => evOkModal(rows[+b.dataset.ok], async note => { D = await call('ev.confirm', { id, ok: true, note, items: [{ empId: rows[+b.dataset.ok].empId, key: rows[+b.dataset.ok].key }] }); draw(); }));
     box.querySelectorAll('[data-ed]').forEach(b => b.onclick = () => evEditModal(rows[+b.dataset.ed], async (ok, patch) => { D = await call('ev.confirm', { id, ok, note: patch.note, items: [{ empId: patch.empId, key: patch.key, in: patch.in, out: patch.out }] }); draw(); }));
   };
   draw();
 }
 const evOpenAt = x => { const m = String(x.start).match(/(\d+):(\d+)/); if (!m) return ''; const t = (+m[1]) * 60 + (+m[2]) - 60; return `${pad(Math.floor(((t % 1440) + 1440) % 1440 / 60))}:${pad(t % 60 < 0 ? t % 60 + 60 : t % 60)} ${vnDate(x.date).slice(0, 5)}`; };
+function evOkModal(x, save){
+  const m = modal('Xác nhận chấm công', `<div class="small muted" style="margin-bottom:10px"><b>${esc(x.name)}</b> · ${esc(evDay(x.date))} · ${esc(x.type)} ${esc(x.start)}–${esc(x.end)} · ${esc(x.roleName)}</div>
+    <div class="row" style="gap:18px;margin-bottom:10px"><div><span class="small muted">Check-in</span><div><b>${evHM(x.in)}</b></div></div><div><span class="small muted">Check-out</span><div><b>${evHM(x.out)}</b></div></div><div>${evChk(x)}</div></div>
+    <div class="field"><label for="eo-n">Ghi chú <span class="small muted">(không bắt buộc)</span></label><textarea class="textarea" id="eo-n" style="min-height:70px" placeholder="vd: đi trễ 15 phút do kẹt xe, đã báo trước">${esc(x.note || '')}</textarea></div>`,
+    '<button class="btn ghost" data-close>Huỷ</button><button class="btn primary" id="eo-ok">Xác nhận</button>');
+  $('#eo-ok', m.el).onclick = async e => { busy(e.currentTarget, true, 'Đang lưu…');
+    try { await save($('#eo-n', m.el).value.trim()); m.close(); toast('Đã xác nhận ' + x.name); } catch(err) { toast(err.message, 'err'); busy(e.currentTarget, false); } };
+}
 function evEditModal(x, save){
   const m = modal('Xác nhận / sửa giờ', `<div class="small muted" style="margin-bottom:10px"><b>${esc(x.name)}</b> · ${esc(evDay(x.date))} · ${esc(x.type)} ${esc(x.start)}–${esc(x.end)} · ${esc(x.roleName)}</div>
     <div class="row" style="flex-wrap:nowrap"><div class="field" style="flex:1"><label for="ee-i">Giờ vào</label><input class="input" type="time" id="ee-i" value="${esc(x.in ? x.in.slice(11, 16) : '')}"></div>
