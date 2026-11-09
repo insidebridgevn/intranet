@@ -437,6 +437,16 @@ kbd{font:600 11px var(--fb);background:var(--surface-3);color:var(--text-2);bord
 .cal .c:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:var(--line-2)}
 .cal .c.out{opacity:0;pointer-events:none}
 .cal .c.we{background:transparent;border-style:dashed}
+.ev-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.ev-card{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:8px;padding:18px 20px;background:var(--surface);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);transition:transform .15s,box-shadow .15s}
+.ev-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+.ev-name{font-family:var(--fd);font-size:17px;line-height:1.3}
+.ev-foot{display:flex;align-items:center;gap:8px;margin-top:4px}.ev-foot>svg{width:16px;height:16px;color:var(--muted)}
+.ev-shift.now{border-color:var(--brand);box-shadow:var(--glow)}.ev-shift.miss{opacity:.75}
+.ev-times{display:flex;flex-wrap:wrap;gap:18px;margin-top:12px}.ev-times>div{display:flex;flex-direction:column;gap:2px;min-width:80px}.ev-times b{font-size:18px;font-variant-numeric:tabular-nums}
+.ev-chk{font-weight:600;font-size:13px}.ev-chk.ok{color:var(--ok)}.ev-chk.bad{color:var(--bad)}
+.ev-btn{min-height:44px;padding-inline:22px}
+.cal .c .cf b.evd{background:var(--info-bg);color:var(--info)}
 .cal .c .cf{display:flex;flex-wrap:wrap;gap:3px;margin-top:auto}.cal .c .cf b{font-size:10px;font-weight:700;padding:1px 6px;border-radius:999px;background:var(--warn-bg,#fff3d6);color:var(--warn,#b7791f)}.cal .c .cf b.no{background:var(--bad-bg,#fde4e4);color:var(--bad)}.cal .c .cf b.okd{background:var(--ok-bg,#dff5e8);color:var(--ok)}.cal .c .cf b.off{background:var(--brand-soft,#ffe9dc);color:var(--brand)}
 @media (max-width:640px){.cal .c .cf b{font-size:9px;padding:0 4px}}
 .cc-flags{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:0 20px 10px;font-size:12.5px}
@@ -655,6 +665,7 @@ kbd{font:600 11px var(--fb);background:var(--surface-3);color:var(--text-2);bord
 .tbl tr.hr-bad td{background:rgba(214,69,61,.07)}.tbl tr.hr-bad td:first-child{box-shadow:inset 3px 0 0 #D6453D}
 .ds-g{border-top:1px solid var(--line)}.ds-g summary{display:flex;align-items:center;gap:10px;padding:14px 20px;cursor:pointer;list-style:none}.ds-g summary::-webkit-details-marker{display:none}
 .ds-g summary svg{width:16px;height:16px;transition:transform .2s}.ds-g[open] summary svg{transform:rotate(90deg)}.ds-g .req-item{margin:0 12px 10px}
+.att-ev{display:flex;gap:8px;align-items:flex-start;margin:4px 0 8px;font-size:12.5px;line-height:1.5;padding:8px 10px;border-radius:12px;background:var(--info-bg)}.att-ev svg{width:14px;height:14px;flex:none;margin-top:3px;color:var(--info)}
 .att-dt{display:flex;gap:6px;align-items:flex-start;margin-top:4px;font-size:11.5px;line-height:1.35;font-weight:600}.att-dt.ok{color:var(--ok)}.att-dt.no{color:var(--bad)}.att-dt span{font-weight:500;opacity:.9}
 .att-ed{display:flex;gap:6px;align-items:flex-start;margin-top:4px;font-size:11.5px;color:var(--info);line-height:1.35}.att-ed svg{width:12px;height:12px;flex:none;margin-top:2px}
 .pin-card{max-width:360px;margin:20px auto;padding:28px 24px;text-align:center}.pin-card h3{margin:10px 0 4px;font-family:var(--fd)}
@@ -949,6 +960,7 @@ const IC = {
   plus:'<path d="M12 5v14M5 12h14"/>', x:'<path d="M18 6 6 18M6 6l12 12"/>',
   trash:'<path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="m19 6-1 14H6L5 6"/>',
   pin:'<path d="M12 17v5"/><path d="M5 17h14l-2-5V4H7v8z"/>',
+  mapPin:'<path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/>',
   shield:'<path d="M12 3 20 6v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="m9 12 2 2 4-4"/>',
   user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
   eye:'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
@@ -1102,6 +1114,7 @@ const NAV = [
   { group:'Của tôi', items:[
     { key:'luong', label:'Bảng lương', icon:'wallet', sub:'Phiếu lương hằng tháng', desc:'Xem phiếu lương các tháng' },
     { key:'chamcong', label:'Lịch sử chấm công', icon:'clock', sub:'Giờ vào / ra từ khóa cửa TTLock', desc:'Giờ vào, giờ ra từng ngày' },
+    { key:'event', label:'Chấm công event', icon:'mapPin', sub:'Lịch ca & check-in/out khi đi event, sale', desc:'Check-in/out ca event' },
     { key:'phonghop', label:'Đăng ký phòng họp', icon:'calendar', sub:'Đặt phòng, tự cập nhật lên lịch công ty', desc:'Đặt phòng, tự lên lịch công ty' } ]},
   { group:'Đơn từ & phê duyệt', items:[
     { key:'dontu', label:'Đơn từ nhân sự', icon:'file', sub:'Nghỉ phép, đi trễ, OT, quên chấm công…', desc:'Nghỉ phép, OT, quên chấm công…' },
@@ -1988,10 +2001,11 @@ VIEWS.chamcong = async el => {
     const typeShort = t => vi(t).replace('Mở khóa bằng ', '').replace('Mở khóa với ', '');
     const PRE = { late:'tre', early:'tre', noin:'quen', noout:'quen', absent:'nghi' };
     const statusHtml = (iso, mine) => { const b = BL[iso]; if (!b) return '';
-      const pills = b.flags.filter(f => f !== 'nodt' && f !== 'ok' && f !== 'off').map(f => `<span class="pill ${f === 'absent' ? '' : 'warn'}">${esc(({ late:'Đi trễ', early:'Về sớm', noin:'Quên check-in', noout:'Quên check-out', absent:'Không có dữ liệu' })[f])}</span>`).join(' ');
+      const pills = b.flags.filter(f => f !== 'nodt' && f !== 'ok' && f !== 'off' && f !== 'event').map(f => `<span class="pill ${f === 'absent' ? '' : 'warn'}">${esc(({ late:'Đi trễ', early:'Về sớm', noin:'Quên check-in', noout:'Quên check-out', absent:'Không có dữ liệu' })[f])}</span>`).join(' ');
       const ok = b.flags.includes('ok') ? '<span class="pill ok">Đúng giờ</span>' : '';
       const btn = mine && b.miss.length ? ` <button class="btn sm soft" data-pre="${PRE[b.miss[0]]}">${ic('file')}Làm đơn</button>` : '';
-      return `<div style="margin:2px 0 8px">${ok}${pills}${b.offTag ? ` <span class="pill brand">${esc(b.offTag)}</span>` : ''}${b.slot && b.slot !== 'Linh hoạt' ? ` <span class="pill">${ic('clock')}${esc(b.slot)}</span>` : ''}${dtNote(b)}${btn}</div>`; };
+      const evh = (b.ev || []).map(e => `<div class="att-ev">${ic('mapPin')}<div><b>${esc(e.ev)}</b> · ${esc(e.type)} ${esc(e.start)}–${esc(e.end)} · ${esc(e.role)}<br>Check-in ${esc(e.in || '—')} · Check-out ${esc(e.out || '—')} · <span class="pill ${e.status === 'Đã xác nhận' ? 'ok' : e.status === 'Từ chối' ? 'bad' : 'warn'}">${esc(e.status || 'Chờ xác nhận')}</span></div></div>`).join('');
+      return `<div style="margin:2px 0 8px">${evh}${ok}${pills}${b.offTag ? ` <span class="pill brand">${esc(b.offTag)}</span>` : ''}${b.slot && b.slot !== 'Linh hoạt' ? ` <span class="pill">${ic('clock')}${esc(b.slot)}</span>` : ''}${dtNote(b)}${btn}</div>`; };
     const detail = x => `<div class="day-detail"><div class="row" style="margin-bottom:6px"><b style="font-family:var(--fd);font-size:16px">${WDL[parseISO(x.date).getDay()]}, ${vnDate(x.date)}</b><span class="spacer"></span><span class="pill">${x.scans.length} lượt quét</span></div>${statusHtml(x.date, empId === S.user.id)}${x.edit ? `<div style="margin-bottom:6px">${editNote(x.edit)}<div class="small">Giờ vào/ra đã sửa: <b>${esc((x.edit.in || '—').slice(0, 5))}</b> → <b>${esc((x.edit.out || '—').slice(0, 5))}</b></div></div>` : ''}
       ${x.scans.map(s => `<div class="scan"><span class="sd ${s.ok ? '' : 'bad'}"></span><span class="mono">${s.time.slice(0,5)}</span><span>${esc(s.type)}</span>${s.ok ? '' : '<span class="pill bad">Thất bại</span>'}${s.lock ? `<span class="spacer"></span><span class="pill">${esc(s.lock)}</span>` : ''}</div>`).join('')}</div>`;
     const paint = () => {
@@ -2011,6 +2025,7 @@ VIEWS.chamcong = async el => {
       const calFlags = iso => { const b = BL[iso]; if (!b) return ''; const t = [];
         if (b.flags.includes('late')) t.push('<b>Trễ</b>'); if (b.flags.includes('early')) t.push('<b>Sớm</b>');
         if (b.flags.includes('absent')) t.push('<b class="no">Vắng</b>'); if (b.offTag) t.push(`<b class="off">${b.offTag === 'Nghỉ buổi sáng' ? 'Off sáng' : b.offTag === 'Nghỉ buổi chiều' ? 'Off chiều' : 'Nghỉ'}</b>`);
+        if (b.ev) t.push('<b class="evd">Event</b>');
         if (b.need) t.push(b.miss.length ? '<b class="no">Chưa đơn</b>' : '<b class="okd">✓ Đơn</b>');
         return t.length ? `<div class="cf">${t.join('')}</div>` : ''; };
       const todayIso = isoDate(new Date());
@@ -2161,7 +2176,7 @@ VIEWS.chamcong = async el => {
     const KINDS = [
       { k:'ok', l:'Đúng giờ', hue:'mint' }, { k:'late', l:'Đi trễ', hue:'peach' }, { k:'early', l:'Về sớm', hue:'peach' },
       { k:'noin', l:'Quên check-in', hue:'rose' }, { k:'noout', l:'Quên check-out', hue:'rose' }, { k:'absent', l:'Không có dữ liệu', hue:'sky' }, { k:'nodt', l:'Chưa làm đơn', hue:'rose' } ];
-    const LAB = { ok:['Đúng giờ','ok'], late:['Đi trễ','warn'], early:['Về sớm','warn'], noin:['Quên check-in','bad'], noout:['Quên check-out','bad'], absent:['Không có dữ liệu',''], off:['Nghỉ phép','brand'] };
+    const LAB = { ok:['Đúng giờ','ok'], late:['Đi trễ','warn'], early:['Về sớm','warn'], noin:['Quên check-in','bad'], noout:['Quên check-out','bad'], absent:['Không có dữ liệu',''], off:['Nghỉ phép','brand'], event:['Làm event','info'] };
     const paint = () => {
       const people = k => new Set(LIST.filter(x => x.flags.includes(k)).map(x => x.e.id)).size;
       const times = k => LIST.filter(x => x.flags.includes(k)).length;
@@ -2250,7 +2265,9 @@ function attBuild(R){
       if (pmOff) Ra = Math.min(Ra, trua);  // nghỉ buổi chiều → ra từ giờ hết buổi sáng không tính về sớm
       const lastV = amOff ? V : fx ? slots[slots.length - 1].i : vao;
       if (!r && (!work || (isToday && now < lastV))) return;
+      const evd = (R.ev || {})[key] || null;
       if (!r && fullOff) flags.push('off');
+      else if (!r && evd) flags.push('event');   // không quét cửa nhưng có chấm công event hôm đó
       else if (!r) flags.push('absent');
       else {
         if (!ci) flags.push('noin');
@@ -2262,14 +2279,14 @@ function attBuild(R){
       const need = !!R.dtAt && flags.some(f => DT_NEED[f]), m = need ? dtMatch(dl, flags, fullOff) : { dts: [], miss: [] }, dts = m.dts, miss = m.miss;
       if (miss.length) flags.push('nodt');
       const offTag = offs.length ? (amOff && pmOff ? 'Nghỉ cả ngày' : amOff ? 'Nghỉ buổi sáng' : pmOff ? 'Nghỉ buổi chiều' : 'Nghỉ phép') : '';
-      out.push({ day, e, ci, co, hrs: a != null && b != null && b > a ? b - a : null, flags, edit: r ? r[5] || null : null, slot: fx ? (sl && ci ? sl.l : 'Linh hoạt') : '', need, dts, miss, offTag });
+      out.push({ day, e, ci, co, hrs: a != null && b != null && b > a ? b - a : null, flags, edit: r ? r[5] || null : null, slot: fx ? (sl && ci ? sl.l : 'Linh hoạt') : '', need, dts, miss, offTag, ev: evd });
     });
   });
   return out;
 }
 function exportAtt(R, LIST){
   const per = `${vnDate(R.from)} ~ ${vnDate(R.to)}`;
-  const nm = { ok:'Đúng giờ', late:'Đi trễ', early:'Về sớm', noin:'Quên check-in', noout:'Quên check-out', absent:'Không có dữ liệu', off:'Nghỉ phép' };
+  const nm = { ok:'Đúng giờ', late:'Đi trễ', early:'Về sớm', noin:'Quên check-in', noout:'Quên check-out', absent:'Không có dữ liệu', off:'Nghỉ phép', event:'Làm event' };
   const daySheet = [['IBVN – Tình trạng chấm công theo kỳ'], ['Kỳ', per],
     ['Giờ vào = quét sớm nhất ở ' + R.khoaVao + '; giờ ra = quét trễ nhất ở ' + R.khoaRa + '; trễ sau ' + R.gioVao + ', về sớm trước ' + R.gioRa], [],
     ['Ngày', 'Mã nhân viên', 'Họ và tên', 'Chức vụ', 'Bộ phận', 'Khung giờ', 'Giờ vào làm', 'Giờ tan làm', 'Tổng giờ', 'Trạng thái', 'Đơn từ', 'Ghi chú sửa giờ']];
@@ -2622,6 +2639,129 @@ VIEWS.gopy = async el => {
   });
   await load();
 };
+
+/* ---------- Chấm công event ---------- */
+const EV_ST = { active:['Đang diễn ra','ok'], upcoming:['Sắp diễn ra','info'], ended:['Đã kết thúc',''], hidden:['Đã ẩn',''] };
+const evHM = s => s ? String(s).slice(11, 16) : '—';
+const evDay = d => `${WD[parseISO(d).getDay()]} ${vnDate(d).slice(0, 5)}`;
+const evStPill = x => x.status === 'Đã xác nhận' ? `<span class="pill ok">${ic('check')}Đã xác nhận</span>` : x.status === 'Từ chối' ? '<span class="pill bad">Từ chối</span>' : x.in ? '<span class="pill warn">Chờ quản lý xác nhận</span>' : '';
+const evChk = x => { const bad = /Không check-in|Thiếu|trễ|sớm/.test(x.check), ok = /Đúng giờ/.test(x.check); return `<span class="ev-chk ${bad ? 'bad' : ok ? 'ok' : ''}">${esc(x.check)}</span>`; };
+VIEWS.event = async el => {
+  el.innerHTML = skel(3, 90);
+  let d = await call('ev.list'), filt = 'active';
+  if (!d.list.some(x => x.state === 'active')) filt = d.list.some(x => x.state === 'upcoming') ? 'upcoming' : 'all';
+  const pre = S.pre && S.pre.ev; if (pre) { S.pre.ev = null; return evOpen(el, pre); }
+  const draw = () => {
+    const cnt = k => d.list.filter(x => k === 'all' || x.state === k).length;
+    const list = d.list.filter(x => filt === 'all' || x.state === filt);
+    el.innerHTML = `<div class="stack">
+      <div class="row"><div class="seg" id="ev-f">${[['active','Đang diễn ra'],['upcoming','Sắp diễn ra'],['ended','Đã kết thúc'],['all','Tất cả']].map(([k, l]) => `<button data-f="${k}" class="${filt === k ? 'on' : ''}">${l} <span class="small muted">${cnt(k)}</span></button>`).join('')}</div>
+        <span class="spacer"></span>${d.canAdd ? `<button class="btn soft" id="ev-add">${ic('plus')}Thêm sự kiện</button>` : ''}</div>
+      ${list.length ? `<div class="ev-grid">${list.map(x => `<button class="card ev-card" data-id="${esc(x.id)}">
+          <div class="row" style="gap:8px"><span class="pill ${EV_ST[x.state][1]}">${EV_ST[x.state][0]}</span>${x.isMgr ? '<span class="pill brand">Bạn là quản lý</span>' : ''}</div>
+          <b class="ev-name">${esc(x.name)}</b>
+          <div class="small muted">${x.from ? `${vnDate(x.from)} – ${vnDate(x.to)}` : ''}${x.note ? ' · ' + esc(x.note) : ''}</div>
+          <div class="ev-foot">${x.err ? `<span class="pill bad">${esc(x.err)}</span>` : x.mine ? `<span class="pill ok">${ic('calendar')}Bạn có ${x.mine} ca</span>` : '<span class="small muted">Bạn không có ca trong sự kiện này</span>'}<span class="spacer"></span>${ic('chevR')}</div></button>`).join('')}</div>`
+        : `<div class="card"><div class="empty"><div class="ico">${ic('calendar')}</div><b>Không có sự kiện nào</b>Chọn mục khác ở trên.</div></div>`}</div>`;
+    $('#ev-f', el).onclick = e => { const b = e.target.closest('[data-f]'); if (!b) return; filt = b.dataset.f; draw(); };
+    el.querySelectorAll('.ev-card').forEach(c => c.onclick = () => evOpen(el, c.dataset.id));
+    const add = $('#ev-add', el); if (add) add.onclick = () => evAddModal(nd => { d = nd; draw(); });
+  };
+  draw();
+};
+function evAddModal(done){
+  const m = modal('Thêm sự kiện', `<div class="field"><label for="ea-n">Tên sự kiện <span class="req">*</span></label><input class="input" id="ea-n" placeholder="vd: 26NOV MEGA SALES - REX HOTEL"></div>
+    <div class="field"><label for="ea-u">Link Google Sheet lịch phân ca <span class="req">*</span></label><input class="input" id="ea-u" placeholder="https://docs.google.com/spreadsheets/d/…"></div>
+    <div class="field"><label for="ea-t">Tên tab lịch chi tiết</label><input class="input" id="ea-t" value="3. Details"></div>
+    <div class="field"><label for="ea-m">Mã NV quản lý event (cách nhau dấu phẩy)</label><input class="input" id="ea-m" placeholder="vd: IBVN000xx"></div>
+    <span class="small muted">Tab lịch cần có dòng tiêu đề "Mã NV", các dòng "Ngày", "Loại ca", "Bắt đầu", "Kết thúc" và mã vai trò trong ô (CA, SC, BH, KHO, SU, DH). Tài khoản chạy intranet phải có quyền sửa file này.</span>`,
+    '<button class="btn ghost" data-close>Huỷ</button><button class="btn primary" id="ea-s">Lưu</button>');
+  $('#ea-s', m.el).onclick = async ev => { busy(ev.currentTarget, true, 'Đang đọc lịch…');
+    try { const d = await call('ev.add', { name: $('#ea-n', m.el).value, url: $('#ea-u', m.el).value, tab: $('#ea-t', m.el).value, managers: $('#ea-m', m.el).value }); m.close(); toast('Đã thêm sự kiện'); done(d); }
+    catch(err) { toast(err.message, 'err'); busy(ev.currentTarget, false); } };
+}
+async function evOpen(el, id, keepTab){
+  el.innerHTML = skel(4, 80);
+  let D;
+  try { D = await call('ev.get', { id }); } catch(err) { el.innerHTML = errBox(err.message); return; }
+  let tab = keepTab || 'mine', pick = '';
+  const today = isoDate(new Date());
+  const shiftLabel = s => `${evDay(s.date)} · ${s.type} ${s.start}–${s.end}`;
+  const act = async (fn, btn) => { busy(btn, true, '…'); try { D = await fn(); draw(); } catch(err) { toast(err.message, 'err'); busy(btn, false); } };
+  const draw = () => {
+    const e = D.ev;
+    el.innerHTML = `<div class="stack">
+      <div class="card"><div class="card-b row" style="padding-top:18px;gap:12px">
+        <button class="icon-btn" id="ev-back" aria-label="Quay lại">${ic('chevL')}</button>
+        <div style="min-width:0;flex:1"><b style="font-family:var(--fd);font-size:18px">${esc(e.name)}</b>
+          <div class="small muted">Quản lý event: ${esc(e.managers.join(', ') || '—')} · lịch đọc lúc ${esc(String(D.schedAt).slice(11, 16))}</div></div>
+        <span class="pill ${EV_ST[e.state][1]}">${EV_ST[e.state][0]}</span></div></div>
+      ${D.isMgr ? `<div class="seg" id="ev-tab"><button data-t="mine" class="${tab === 'mine' ? 'on' : ''}">${ic('user')}Lịch của tôi</button><button data-t="mgr" class="${tab === 'mgr' ? 'on' : ''}">${ic('users')}Quản lý chấm công</button></div>` : ''}
+      <div id="ev-body"></div></div>`;
+    $('#ev-back', el).onclick = () => VIEWS.event(el);
+    const t = $('#ev-tab', el); if (t) t.onclick = ev => { const b = ev.target.closest('[data-t]'); if (!b) return; tab = b.dataset.t; draw(); };
+    (tab === 'mgr' && D.isMgr ? drawMgr : drawMine)($('#ev-body', el));
+  };
+  const drawMine = box => {
+    const L = D.mine;
+    if (!L.length) { box.innerHTML = `<div class="card"><div class="empty"><div class="ico">${ic('calendar')}</div><b>Bạn không có ca nào trong sự kiện này</b>Nếu bạn có tham gia, báo quản lý event thêm tên bạn vào lịch.</div></div>`; return; }
+    const ok = L.filter(x => x.status === 'Đã xác nhận').length;
+    box.innerHTML = `<div class="stack"><div class="small muted">${L.length} ca đã đăng ký · ${ok} ca đã được xác nhận. Check-in mở từ 60 phút trước giờ vào ca; giờ chỉ được tính sau khi quản lý event xác nhận.</div>
+      ${L.map((x, i) => { const now = x.date === today;
+        return `<div class="card ev-shift ${now ? 'now' : ''} ${x.ended && !x.in ? 'miss' : ''}"><div class="card-b">
+          <div class="row" style="gap:8px"><b style="font-family:var(--fd);font-size:16px">${esc(evDay(x.date))}</b><span class="pill brand">${esc(x.type)} ${esc(x.start)}–${esc(x.end)}</span><span class="pill">${esc(x.roleName)}</span>${now ? '<span class="pill ok">Hôm nay</span>' : ''}<span class="spacer"></span>${evStPill(x)}</div>
+          <div class="ev-times"><div><span class="small muted">Check-in</span><b>${evHM(x.in)}</b></div><div><span class="small muted">Check-out</span><b>${evHM(x.out)}</b></div><div style="flex:2;min-width:160px"><span class="small muted">Đối chiếu với lịch</span>${evChk(x)}</div></div>
+          ${x.note ? `<div class="small" style="margin-top:6px">Ghi chú quản lý: ${esc(x.note)}</div>` : ''}
+          ${!x.in || !x.out ? `<div class="row" style="margin-top:12px">${!x.in ? `<button class="btn primary ev-btn" data-i="${i}" data-a="in" ${x.canIn ? '' : 'disabled'}>${ic('door')}Check-in</button>` : ''}
+            ${x.in && !x.out ? `<button class="btn primary ev-btn" data-i="${i}" data-a="out" ${x.canOut ? '' : 'disabled'}>${ic('logout')}Check-out</button>` : ''}
+            ${!x.in && !x.canIn ? `<span class="small muted">${x.ended ? 'Ca đã kết thúc' : 'Mở check-in lúc ' + esc(evOpenAt(x))}</span>` : ''}</div>` : ''}
+        </div></div>`; }).join('')}</div>`;
+    box.querySelectorAll('.ev-btn').forEach(b => b.onclick = () => { const x = L[+b.dataset.i];
+      if (b.dataset.a === 'out' && !confirm(`Check-out ca ${x.type} ${evDay(x.date)} lúc ${new Date().toTimeString().slice(0, 5)}?`)) return;
+      act(() => call('ev.check', { id, key: x.key, type: b.dataset.a }), b); });
+  };
+  const drawMgr = box => {
+    const A = D.all || [], shifts = D.shifts;
+    if (!pick) { const s = shifts.find(s => s.date === today) || shifts.find(s => s.date > today) || shifts[shifts.length - 1]; pick = s ? s.key : ''; }
+    const rows = pick === '*' ? A : A.filter(x => x.key === pick);
+    const tot = k => A.filter(x => x.key === k), wait = A.filter(x => x.in && !x.status || x.status === 'Chờ xác nhận').length;
+    box.innerHTML = `<div class="stack"><div class="card"><div class="card-b row" style="padding-top:16px;gap:10px">
+        <select class="select" id="ev-pick" style="max-width:320px">${shifts.map(s => { const n = tot(s.key), c = n.filter(x => x.in).length; return `<option value="${esc(s.key)}" ${pick === s.key ? 'selected' : ''}>${esc(shiftLabel(s))} · ${c}/${n.length} đã check-in</option>`; }).join('')}<option value="*" ${pick === '*' ? 'selected' : ''}>Tất cả ca</option></select>
+        <span class="small muted">${wait} ca đang chờ xác nhận</span><span class="spacer"></span>
+        <button class="btn sm soft" id="ev-okall">${ic('check')}Xác nhận tất cả đã check-in</button>
+        <button class="btn sm ghost" id="ev-sync" title="Đọc lại lịch và ghi tab 5. Chấm công trong file lịch">${ic('refresh')}Đồng bộ sheet</button></div></div>
+      <div class="card">${rows.length ? `<div class="tbl-wrap"><table class="tbl"><thead><tr>${pick === '*' ? '<th>Ca</th>' : ''}<th>Nhân viên</th><th>Vai trò</th><th>Check-in</th><th>Check-out</th><th>Đối chiếu</th><th>Xác nhận</th><th></th></tr></thead><tbody>
+        ${rows.map((x, i) => `<tr>${pick === '*' ? `<td class="small">${esc(evDay(x.date))}<div class="muted">${esc(x.type)}</div></td>` : ''}<td><b>${esc(x.name)}</b><div class="small muted">${esc(x.empId)}</div></td><td class="small">${esc(x.roleName)}</td>
+          <td class="tnum">${evHM(x.in)}</td><td class="tnum">${evHM(x.out)}</td><td class="small">${evChk(x)}</td>
+          <td>${evStPill(x) || '<span class="small muted">—</span>'}${x.by ? `<div class="small muted">${esc(x.by)} · ${esc(String(x.at).slice(11, 16))}</div>` : ''}${x.note ? `<div class="small">${esc(x.note)}</div>` : ''}</td>
+          <td style="white-space:nowrap">${x.in && x.status !== 'Đã xác nhận' ? `<button class="btn sm primary" data-ok="${i}">Xác nhận</button> ` : ''}<button class="btn sm ghost" data-ed="${i}">${ic('edit')}Sửa</button></td></tr>`).join('')}</tbody></table></div>`
+        : `<div class="empty"><b>Không có ai trong ca này</b></div>`}</div></div>`;
+    $('#ev-pick', box).onchange = e => { pick = e.target.value; drawMgr(box); };
+    $('#ev-sync', box).onclick = async e => { busy(e.currentTarget, true, 'Đang đồng bộ…'); try { const r = await call('ev.sync', { id }); toast(`Đã ghi ${r.rows} ca vào tab "5. Chấm công"`); D = await call('ev.get', { id, fresh: 1 }); draw(); } catch(err) { toast(err.message, 'err'); busy(e.currentTarget, false); } };
+    $('#ev-okall', box).onclick = e => { const items = rows.filter(x => x.in && x.status !== 'Đã xác nhận').map(x => ({ empId: x.empId, key: x.key }));
+      if (!items.length) return toast('Không có ca nào cần xác nhận', 'err');
+      if (!confirm(`Xác nhận ${items.length} ca đã check-in?`)) return;
+      act(() => call('ev.confirm', { id, ok: true, items }), e.currentTarget); };
+    box.querySelectorAll('[data-ok]').forEach(b => b.onclick = () => { const x = rows[+b.dataset.ok]; act(() => call('ev.confirm', { id, ok: true, items: [{ empId: x.empId, key: x.key }] }), b); });
+    box.querySelectorAll('[data-ed]').forEach(b => b.onclick = () => evEditModal(rows[+b.dataset.ed], async (ok, patch) => { D = await call('ev.confirm', { id, ok, note: patch.note, items: [{ empId: patch.empId, key: patch.key, in: patch.in, out: patch.out }] }); draw(); }));
+  };
+  draw();
+}
+const evOpenAt = x => { const m = String(x.start).match(/(\d+):(\d+)/); if (!m) return ''; const t = (+m[1]) * 60 + (+m[2]) - 60; return `${pad(Math.floor(((t % 1440) + 1440) % 1440 / 60))}:${pad(t % 60 < 0 ? t % 60 + 60 : t % 60)} ${vnDate(x.date).slice(0, 5)}`; };
+function evEditModal(x, save){
+  const m = modal('Xác nhận / sửa giờ', `<div class="small muted" style="margin-bottom:10px"><b>${esc(x.name)}</b> · ${esc(evDay(x.date))} · ${esc(x.type)} ${esc(x.start)}–${esc(x.end)} · ${esc(x.roleName)}</div>
+    <div class="row" style="flex-wrap:nowrap"><div class="field" style="flex:1"><label for="ee-i">Giờ vào</label><input class="input" type="time" id="ee-i" value="${esc(x.in ? x.in.slice(11, 16) : '')}"></div>
+    <div class="field" style="flex:1"><label for="ee-o">Giờ ra</label><input class="input" type="time" id="ee-o" value="${esc(x.out ? x.out.slice(11, 16) : '')}"></div></div>
+    <div class="field"><label for="ee-n">Ghi chú</label><textarea class="textarea" id="ee-n" style="min-height:60px" placeholder="vd: quên check-out, đã xác nhận ra lúc 22:05">${esc(x.note || '')}</textarea></div>`,
+    '<button class="btn ghost" id="ee-no">Từ chối</button><button class="btn primary" id="ee-ok">Lưu & xác nhận</button>');
+  const go = async (ok, btn) => { busy(btn, true, 'Đang lưu…');
+    try { const i = $('#ee-i', m.el).value, o = $('#ee-o', m.el).value;
+      await save(ok, { empId: x.empId, key: x.key, in: i !== (x.in || '').slice(11, 16) ? i : undefined, out: o !== (x.out || '').slice(11, 16) ? o : undefined, note: $('#ee-n', m.el).value });
+      m.close(); toast(ok ? 'Đã xác nhận' : 'Đã từ chối'); }
+    catch(err) { toast(err.message, 'err'); busy(btn, false); } };
+  $('#ee-ok', m.el).onclick = e => go(true, e.currentTarget);
+  $('#ee-no', m.el).onclick = e => { if (!$('#ee-n', m.el).value.trim()) return toast('Nhập lý do từ chối vào ô ghi chú', 'err'); go(false, e.currentTarget); };
+}
 
 /* ---------- Cài đặt ---------- */
 VIEWS.caidat = async el => {
