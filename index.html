@@ -438,6 +438,7 @@ kbd{font:600 11px var(--fb);background:var(--surface-3);color:var(--text-2);bord
 .cal .c.out{opacity:0;pointer-events:none}
 .cal .c.we{background:transparent;border-style:dashed}
 .ev-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.ev-edit{width:34px;height:34px}
 .ev-card{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:8px;padding:18px 20px;background:var(--surface);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);transition:transform .15s,box-shadow .15s}
 .ev-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}
 .ev-name{font-family:var(--fd);font-size:17px;line-height:1.3}
@@ -881,6 +882,38 @@ const KO = {
 };
 const KO_WD = { 'Thứ hai':'월요일','Thứ ba':'화요일','Thứ tư':'수요일','Thứ năm':'목요일','Thứ sáu':'금요일','Thứ bảy':'토요일','Chủ nhật':'일요일','Hôm nay':'오늘','T2':'월','T3':'화','T4':'수','T5':'목','T6':'금','T7':'토','CN':'일' };
 Object.assign(KO, KO_WD);
+/* Chấm công event, giờ linh hoạt, đối chiếu đơn từ, đơn của nhân viên (11/2026) */
+Object.assign(KO, {
+  'Chấm công event':'이벤트 근태', 'Lịch ca & check-in/out khi đi event, sale':'이벤트·세일 근무표 및 출퇴근 체크', 'Check-in/out ca event':'이벤트 근무 출퇴근 체크',
+  'Đang diễn ra':'진행 중', 'Sắp diễn ra':'예정', 'Đã kết thúc':'종료', 'Đã ẩn':'숨김', 'Thêm sự kiện':'이벤트 추가', 'Sửa sự kiện':'이벤트 수정', 'Bạn là quản lý':'관리자',
+  'Bạn không có ca trong sự kiện này':'이 이벤트에 배정된 근무가 없습니다', 'Không có sự kiện nào':'이벤트가 없습니다', 'Chọn mục khác ở trên.':'위에서 다른 항목을 선택하세요.',
+  'Tên sự kiện (tiếng Việt)':'이벤트명 (베트남어)', 'Tên sự kiện (tiếng Hàn)':'이벤트명 (한국어)', 'Link Google Sheet lịch phân ca':'근무표 구글 시트 링크', 'Tên tab lịch chi tiết':'상세 근무표 탭 이름',
+  'Quản lý event (mã NV, cách nhau dấu phẩy)':'이벤트 관리자 (사번, 쉼표로 구분)', 'Ngày bắt đầu':'시작일', 'Ngày kết thúc':'종료일', 'Trạng thái':'상태',
+  'Tự động theo ngày':'날짜에 따라 자동', 'Luôn hiện là đang diễn ra':'항상 진행 중으로 표시', 'Đã kết thúc (khoá check-in mới)':'종료 (신규 체크인 잠금)', 'Ẩn với nhân viên':'직원에게 숨기기',
+  'Ghi chú (tiếng Việt)':'메모 (베트남어)', 'Ghi chú (tiếng Hàn)':'메모 (한국어)',
+  'Để trống ngày bắt đầu / kết thúc thì lấy theo ngày đầu và cuối trong file lịch. Tab lịch cần có dòng tiêu đề "Mã NV", các dòng "Ngày", "Loại ca", "Bắt đầu", "Kết thúc" và mã vai trò trong ô (CA, SC, BH, KHO, SU, DH).':'시작일/종료일을 비워 두면 근무표의 첫날과 마지막 날을 사용합니다. 근무표 탭에는 "Mã NV" 제목 행과 "Ngày", "Loại ca", "Bắt đầu", "Kết thúc" 행, 그리고 역할 코드(CA, SC, BH, KHO, SU, DH)가 있어야 합니다.',
+  'Đã lưu sự kiện':'이벤트를 저장했습니다', 'Đã thêm sự kiện':'이벤트를 추가했습니다', 'Lịch của tôi':'내 근무', 'Quản lý chấm công':'근태 관리',
+  'Bạn không có ca nào trong sự kiện này':'이 이벤트에 배정된 근무가 없습니다', 'Nếu bạn có tham gia, báo quản lý event thêm tên bạn vào lịch.':'참여한다면 이벤트 관리자에게 근무표에 이름을 추가해 달라고 요청하세요.',
+  'Sáng':'오전', 'Chiều':'오후', 'Setup':'세팅', 'Dọn hàng':'철수', 'Bán hàng':'판매', 'Thu ngân':'계산원', 'Hỗ trợ thu ngân':'계산 보조', 'Hỗ trợ kho':'창고 지원', 'Set up':'세팅',
+  'Đã xác nhận':'확인 완료', 'Từ chối':'반려', 'Chờ quản lý xác nhận':'관리자 확인 대기', 'Chờ xác nhận':'확인 대기', 'Đối chiếu với lịch':'근무표 대조', 'Đối chiếu':'대조', 'Vai trò':'역할', 'Xác nhận':'확인',
+  'Không check-in':'체크인 없음', 'Chưa check-in':'미체크인', 'Chưa đến ca':'근무 전', 'Thiếu check-out':'체크아웃 누락', 'Đúng giờ':'정시',
+  'Ca đã kết thúc':'근무 종료됨', 'Đã quá giờ check-out – báo quản lý event sửa giờ':'체크아웃 시간이 지났습니다 – 이벤트 관리자에게 시간 수정을 요청하세요',
+  'Tất cả ca':'전체 근무', 'Đồng bộ sheet':'시트 동기화', 'Đọc lại lịch và ghi tab 5. Chấm công trong file lịch':'근무표를 다시 읽고 근무표 파일의 "5. Chấm công" 탭에 기록', 'Không có ai trong ca này':'이 근무에 배정된 사람이 없습니다',
+  'Xác nhận chấm công':'근태 확인', '(không bắt buộc)':'(선택)', 'vd: đi trễ 15 phút do kẹt xe, đã báo trước':'예: 교통 체증으로 15분 지각, 사전 보고함',
+  'Xác nhận / sửa giờ':'확인 / 시간 수정', 'Giờ vào':'출근 시간', 'Giờ ra':'퇴근 시간', 'Lưu & xác nhận':'저장 후 확인', 'Nhập lý do từ chối vào ô ghi chú':'메모란에 반려 사유를 입력하세요', 'Đã từ chối':'반려했습니다',
+  'vd: quên check-out, đã xác nhận ra lúc 22:05':'예: 체크아웃 누락, 22:05 퇴근 확인함', 'Quay lại':'뒤로',
+  'Bạn không có ca này trong lịch sự kiện':'이벤트 근무표에 해당 근무가 없습니다', 'Ca đã kết thúc, không check-in được nữa. Báo quản lý event để được sửa giờ.':'근무가 종료되어 체크인할 수 없습니다. 이벤트 관리자에게 시간 수정을 요청하세요.',
+  'Bạn chưa check-in ca này':'아직 이 근무에 체크인하지 않았습니다', 'Đã quá thời gian check-out của ca. Báo quản lý event để được sửa giờ.':'체크아웃 가능 시간이 지났습니다. 이벤트 관리자에게 시간 수정을 요청하세요.',
+  'Chỉ quản lý event mới xác nhận được':'이벤트 관리자만 확인할 수 있습니다', 'Chỉ quản lý event mới làm được':'이벤트 관리자만 할 수 있습니다', 'Hệ thống đang bận, thử lại sau vài giây':'시스템이 바쁩니다. 잠시 후 다시 시도하세요',
+  'Đang xem với tư cách người khác – không chấm công được':'다른 사람으로 보는 중에는 체크할 수 없습니다', 'Không tìm thấy sự kiện':'이벤트를 찾을 수 없습니다', 'Nhập tên sự kiện':'이벤트명을 입력하세요',
+  'Dán link Google Sheet lịch phân ca':'근무표 구글 시트 링크를 붙여 넣으세요', 'Link Google Sheet không hợp lệ':'구글 시트 링크가 올바르지 않습니다', 'Ngày kết thúc phải sau ngày bắt đầu':'종료일은 시작일 이후여야 합니다',
+  'Chưa chọn ca nào':'선택한 근무가 없습니다', 'Làm event':'이벤트 근무', 'Event':'이벤트',
+  'Linh hoạt':'유연근무', 'Đã làm đơn':'신청 완료', 'Chưa làm đơn':'미신청', 'Nghỉ phép':'휴가', 'Nghỉ buổi sáng':'오전 반차', 'Nghỉ buổi chiều':'오후 반차', 'Nghỉ cả ngày':'종일 휴가',
+  'Off sáng':'오전 반차', 'Off chiều':'오후 반차', 'Nghỉ':'휴가', 'Trễ':'지각', 'Sớm':'조퇴', 'Vắng':'결근', 'Chưa đơn':'미신청', '✓ Đơn':'✓ 신청', 'Tháng này:':'이번 달:', 'Đã đủ đơn':'신청 완료',
+  'Làm đơn':'신청하기', 'Đồng bộ ngay':'지금 동기화', 'Đang đồng bộ…':'동기화 중…', '★ Tất cả nhân viên':'★ 전체 직원', 'Tất cả tháng':'전체 월',
+  'Chưa có thông tin hợp đồng. Nếu bạn đã ký hợp đồng, báo bộ phận nhân sự cập nhật trong Danh Sách NV.':'계약 정보가 없습니다. 계약을 체결했다면 인사팀에 직원 명단 업데이트를 요청하세요.',
+  'Hợp đồng lao động':'근로계약', '(tự động mỗi nửa ngày)':'(반나절마다 자동)', 'Đơn từ nhân sự đồng bộ':'인사 신청서 동기화', 'chưa có':'없음'
+});
 const KO_RX = [
   [/^(\d+) người nhận(.*)$/, '수신자 $1명$2'], [/^\((\d+) lần gửi\)$/, '($1회 발송)'],
   [/^Còn (\d+) ngày$/, '$1일 남음'], [/^Đã hết hạn (\d+) ngày$/, '만료 $1일 경과'], [/^(\d+) nhân sự sắp hết hạn hợp đồng.*$/, '계약 만료 임박 직원 $1명'], [/^(\d+) đơn$/, '$1건'],
@@ -914,6 +947,21 @@ const KO_RX = [
   [/^Nhập sai (\d+) lần\. Tài khoản bị khóa (\d+) phút\.$/, '$1회 잘못 입력하여 $2분간 잠겼습니다.'], [/^Tài khoản đang tạm khóa vì nhập sai nhiều lần\. Thử lại sau (.+)$/, '여러 번 잘못 입력하여 잠겼습니다. $1 이후 다시 시도하세요'],
   [/^Trùng lịch: "(.+)"(.*)$/, '일정 중복: "$1"$2'], [/^Không tìm thấy (.+)$/, '찾을 수 없습니다: $1']
 ];
+KO_RX.push(
+  [/^Bạn có (\d+) ca$/, '내 근무 $1개'], [/^Quản lý event: (.*) · lịch đọc lúc (.+)$/, '이벤트 관리자: $1 · 근무표 확인 $2'],
+  [/^(\d+) ca đã đăng ký · (\d+) ca đã được xác nhận\..*$/, '등록된 근무 $1개 · 확인 완료 $2개. 체크인은 근무 시작 1시간 전부터 가능하며, 이벤트 관리자가 확인해야 근무 시간으로 인정됩니다.'],
+  [/^(Sáng|Chiều|Setup|Dọn hàng) (\d{2}:\d{2}–\d{2}:\d{2})$/, (m, a, b) => KO[a] + ' ' + b], [/^Đi trễ (\d+) phút$/, '$1분 지각'], [/^Về sớm (\d+) phút$/, '$1분 조퇴'],
+  [/^Mở check-in lúc (.+)$/, '체크인 가능 시각: $1'], [/^(\d+)\/(\d+) đã check-in$/, '$1/$2명 체크인'], [/^(\d+) ca đang chờ xác nhận$/, '확인 대기 $1건'],
+  [/^Đã ghi (\d+) ca vào tab "5\. Chấm công"$/, '"5. Chấm công" 탭에 근무 $1건 기록'], [/^Đã xác nhận (.+)$/, '$1 확인 완료'], [/^Ghi chú quản lý: (.+)$/, '관리자 메모: $1'],
+  [/^Chỉ check-in được từ 60 phút trước giờ bắt đầu ca \((.+)\)$/, '근무 시작($1) 60분 전부터 체크인할 수 있습니다'], [/^Bạn đã check-in ca này lúc (.+)$/, '이미 $1에 체크인했습니다'],
+  [/^Bạn đã check-out lúc (.+)$/, '이미 $1에 체크아웃했습니다'], [/^(.+) chưa check-in – nhập giờ vào trước khi xác nhận$/, '$1님이 체크인하지 않았습니다 – 확인 전에 출근 시간을 입력하세요'],
+  [/^Không tìm thấy mã NV: (.+)$/, '사번을 찾을 수 없습니다: $1'], [/^Ngày không hợp lệ: (.+)$/, '날짜가 올바르지 않습니다: $1'], [/^File lịch không có tab "(.+)"$/, '근무표 파일에 "$1" 탭이 없습니다'],
+  [/^Check-out ca (.+) (.+) lúc (.+)\?$/, '$1 근무 체크아웃 ($3)?'],
+  [/^Đi trễ (\d+)$/, '지각 $1'], [/^Về sớm (\d+)$/, '조퇴 $1'], [/^Quên chấm công (\d+)$/, '출퇴근 누락 $1'], [/^(\d+) ngày chưa làm đơn$/, '미신청 $1일'],
+  [/^· đơn từ cập nhật (.+)$/, '· 신청서 업데이트 $1'], [/^Chưa làm đơn (.+)$/, (m, a) => '미신청: ' + a.split(', ').map(x => ({ 'đi trễ':'지각', 'về sớm':'조퇴', 'quên check-in':'출근 누락', 'quên check-out':'퇴근 누락', 'nghỉ':'결근' })[x] || x).join(', ')],
+  [/^Đơn nghỉ: (.+)$/, '휴가 신청: $1'], [/^(\d+) đơn · (\d+) nhân viên$/, '$1건 · 직원 $2명'], [/^Đã đồng bộ (\d+) đơn$/, '신청서 $1건 동기화됨'],
+  [/^Giờ linh hoạt \((\d+) người\): khung$/, '유연근무 ($1명): 시간대']
+);
 function trStr(str){
   const t = String(str).trim(); if (!t || !/[À-ỹa-zA-Z]/.test(t)) return str;
   if (Object.prototype.hasOwnProperty.call(KO, t)) return String(str).replace(t, KO[t]);
@@ -2004,7 +2052,7 @@ VIEWS.chamcong = async el => {
       const pills = b.flags.filter(f => f !== 'nodt' && f !== 'ok' && f !== 'off' && f !== 'event').map(f => `<span class="pill ${f === 'absent' ? '' : 'warn'}">${esc(({ late:'Đi trễ', early:'Về sớm', noin:'Quên check-in', noout:'Quên check-out', absent:'Không có dữ liệu' })[f])}</span>`).join(' ');
       const ok = b.flags.includes('ok') ? '<span class="pill ok">Đúng giờ</span>' : '';
       const btn = mine && b.miss.length ? ` <button class="btn sm soft" data-pre="${PRE[b.miss[0]]}">${ic('file')}Làm đơn</button>` : '';
-      const evh = (b.ev || []).map(e => `<div class="att-ev">${ic('mapPin')}<div><b>${esc(e.ev)}</b> · ${esc(e.type)} ${esc(e.start)}–${esc(e.end)} · ${esc(e.role)}<br>Check-in ${esc(e.in || '—')} · Check-out ${esc(e.out || '—')} · <span class="pill ${e.status === 'Đã xác nhận' ? 'ok' : e.status === 'Từ chối' ? 'bad' : 'warn'}">${esc(e.status || 'Chờ xác nhận')}</span></div></div>`).join('');
+      const evh = (b.ev || []).map(e => `<div class="att-ev">${ic('mapPin')}<div><b data-noi18n>${esc(LANG === 'ko' && e.evKo ? e.evKo : e.ev)}</b> · ${esc(e.type)} ${esc(e.start)}–${esc(e.end)} · ${esc(e.role)}<br>Check-in ${esc(e.in || '—')} · Check-out ${esc(e.out || '—')} · <span class="pill ${e.status === 'Đã xác nhận' ? 'ok' : e.status === 'Từ chối' ? 'bad' : 'warn'}">${esc(e.status || 'Chờ xác nhận')}</span></div></div>`).join('');
       return `<div style="margin:2px 0 8px">${evh}${ok}${pills}${b.offTag ? ` <span class="pill brand">${esc(b.offTag)}</span>` : ''}${b.slot && b.slot !== 'Linh hoạt' ? ` <span class="pill">${ic('clock')}${esc(b.slot)}</span>` : ''}${dtNote(b)}${btn}</div>`; };
     const detail = x => `<div class="day-detail"><div class="row" style="margin-bottom:6px"><b style="font-family:var(--fd);font-size:16px">${WDL[parseISO(x.date).getDay()]}, ${vnDate(x.date)}</b><span class="spacer"></span><span class="pill">${x.scans.length} lượt quét</span></div>${statusHtml(x.date, empId === S.user.id)}${x.edit ? `<div style="margin-bottom:6px">${editNote(x.edit)}<div class="small">Giờ vào/ra đã sửa: <b>${esc((x.edit.in || '—').slice(0, 5))}</b> → <b>${esc((x.edit.out || '—').slice(0, 5))}</b></div></div>` : ''}
       ${x.scans.map(s => `<div class="scan"><span class="sd ${s.ok ? '' : 'bad'}"></span><span class="mono">${s.time.slice(0,5)}</span><span>${esc(s.type)}</span>${s.ok ? '' : '<span class="pill bad">Thất bại</span>'}${s.lock ? `<span class="spacer"></span><span class="pill">${esc(s.lock)}</span>` : ''}</div>`).join('')}</div>`;
@@ -2657,28 +2705,45 @@ VIEWS.event = async el => {
     el.innerHTML = `<div class="stack">
       <div class="row"><div class="seg" id="ev-f">${[['active','Đang diễn ra'],['upcoming','Sắp diễn ra'],['ended','Đã kết thúc'],['all','Tất cả']].map(([k, l]) => `<button data-f="${k}" class="${filt === k ? 'on' : ''}">${l} <span class="small muted">${cnt(k)}</span></button>`).join('')}</div>
         <span class="spacer"></span>${d.canAdd ? `<button class="btn soft" id="ev-add">${ic('plus')}Thêm sự kiện</button>` : ''}</div>
-      ${list.length ? `<div class="ev-grid">${list.map(x => `<button class="card ev-card" data-id="${esc(x.id)}">
-          <div class="row" style="gap:8px"><span class="pill ${EV_ST[x.state][1]}">${EV_ST[x.state][0]}</span>${x.isMgr ? '<span class="pill brand">Bạn là quản lý</span>' : ''}</div>
-          <b class="ev-name">${esc(x.name)}</b>
-          <div class="small muted">${x.from ? `${vnDate(x.from)} – ${vnDate(x.to)}` : ''}${x.note ? ' · ' + esc(x.note) : ''}</div>
-          <div class="ev-foot">${x.err ? `<span class="pill bad">${esc(x.err)}</span>` : x.mine ? `<span class="pill ok">${ic('calendar')}Bạn có ${x.mine} ca</span>` : '<span class="small muted">Bạn không có ca trong sự kiện này</span>'}<span class="spacer"></span>${ic('chevR')}</div></button>`).join('')}</div>`
+      ${list.length ? `<div class="ev-grid">${list.map(x => `<div class="card ev-card" role="button" tabindex="0" data-id="${esc(x.id)}">
+          <div class="row" style="gap:8px"><span class="pill ${EV_ST[x.state][1]}">${EV_ST[x.state][0]}</span>${x.isMgr ? '<span class="pill brand">Bạn là quản lý</span>' : ''}<span class="spacer"></span>${x.edit ? `<button class="icon-btn ev-edit" data-ed="${esc(x.id)}" title="Sửa sự kiện" aria-label="Sửa sự kiện">${ic('edit')}</button>` : ''}</div>
+          <b class="ev-name" data-noi18n>${esc(evName(x))}</b>
+          <div class="small muted">${x.from ? `${vnDate(x.from)} – ${vnDate(x.to)}` : ''}${evNote(x) ? ` · <span data-noi18n>${esc(evNote(x))}</span>` : ''}</div>
+          <div class="ev-foot">${x.err ? `<span class="pill bad">${esc(x.err)}</span>` : x.mine ? `<span class="pill ok">${ic('calendar')}Bạn có ${x.mine} ca</span>` : '<span class="small muted">Bạn không có ca trong sự kiện này</span>'}<span class="spacer"></span>${ic('chevR')}</div></div>`).join('')}</div>`
         : `<div class="card"><div class="empty"><div class="ico">${ic('calendar')}</div><b>Không có sự kiện nào</b>Chọn mục khác ở trên.</div></div>`}</div>`;
     $('#ev-f', el).onclick = e => { const b = e.target.closest('[data-f]'); if (!b) return; filt = b.dataset.f; draw(); };
-    el.querySelectorAll('.ev-card').forEach(c => c.onclick = () => evOpen(el, c.dataset.id));
-    const add = $('#ev-add', el); if (add) add.onclick = () => evAddModal(nd => { d = nd; draw(); });
+    el.querySelectorAll('.ev-card').forEach(c => { c.onclick = e => { const ed = e.target.closest('[data-ed]'); if (ed) { e.stopPropagation(); return evFormModal(d.list.find(x => x.id === ed.dataset.ed), nd => { d = nd; draw(); }); } evOpen(el, c.dataset.id); };
+      c.onkeydown = e => { if (e.key === 'Enter') evOpen(el, c.dataset.id); }; });
+    const add = $('#ev-add', el); if (add) add.onclick = () => evFormModal(null, nd => { d = nd; draw(); });
   };
   draw();
 };
-function evAddModal(done){
-  const m = modal('Thêm sự kiện', `<div class="field"><label for="ea-n">Tên sự kiện <span class="req">*</span></label><input class="input" id="ea-n" placeholder="vd: 26NOV MEGA SALES - REX HOTEL"></div>
-    <div class="field"><label for="ea-u">Link Google Sheet lịch phân ca <span class="req">*</span></label><input class="input" id="ea-u" placeholder="https://docs.google.com/spreadsheets/d/…"></div>
-    <div class="field"><label for="ea-t">Tên tab lịch chi tiết</label><input class="input" id="ea-t" value="3. Details"></div>
-    <div class="field"><label for="ea-m">Mã NV quản lý event (cách nhau dấu phẩy)</label><input class="input" id="ea-m" placeholder="vd: IBVN000xx"></div>
-    <span class="small muted">Tab lịch cần có dòng tiêu đề "Mã NV", các dòng "Ngày", "Loại ca", "Bắt đầu", "Kết thúc" và mã vai trò trong ô (CA, SC, BH, KHO, SU, DH). Tài khoản chạy intranet phải có quyền sửa file này.</span>`,
-    '<button class="btn ghost" data-close>Huỷ</button><button class="btn primary" id="ea-s">Lưu</button>');
-  $('#ea-s', m.el).onclick = async ev => { busy(ev.currentTarget, true, 'Đang đọc lịch…');
-    try { const d = await call('ev.add', { name: $('#ea-n', m.el).value, url: $('#ea-u', m.el).value, tab: $('#ea-t', m.el).value, managers: $('#ea-m', m.el).value }); m.close(); toast('Đã thêm sự kiện'); done(d); }
-    catch(err) { toast(err.message, 'err'); busy(ev.currentTarget, false); } };
+const evName = x => LANG === 'ko' && x.nameKo ? x.nameKo : x.name;
+const evNote = x => LANG === 'ko' && x.noteKo ? x.noteKo : x.note;
+function evFormModal(ev, done){
+  const E = ev ? (ev.edit || {}) : { tab: '3. Details' }, v = k => esc(E[k] || '');
+  const st = E.state || '';
+  const m = modal(ev ? 'Sửa sự kiện' : 'Thêm sự kiện', `
+    <div class="form-grid">
+      <div class="field"><label for="ea-n">Tên sự kiện (tiếng Việt) <span class="req">*</span></label><input class="input" id="ea-n" value="${esc(ev ? ev.name : '')}" placeholder="vd: 26NOV MEGA SALES - REX HOTEL"></div>
+      <div class="field"><label for="ea-k">Tên sự kiện (tiếng Hàn)</label><input class="input" id="ea-k" value="${esc(ev ? ev.nameKo || '' : '')}" placeholder="vd: 26NOV 메가 세일 - 렉스 호텔"></div>
+      <div class="field" style="grid-column:1/-1"><label for="ea-u">Link Google Sheet lịch phân ca ${ev ? '' : '<span class="req">*</span>'}</label><input class="input" id="ea-u" value="${E.sheetId ? 'https://docs.google.com/spreadsheets/d/' + v('sheetId') : ''}" placeholder="https://docs.google.com/spreadsheets/d/…"></div>
+      <div class="field"><label for="ea-t">Tên tab lịch chi tiết</label><input class="input" id="ea-t" value="${v('tab') || '3. Details'}"></div>
+      <div class="field"><label for="ea-m">Quản lý event (mã NV, cách nhau dấu phẩy)</label><input class="input" id="ea-m" value="${v('managers')}" placeholder="vd: IBVN000xx, IBVN000yy"></div>
+      <div class="field"><label for="ea-s">Ngày bắt đầu</label><input class="input" type="date" id="ea-s" value="${v('start')}"></div>
+      <div class="field"><label for="ea-e">Ngày kết thúc</label><input class="input" type="date" id="ea-e" value="${v('end')}"></div>
+      <div class="field" style="grid-column:1/-1"><label for="ea-st">Trạng thái</label><select class="select" id="ea-st">
+        ${[['', 'Tự động theo ngày'], ['Đang diễn ra', 'Luôn hiện là đang diễn ra'], ['Đã kết thúc', 'Đã kết thúc (khoá check-in mới)'], ['Ẩn', 'Ẩn với nhân viên']].map(([k, l]) => `<option value="${k}" ${st === k ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+      <div class="field"><label for="ea-no">Ghi chú (tiếng Việt)</label><input class="input" id="ea-no" value="${v('note')}" placeholder="vd: Private sale tại Rex Hotel"></div>
+      <div class="field"><label for="ea-nk">Ghi chú (tiếng Hàn)</label><input class="input" id="ea-nk" value="${esc(ev ? ev.noteKo || '' : '')}" placeholder="vd: 렉스 호텔 프라이빗 세일"></div>
+    </div>
+    <span class="small muted">Để trống ngày bắt đầu / kết thúc thì lấy theo ngày đầu và cuối trong file lịch. Tab lịch cần có dòng tiêu đề "Mã NV", các dòng "Ngày", "Loại ca", "Bắt đầu", "Kết thúc" và mã vai trò trong ô (CA, SC, BH, KHO, SU, DH).</span>`,
+    '<button class="btn ghost" data-close>Huỷ</button><button class="btn primary" id="ea-save">Lưu</button>');
+  $('#ea-save', m.el).onclick = async e => { busy(e.currentTarget, true, 'Đang lưu…');
+    const f = { name: $('#ea-n', m.el).value, nameKo: $('#ea-k', m.el).value, url: $('#ea-u', m.el).value, tab: $('#ea-t', m.el).value, managers: $('#ea-m', m.el).value,
+      start: $('#ea-s', m.el).value, end: $('#ea-e', m.el).value, state: $('#ea-st', m.el).value, note: $('#ea-no', m.el).value, noteKo: $('#ea-nk', m.el).value };
+    try { const d = await call(ev ? 'ev.update' : 'ev.add', ev ? { id: ev.id, ...f } : f); m.close(); toast(ev ? 'Đã lưu sự kiện' : 'Đã thêm sự kiện'); done(d); }
+    catch(err) { toast(err.message, 'err'); busy(e.currentTarget, false); } };
 }
 async function evOpen(el, id, keepTab){
   el.innerHTML = skel(4, 80);
@@ -2693,7 +2758,7 @@ async function evOpen(el, id, keepTab){
     el.innerHTML = `<div class="stack">
       <div class="card"><div class="card-b row" style="padding-top:18px;gap:12px">
         <button class="icon-btn" id="ev-back" aria-label="Quay lại">${ic('chevL')}</button>
-        <div style="min-width:0;flex:1"><b style="font-family:var(--fd);font-size:18px">${esc(e.name)}</b>
+        <div style="min-width:0;flex:1"><b style="font-family:var(--fd);font-size:18px" data-noi18n>${esc(evName(e))}</b>
           <div class="small muted">Quản lý event: ${esc(e.managers.join(', ') || '—')} · lịch đọc lúc ${esc(String(D.schedAt).slice(11, 16))}</div></div>
         <span class="pill ${EV_ST[e.state][1]}">${EV_ST[e.state][0]}</span></div></div>
       ${D.isMgr ? `<div class="seg" id="ev-tab"><button data-t="mine" class="${tab === 'mine' ? 'on' : ''}">${ic('user')}Lịch của tôi</button><button data-t="mgr" class="${tab === 'mgr' ? 'on' : ''}">${ic('users')}Quản lý chấm công</button></div>` : ''}
@@ -2718,7 +2783,7 @@ async function evOpen(el, id, keepTab){
             ${x.in && !x.out && !x.canOut ? `<span class="small muted">Đã quá giờ check-out – báo quản lý event sửa giờ</span>` : ''}</div>` : ''}
         </div></div>`; }).join('')}</div>`;
     box.querySelectorAll('.ev-btn').forEach(b => b.onclick = () => { const x = L[+b.dataset.i];
-      if (b.dataset.a === 'out' && !confirm(`Check-out ca ${x.type} ${evDay(x.date)} lúc ${new Date().toTimeString().slice(0, 5)}?`)) return;
+      if (b.dataset.a === 'out' && !confirm(tr(`Check-out ca ${x.type} ${evDay(x.date)} lúc ${new Date().toTimeString().slice(0, 5)}?`))) return;
       act(() => call('ev.check', { id, key: x.key, type: b.dataset.a }), b); });
   };
   const drawMgr = box => {
