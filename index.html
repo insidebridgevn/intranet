@@ -439,6 +439,7 @@ kbd{font:600 11px var(--fb);background:var(--surface-3);color:var(--text-2);bord
 .cal .c.we{background:transparent;border-style:dashed}
 .ev-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
 .ev-edit{width:34px;height:34px}
+.ev-tbl td,.ev-tbl th{white-space:nowrap}.ev-tbl td:nth-last-child(2){white-space:normal;min-width:150px}
 .ev-card{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:8px;padding:18px 20px;background:var(--surface);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);transition:transform .15s,box-shadow .15s}
 .ev-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}
 .ev-name{font-family:var(--fd);font-size:17px;line-height:1.3}
@@ -907,7 +908,7 @@ Object.assign(KO, {
   'Chỉ quản lý event mới xác nhận được':'이벤트 관리자만 확인할 수 있습니다', 'Chỉ quản lý event mới làm được':'이벤트 관리자만 할 수 있습니다', 'Hệ thống đang bận, thử lại sau vài giây':'시스템이 바쁩니다. 잠시 후 다시 시도하세요',
   'Đang xem với tư cách người khác – không chấm công được':'다른 사람으로 보는 중에는 체크할 수 없습니다', 'Không tìm thấy sự kiện':'이벤트를 찾을 수 없습니다', 'Nhập tên sự kiện':'이벤트명을 입력하세요',
   'Dán link Google Sheet lịch phân ca':'근무표 구글 시트 링크를 붙여 넣으세요', 'Link Google Sheet không hợp lệ':'구글 시트 링크가 올바르지 않습니다', 'Ngày kết thúc phải sau ngày bắt đầu':'종료일은 시작일 이후여야 합니다',
-  'Chưa chọn ca nào':'선택한 근무가 없습니다', 'Bạn được xem chấm công':'근태 열람 가능', 'Chấm công tất cả':'전체 근태', 'Chỉ xem':'보기 전용', 'Làm event':'이벤트 근무', 'Event':'이벤트',
+  'Chưa chọn ca nào':'선택한 근무가 없습니다', 'Bạn được xem chấm công':'근태 열람 가능', 'Bộ phận / chức vụ':'부서 / 직책', 'Chấm công tất cả':'전체 근태', 'Chỉ xem':'보기 전용', 'Làm event':'이벤트 근무', 'Event':'이벤트',
   'Linh hoạt':'유연근무', 'Đã làm đơn':'신청 완료', 'Chưa làm đơn':'미신청', 'Nghỉ phép':'휴가', 'Nghỉ buổi sáng':'오전 반차', 'Nghỉ buổi chiều':'오후 반차', 'Nghỉ cả ngày':'종일 휴가',
   'Off sáng':'오전 반차', 'Off chiều':'오후 반차', 'Nghỉ':'휴가', 'Trễ':'지각', 'Sớm':'조퇴', 'Vắng':'결근', 'Chưa đơn':'미신청', '✓ Đơn':'✓ 신청', 'Tháng này:':'이번 달:', 'Đã đủ đơn':'신청 완료',
   'Làm đơn':'신청하기', 'Đồng bộ ngay':'지금 동기화', 'Đang đồng bộ…':'동기화 중…', '★ Tất cả nhân viên':'★ 전체 직원', 'Tất cả tháng':'전체 월',
@@ -2795,8 +2796,8 @@ async function evOpen(el, id, keepTab){
         <select class="select" id="ev-pick" style="max-width:320px">${shifts.map(s => { const n = tot(s.key), c = n.filter(x => x.in).length; return `<option value="${esc(s.key)}" ${pick === s.key ? 'selected' : ''} data-noi18n>${esc([evDay(s.date), s.type + ' ' + s.start + '–' + s.end, c + '/' + n.length + ' đã check-in'].map(tr).join(' · '))}</option>`; }).join('')}<option value="*" ${pick === '*' ? 'selected' : ''}>Tất cả ca</option></select>
         <span class="small muted">${wait} ca đang chờ xác nhận</span><span class="spacer"></span>
         ${ro ? '<span class="pill info">Chỉ xem</span>' : `<button class="btn sm ghost" id="ev-sync" title="Đọc lại lịch và ghi tab 5. Chấm công trong file lịch">${ic('refresh')}Đồng bộ sheet</button>`}</div></div>
-      <div class="card">${rows.length ? `<div class="tbl-wrap"><table class="tbl"><thead><tr>${pick === '*' ? '<th>Ca</th>' : ''}<th>Nhân viên</th><th>Vai trò</th><th>Check-in</th><th>Check-out</th><th>Đối chiếu</th><th>Xác nhận</th><th></th></tr></thead><tbody>
-        ${rows.map((x, i) => `<tr>${pick === '*' ? `<td class="small">${esc(evDay(x.date))}<div class="muted">${esc(x.type)}</div></td>` : ''}<td><b>${esc(x.name)}</b><div class="small muted">${esc(x.empId)}</div></td><td class="small">${esc(x.roleName)}</td>
+      <div class="card">${rows.length ? `<div class="tbl-wrap"><table class="tbl ev-tbl"><thead><tr>${pick === '*' ? '<th>Ca</th>' : ''}<th>Nhân viên</th><th>Bộ phận / chức vụ</th><th>Vai trò</th><th>Check-in</th><th>Check-out</th><th>Đối chiếu</th><th>Xác nhận</th><th></th></tr></thead><tbody>
+        ${rows.map((x, i) => `<tr>${pick === '*' ? `<td class="small">${esc(evDay(x.date))}<div class="muted">${esc(x.type)}</div></td>` : ''}<td><b>${esc(x.name)}</b><div class="small muted">${esc(x.empId)}</div></td><td class="small">${esc(x.dept || '—')}<div class="muted">${esc(x.position || '')}</div></td><td class="small">${esc(x.roleName)}</td>
           <td class="tnum">${evHM(x.in)}</td><td class="tnum">${evHM(x.out)}</td><td class="small">${evChk(x)}</td>
           <td>${evStPill(x) || '<span class="small muted">—</span>'}${x.by ? `<div class="small muted">${esc(x.by)} · ${esc(String(x.at).slice(11, 16))}</div>` : ''}${x.note ? `<div class="small">${esc(x.note)}</div>` : ''}</td>
           <td style="white-space:nowrap">${ro ? '' : `${x.in && x.status !== 'Đã xác nhận' ? `<button class="btn sm primary" data-ok="${i}">Xác nhận</button> ` : ''}<button class="btn sm ghost" data-ed="${i}">${ic('edit')}Sửa</button>`}</td></tr>`).join('')}</tbody></table></div>`
