@@ -1597,13 +1597,14 @@ VIEWS.home = async el => {
   S.ann = mergeAnn(d.announcements);
   if (d.hrAlerts && d.hrAlerts.length) { const hb = document.createElement('section'); hb.className = 'b12 hr-alarm clk'; hb.dataset.go = 'nhansu';
     hb.innerHTML = `${ic('info')}<div><b>${d.hrAlerts.length} nhân sự sắp hết hạn hợp đồng</b><div class="small">${d.hrAlerts.slice(0, 5).map(x => esc(x.name) + ' (' + esc(dLeft(x.daysLeft)).toLowerCase() + ')').join(' · ')} — bấm để xem và lên lịch review</div></div>`;
-    const bento = $('.bento'); if (bento) bento.insertBefore(hb, bento.children[1] || null); }
+    const bento = el.querySelector('.bento');   // chỉ 1 thông báo: xoá cái cũ nếu trang chủ được vẽ lại
+    if (bento && el.isConnected) { bento.querySelectorAll('.hr-alarm').forEach(x => x.remove()); bento.insertBefore(hb, bento.children[1] || null); } }
   const seen = lastSeenAnn(), unread = unreadCount();
   const today = isoDate(now), todayEv = (d.events || []).filter(e => e.start.slice(0, 10) === today);
   const ls = d.lastScan;
   $('#h-line').textContent = `Hôm nay có ${todayEv.length} cuộc họp${todayEv.some(e => e.mine) ? ', trong đó có lịch của bạn' : ''}${unread ? ` và ${unread} thông báo bạn chưa đọc` : ''}. Chúc bạn một ngày làm việc hiệu quả!`;
   $('#h-scan').innerHTML = ls ? `${ic('door')}Quét gần nhất: ${ls.first}${ls.count > 1 ? ' → ' + ls.last : ''} · ${WD[parseISO(ls.date).getDay()]} ${vnDate(ls.date).slice(0, 5)}` : `${ic('door')}Chưa có dữ liệu chấm công`;
-  $('#h-week').innerHTML = d.week && d.week.length ? rangeChart(d.week) : `<div class="empty">Chưa có dữ liệu chấm công</div>`;
+  $('#h-week').innerHTML = d.week && d.week.length ? rangeChart(d.week.slice(-5)) : `<div class="empty">Chưa có dữ liệu chấm công</div>`;
   $('#h-stats').innerHTML = `
     <div class="stat hu-peach" data-go="dontu" data-dt="my" style="cursor:pointer" title="Xem đơn tháng này"><div class="ic">${ic('file')}</div><div><div class="k">Đơn từ tháng này</div><div class="v"><span data-count="${d.reqMonth}">0</span><small>đơn</small></div></div><span class="go">${ic('arrowR')}</span></div>
     <div class="stat hu-lilac" data-go="phonghop" style="cursor:pointer"><div class="ic">${ic('calendar')}</div><div><div class="k">Cuộc họp hôm nay</div><div class="v"><span data-count="${todayEv.length}">0</span><small>cuộc</small></div></div><span class="go">${ic('arrowR')}</span></div>
