@@ -667,6 +667,8 @@ kbd{font:600 11px var(--fb);background:var(--surface-3);color:var(--text-2);bord
 .tbl tr.hr-bad td{background:rgba(214,69,61,.07)}.tbl tr.hr-bad td:first-child{box-shadow:inset 3px 0 0 #D6453D}
 .ds-g{border-top:1px solid var(--line)}.ds-g summary{display:flex;align-items:center;gap:10px;padding:14px 20px;cursor:pointer;list-style:none}.ds-g summary::-webkit-details-marker{display:none}
 .ds-g summary svg{width:16px;height:16px;transition:transform .2s}.ds-g[open] summary svg{transform:rotate(90deg)}.ds-g .req-item{margin:0 12px 10px}
+.cal .c .tm.ev2{font-size:11.5px}.cal .c .tm.ev2 i{font-style:normal;font-size:9.5px;font-weight:700;color:var(--muted);min-width:30px}
+.att-two{display:flex;flex-direction:column;gap:2px;line-height:1.3}.att-two i{font-style:normal;font-size:10px;font-weight:700;color:var(--muted);display:inline-block;min-width:34px;margin-right:4px}
 .att-ev{display:flex;gap:8px;align-items:flex-start;margin:4px 0 8px;font-size:12.5px;line-height:1.5;padding:8px 10px;border-radius:12px;background:var(--info-bg)}.att-ev svg{width:14px;height:14px;flex:none;margin-top:3px;color:var(--info)}
 .att-dt{display:flex;gap:6px;align-items:flex-start;margin-top:4px;font-size:11.5px;line-height:1.35;font-weight:600}.att-dt.ok{color:var(--ok)}.att-dt.no{color:var(--bad)}.att-dt span{font-weight:500;opacity:.9}
 .att-ed{display:flex;gap:6px;align-items:flex-start;margin-top:4px;font-size:11.5px;color:var(--info);line-height:1.35}.att-ed svg{width:12px;height:12px;flex:none;margin-top:2px}
@@ -908,7 +910,7 @@ Object.assign(KO, {
   'Chỉ quản lý event mới xác nhận được':'이벤트 관리자만 확인할 수 있습니다', 'Chỉ quản lý event mới làm được':'이벤트 관리자만 할 수 있습니다', 'Hệ thống đang bận, thử lại sau vài giây':'시스템이 바쁩니다. 잠시 후 다시 시도하세요',
   'Đang xem với tư cách người khác – không chấm công được':'다른 사람으로 보는 중에는 체크할 수 없습니다', 'Không tìm thấy sự kiện':'이벤트를 찾을 수 없습니다', 'Nhập tên sự kiện':'이벤트명을 입력하세요',
   'Dán link Google Sheet lịch phân ca':'근무표 구글 시트 링크를 붙여 넣으세요', 'Link Google Sheet không hợp lệ':'구글 시트 링크가 올바르지 않습니다', 'Ngày kết thúc phải sau ngày bắt đầu':'종료일은 시작일 이후여야 합니다',
-  'Chưa chọn ca nào':'선택한 근무가 없습니다', 'Bạn được xem chấm công':'근태 열람 가능', 'Bộ phận / chức vụ':'부서 / 직책', 'Chấm công tất cả':'전체 근태', 'Chỉ xem':'보기 전용', 'Làm event':'이벤트 근무', 'Event':'이벤트',
+  'Chưa chọn ca nào':'선택한 근무가 없습니다', 'VP':'사무실', 'Event + VP':'이벤트 + 사무실', 'Bạn được xem chấm công':'근태 열람 가능', 'Bộ phận / chức vụ':'부서 / 직책', 'Chấm công tất cả':'전체 근태', 'Chỉ xem':'보기 전용', 'Làm event':'이벤트 근무', 'Event':'이벤트',
   'Linh hoạt':'유연근무', 'Đã làm đơn':'신청 완료', 'Chưa làm đơn':'미신청', 'Nghỉ phép':'휴가', 'Nghỉ buổi sáng':'오전 반차', 'Nghỉ buổi chiều':'오후 반차', 'Nghỉ cả ngày':'종일 휴가',
   'Off sáng':'오전 반차', 'Off chiều':'오후 반차', 'Nghỉ':'휴가', 'Trễ':'지각', 'Sớm':'조퇴', 'Vắng':'결근', 'Chưa đơn':'미신청', '✓ Đơn':'✓ 신청', 'Tháng này:':'이번 달:', 'Đã đủ đơn':'신청 완료',
   'Làm đơn':'신청하기', 'Đồng bộ ngay':'지금 동기화', 'Đang đồng bộ…':'동기화 중…', '★ Tất cả nhân viên':'★ 전체 직원', 'Tất cả tháng':'전체 월',
@@ -2085,7 +2087,7 @@ VIEWS.chamcong = async el => {
         const iso = `${y}-${pad(m)}-${pad(d)}`, dt = new Date(y, m - 1, d), x = map[iso], we = dt.getDay() === 0 || dt.getDay() === 6;
         const cls = [we ? 'we' : '', x && x.first ? (x.last ? 'ok' : 'single') : '', iso === todayIso ? 'today' : '', sel === iso ? 'sel' : ''].join(' ');
         cells += `<div class="c ${cls}" data-d="${iso}"><div class="n">${d}<i>${x ? x.scans.length + ' lượt' : ''}</i></div>
-          ${x && x.first ? `<div class="tm in">${ic('arrowR')}${x.first.time.slice(0,5)}</div>${x.last ? `<div class="tm outt">${ic('logout')}${x.last.time.slice(0,5)}</div>` : '<span class="pill warn" style="padding:1px 6px;font-size:10.5px">Thiếu ra</span>'}` : BL[iso] && BL[iso].evTimes ? `<div class="tm in">${ic('arrowR')}${BL[iso].ci.slice(0,5)}</div>${BL[iso].co ? `<div class="tm outt">${ic('logout')}${BL[iso].co.slice(0,5)}</div>` : ''}` : ''}${calFlags(iso)}</div>`;
+          ${BL[iso] && BL[iso].mixed ? `<div class="tm ev2"><i>Event</i>${BL[iso].evt.in.slice(0,5)}–${(BL[iso].evt.out || '—').slice(0,5)}</div><div class="tm ev2"><i>VP</i>${(BL[iso].of.in || '—').slice(0,5)}–${(BL[iso].of.out || '—').slice(0,5)}</div>` : x && x.first ? `<div class="tm in">${ic('arrowR')}${x.first.time.slice(0,5)}</div>${x.last ? `<div class="tm outt">${ic('logout')}${x.last.time.slice(0,5)}</div>` : '<span class="pill warn" style="padding:1px 6px;font-size:10.5px">Thiếu ra</span>'}` : BL[iso] && BL[iso].evTimes ? `<div class="tm in">${ic('arrowR')}${BL[iso].ci.slice(0,5)}</div>${BL[iso].co ? `<div class="tm outt">${ic('logout')}${BL[iso].co.slice(0,5)}</div>` : ''}` : ''}${calFlags(iso)}</div>`;
       }
       box.innerHTML = `<div class="cal" id="cc-cal">${cells}</div><div id="cc-det">${sel && (map[sel] || BL[sel]) ? detail(map[sel] || { date: sel, scans: [] }) : ''}</div>`;
       $('#cc-cal').onclick = e => { const c = e.target.closest('.c[data-d]'); if (!c || (!map[c.dataset.d] && !BL[c.dataset.d])) return; sel = sel === c.dataset.d ? '' : c.dataset.d; paint(); };
@@ -2242,7 +2244,7 @@ VIEWS.chamcong = async el => {
       $('#ca-lt').textContent = filt === 'all' ? `Chi tiết (${rows.length} dòng)` : `${(KINDS.find(k => k.k === filt) || {}).l} (${rows.length} lượt)`;
       $('#ca-list').innerHTML = rows.length ? `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Ngày</th><th>Nhân viên</th><th>Bộ phận</th><th>Giờ vào</th><th>Giờ ra</th><th>Tổng giờ</th><th>Trạng thái</th>${R.canEdit ? '<th></th>' : ''}</tr></thead><tbody>
         ${rows.slice(0, 1500).map(x => `<tr><td class="tnum">${WD[parseISO(x.day).getDay()]} ${vnDate(x.day).slice(0, 5)}</td><td><b>${esc(x.e.name)}</b><div class="small muted">${esc(x.e.id)}</div></td><td class="small">${esc(x.e.dept)}${x.slot ? `<div><span class="pill brand" style="font-size:10.5px;padding:1px 7px;margin-top:3px">${ic('clock')}${esc(x.slot)}</span></div>` : ''}</td>
-          <td class="tnum ${x.flags.includes('late') ? 'bad-t' : ''}">${x.ci ? x.ci.slice(0, 5) : '—'}</td><td class="tnum ${x.flags.includes('early') ? 'bad-t' : ''}">${x.co ? x.co.slice(0, 5) : '—'}</td><td class="tnum">${attHms(x.hrs) || '—'}</td>
+          <td class="tnum ${x.flags.includes('late') ? 'bad-t' : ''}">${x.mixed ? attTwo(x.evt.in, x.of.in) : x.ci ? x.ci.slice(0, 5) : '—'}</td><td class="tnum ${x.flags.includes('early') ? 'bad-t' : ''}">${x.mixed ? attTwo(x.evt.out, x.of.out) : x.co ? x.co.slice(0, 5) : '—'}</td><td class="tnum">${attHms(x.hrs) || '—'}</td>
           <td>${x.flags.filter(f => LAB[f] && !(f === 'off')).map(f => `<span class="pill ${LAB[f][1]}">${LAB[f][0]}</span>`).join(' ')}${x.offTag ? ` <span class="pill brand">${esc(x.offTag)}</span>` : ''}${dtNote(x)}${editNote(x.edit)}</td>${R.canEdit ? `<td><button class="btn sm ghost" data-ed="${esc(x.e.id)}|${x.day}">${ic('edit')}Sửa</button></td>` : ''}</tr>`).join('')}</tbody></table></div>`
         : `<div class="empty"><div class="ico">${ic('check')}</div><b>Không có dòng nào</b>Thử chọn mục khác hoặc ngày khác.</div>`;
     };
@@ -2293,6 +2295,8 @@ const dtLabel = d => (d.t === 'nghi' ? 'Đơn nghỉ: ' + [d.k, d.tru].filter(Bo
 const dtNote = x => !x.need ? '' : (x.dts.length ? `<div class="att-dt ok">${ic('check')}<div>Đã làm đơn <span>· ${x.dts.map(d => esc(dtLabel(d))).join(' / ')}</span></div></div>` : '')
   + (x.miss.length ? `<div class="att-dt no">${ic('info')}<div>${x.dts.length ? 'Chưa làm đơn ' + x.miss.map(f => DT_NM[f]).join(', ') : 'Chưa làm đơn'}</div></div>` : '');
 const dtText = x => !x.need ? '' : [x.dts.length ? 'Đã làm đơn: ' + x.dts.map(dtLabel).join(' / ') : '', x.miss.length ? 'Chưa làm đơn ' + x.miss.map(f => DT_NM[f]).join(', ') : ''].filter(Boolean).join(' | ');
+/** Ô giờ 2 dòng: trên là event, dưới là văn phòng */
+const attTwo = (ev, of) => `<div class="att-two"><span><i>Event</i>${esc(String(ev || '—').slice(0, 5))}</span><span><i>VP</i>${esc(String(of || '—').slice(0, 5))}</span></div>`;
 function attBuild(R){
   const wd = String(R.workDays).split(/[^0-9]+/).filter(Boolean).map(Number);
   const vao = attSecs(R.gioVao), ra = attSecs(R.gioRa), by = {};
@@ -2310,14 +2314,19 @@ function attBuild(R){
       const amOff = offK.some(k => /SANG/.test(k)), pmOff = offK.some(k => /CHIEU/.test(k)), fullOff = offs.length > 0 && !amOff && !pmOff;
       const evd = (R.ev || {})[key] || null;
       // ngày đi event, không quét cửa: lấy giờ check-in/out event đã được quản lý xác nhận
-      const evOk = !r && evd ? evd.filter(x => x.status === 'Đã xác nhận' && x.in) : [];
+      const evOk = evd ? evd.filter(x => x.status === 'Đã xác nhận' && x.in) : [];
+      const mixed = !!r && evOk.length > 0;   // nửa ca event, nửa ca văn phòng: giữ giờ của cả 2 nơi
       const evMin = xs => xs.reduce((m, x) => m == null || x < m ? x : m, null), evMax = xs => xs.reduce((m, x) => m == null || x > m ? x : m, null);
       const evIn = evOk.length ? evMin(evOk.map(x => x.in)) : '', evOut = evOk.length ? evMax(evOk.map(x => x.out).filter(Boolean)) || '' : '';
-      const ci = r ? r[2] : evIn ? evIn + ':00' : '', co = r ? r[3] : evOut ? evOut + ':00' : '', a = attSecs(ci), b0 = attSecs(co), flags = [];
-      const b = b0 != null && a != null && b0 < a ? b0 + 86400 : b0;   // ca event kết thúc sau nửa đêm
-      const sl = fx && !evOk.length ? attPickSlot(slots, a, som) : null;
-      let V = sl ? sl.i : vao, Ra = sl ? sl.o : ra;
-      if (evOk.length) { V = evMin(evOk.map(x => attSecs(x.start))); const e2 = evMax(evOk.map(x => { const s1 = attSecs(x.start), e1 = attSecs(x.end); return e1 <= s1 ? e1 + 86400 : e1; })); Ra = e2; }
+      const evA = evIn ? attSecs(evIn) : null, evB0 = evOut ? attSecs(evOut) : null, evB = evB0 != null && evA != null && evB0 < evA ? evB0 + 86400 : evB0;   // ca event qua nửa đêm
+      const evV = evOk.length ? evMin(evOk.map(x => attSecs(x.start))) : null, evR = evOk.length ? evMax(evOk.map(x => { const s1 = attSecs(x.start), e1 = attSecs(x.end); return e1 <= s1 ? e1 + 86400 : e1; })) : null;
+      const ofA = r ? attSecs(r[2]) : null, ofB = r ? attSecs(r[3]) : null;
+      const sl = fx ? attPickSlot(slots, ofA, som) : null;
+      let V = sl ? sl.i : vao, Ra = sl ? sl.o : ra, a = ofA, b = ofB;
+      if (evOk.length && (a == null || (evA != null && evA <= a))) { a = evA; V = evV; }   // vào: tính theo nơi đến trước
+      if (evOk.length && (b == null || (evB != null && evB >= b))) { b = evB; Ra = evR; }   // ra: tính theo nơi về sau
+      const hm = n => n == null ? '' : `${pad(Math.floor(n / 3600) % 24)}:${pad(Math.floor(n % 3600 / 60))}:00`;
+      const ci = a != null ? hm(a) : (r ? r[2] : ''), co = b != null ? hm(b) : (r ? r[3] : ''), flags = [];
       if (amOff) V = Math.max(V, chieu);   // nghỉ buổi sáng → vào trước giờ bắt đầu buổi chiều không tính trễ
       if (pmOff) Ra = Math.min(Ra, trua);  // nghỉ buổi chiều → ra từ giờ hết buổi sáng không tính về sớm
       const lastV = amOff ? V : fx ? slots[slots.length - 1].i : vao;
@@ -2336,7 +2345,9 @@ function attBuild(R){
       const need = !!R.dtAt && flags.some(f => DT_NEED[f]), m = need ? dtMatch(dl, flags, fullOff) : { dts: [], miss: [] }, dts = m.dts, miss = m.miss;
       if (miss.length) flags.push('nodt');
       const offTag = offs.length ? (amOff && pmOff ? 'Nghỉ cả ngày' : amOff ? 'Nghỉ buổi sáng' : pmOff ? 'Nghỉ buổi chiều' : 'Nghỉ phép') : '';
-      out.push({ day, e, ci, co, hrs: a != null && b != null && b > a ? b - a : null, flags, edit: r ? r[5] || null : null, slot: evOk.length ? 'Event' : fx ? (sl && ci ? sl.l : 'Linh hoạt') : '', need, dts, miss, offTag, ev: evd, evTimes: !!evOk.length });
+      const span = (x, y) => x != null && y != null && y > x ? y - x : 0;
+      const hrsAll = mixed ? (span(ofA, ofB) + span(evA, evB)) || null : (a != null && b != null && b > a ? b - a : null);
+      out.push({ day, e, ci, co, hrs: hrsAll, flags, mixed, of: r ? { in: r[2] || '', out: r[3] || '' } : null, evt: evOk.length ? { in: evIn, out: evOut } : null, edit: r ? r[5] || null : null, slot: evOk.length && !mixed ? 'Event' : mixed ? 'Event + VP' : fx ? (sl && ci ? sl.l : 'Linh hoạt') : '', need, dts, miss, offTag, ev: evd, evTimes: !!evOk.length });
     });
   });
   return out;
@@ -2348,7 +2359,7 @@ function exportAtt(R, LIST){
     ['Giờ vào = quét sớm nhất ở ' + R.khoaVao + '; giờ ra = quét trễ nhất ở ' + R.khoaRa + '; trễ sau ' + R.gioVao + ', về sớm trước ' + R.gioRa], [],
     ['Ngày', 'Mã nhân viên', 'Họ và tên', 'Chức vụ', 'Bộ phận', 'Khung giờ', 'Giờ vào làm', 'Giờ tan làm', 'Tổng giờ', 'Trạng thái', 'Đơn từ', 'Ghi chú sửa giờ']];
   LIST.slice().sort((a, b) => a.e.name === b.e.name ? (a.day < b.day ? -1 : 1) : (a.e.name < b.e.name ? -1 : 1))
-    .forEach(x => daySheet.push([x.day.replace(/-/g, ''), x.e.id, x.e.name, x.e.position, x.e.dept, x.slot || '', x.ci, x.co, attHms(x.hrs), x.flags.filter(f => nm[f]).map(f => nm[f]).join(', '), dtText(x), x.edit ? 'Sửa bởi ' + x.edit.by + ' lúc ' + x.edit.at + ' – ' + x.edit.reason : '']));
+    .forEach(x => daySheet.push([x.day.replace(/-/g, ''), x.e.id, x.e.name, x.e.position, x.e.dept, x.slot || '', x.mixed ? `Event ${String(x.evt.in || '—').slice(0, 5)} / VP ${String(x.of.in || '—').slice(0, 5)}` : x.ci, x.mixed ? `Event ${String(x.evt.out || '—').slice(0, 5)} / VP ${String(x.of.out || '—').slice(0, 5)}` : x.co, attHms(x.hrs), x.flags.filter(f => nm[f]).map(f => nm[f]).join(', '), dtText(x), x.edit ? 'Sửa bởi ' + x.edit.by + ' lúc ' + x.edit.at + ' – ' + x.edit.reason : '']));
   const empSheet = [['IBVN – Tình trạng chấm công theo nhân viên'], ['Kỳ', per], [],
     ['Mã nhân viên', 'Họ và tên', 'Chức vụ', 'Bộ phận', 'Số ngày có chấm công', 'Giờ vào trung bình', 'Giờ tan trung bình', 'Tổng giờ làm', 'Đi trễ (lần)', 'Về sớm (lần)', 'Quên check-in', 'Quên check-out', 'Không có dữ liệu (ngày)', 'Chưa làm đơn (lần)']];
   R.emps.forEach(e => {
