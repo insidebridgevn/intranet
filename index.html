@@ -2085,7 +2085,7 @@ VIEWS.chamcong = async el => {
         const iso = `${y}-${pad(m)}-${pad(d)}`, dt = new Date(y, m - 1, d), x = map[iso], we = dt.getDay() === 0 || dt.getDay() === 6;
         const cls = [we ? 'we' : '', x && x.first ? (x.last ? 'ok' : 'single') : '', iso === todayIso ? 'today' : '', sel === iso ? 'sel' : ''].join(' ');
         cells += `<div class="c ${cls}" data-d="${iso}"><div class="n">${d}<i>${x ? x.scans.length + ' lượt' : ''}</i></div>
-          ${x && x.first ? `<div class="tm in">${ic('arrowR')}${x.first.time.slice(0,5)}</div>${x.last ? `<div class="tm outt">${ic('logout')}${x.last.time.slice(0,5)}</div>` : '<span class="pill warn" style="padding:1px 6px;font-size:10.5px">Thiếu ra</span>'}` : ''}${calFlags(iso)}</div>`;
+          ${x && x.first ? `<div class="tm in">${ic('arrowR')}${x.first.time.slice(0,5)}</div>${x.last ? `<div class="tm outt">${ic('logout')}${x.last.time.slice(0,5)}</div>` : '<span class="pill warn" style="padding:1px 6px;font-size:10.5px">Thiếu ra</span>'}` : BL[iso] && BL[iso].evTimes ? `<div class="tm in">${ic('arrowR')}${BL[iso].ci.slice(0,5)}</div>${BL[iso].co ? `<div class="tm outt">${ic('logout')}${BL[iso].co.slice(0,5)}</div>` : ''}` : ''}${calFlags(iso)}</div>`;
       }
       box.innerHTML = `<div class="cal" id="cc-cal">${cells}</div><div id="cc-det">${sel && (map[sel] || BL[sel]) ? detail(map[sel] || { date: sel, scans: [] }) : ''}</div>`;
       $('#cc-cal').onclick = e => { const c = e.target.closest('.c[data-d]'); if (!c || (!map[c.dataset.d] && !BL[c.dataset.d])) return; sel = sel === c.dataset.d ? '' : c.dataset.d; paint(); };
@@ -2308,28 +2308,35 @@ function attBuild(R){
       const key = e.id + '|' + day, r = by[key], fx = flex.has(e.id), dl = R.dtAt ? (R.dt || {})[key] || [] : [];
       const offs = dl.filter(d => d.t === 'nghi'), offK = offs.map(d => dtNorm(d.k));
       const amOff = offK.some(k => /SANG/.test(k)), pmOff = offK.some(k => /CHIEU/.test(k)), fullOff = offs.length > 0 && !amOff && !pmOff;
-      const ci = r ? r[2] : '', co = r ? r[3] : '', a = attSecs(ci), b = attSecs(co), flags = [];
-      const sl = fx ? attPickSlot(slots, a, som) : null;
+      const evd = (R.ev || {})[key] || null;
+      // ngày đi event, không quét cửa: lấy giờ check-in/out event đã được quản lý xác nhận
+      const evOk = !r && evd ? evd.filter(x => x.status === 'Đã xác nhận' && x.in) : [];
+      const evMin = xs => xs.reduce((m, x) => m == null || x < m ? x : m, null), evMax = xs => xs.reduce((m, x) => m == null || x > m ? x : m, null);
+      const evIn = evOk.length ? evMin(evOk.map(x => x.in)) : '', evOut = evOk.length ? evMax(evOk.map(x => x.out).filter(Boolean)) || '' : '';
+      const ci = r ? r[2] : evIn ? evIn + ':00' : '', co = r ? r[3] : evOut ? evOut + ':00' : '', a = attSecs(ci), b0 = attSecs(co), flags = [];
+      const b = b0 != null && a != null && b0 < a ? b0 + 86400 : b0;   // ca event kết thúc sau nửa đêm
+      const sl = fx && !evOk.length ? attPickSlot(slots, a, som) : null;
       let V = sl ? sl.i : vao, Ra = sl ? sl.o : ra;
+      if (evOk.length) { V = evMin(evOk.map(x => attSecs(x.start))); const e2 = evMax(evOk.map(x => { const s1 = attSecs(x.start), e1 = attSecs(x.end); return e1 <= s1 ? e1 + 86400 : e1; })); Ra = e2; }
       if (amOff) V = Math.max(V, chieu);   // nghỉ buổi sáng → vào trước giờ bắt đầu buổi chiều không tính trễ
       if (pmOff) Ra = Math.min(Ra, trua);  // nghỉ buổi chiều → ra từ giờ hết buổi sáng không tính về sớm
       const lastV = amOff ? V : fx ? slots[slots.length - 1].i : vao;
       if (!r && (!work || (isToday && now < lastV))) return;
-      const evd = (R.ev || {})[key] || null;
       if (!r && fullOff) flags.push('off');
-      else if (!r && evd) flags.push('event');   // không quét cửa nhưng có chấm công event hôm đó
-      else if (!r) flags.push('absent');
+      else if (!r && evd && !evOk.length) flags.push('event');   // có chấm công event nhưng quản lý chưa xác nhận
+      else if (!r && !evOk.length) flags.push('absent');
       else {
+        if (evOk.length) flags.push('event');
         if (!ci) flags.push('noin');
         if (!co && !(isToday && now < Ra + 3600)) flags.push('noout');
         if (a != null && a > V) flags.push('late');
         if (b != null && b < Ra && !(isToday && now < Ra)) flags.push('early');   // hôm nay chưa tới giờ tan làm → chưa tính về sớm
-        if (!flags.length && (ci || co)) flags.push('ok');
+        if ((!flags.length || flags.join() === 'event') && (ci || co)) flags.push('ok');
       }
       const need = !!R.dtAt && flags.some(f => DT_NEED[f]), m = need ? dtMatch(dl, flags, fullOff) : { dts: [], miss: [] }, dts = m.dts, miss = m.miss;
       if (miss.length) flags.push('nodt');
       const offTag = offs.length ? (amOff && pmOff ? 'Nghỉ cả ngày' : amOff ? 'Nghỉ buổi sáng' : pmOff ? 'Nghỉ buổi chiều' : 'Nghỉ phép') : '';
-      out.push({ day, e, ci, co, hrs: a != null && b != null && b > a ? b - a : null, flags, edit: r ? r[5] || null : null, slot: fx ? (sl && ci ? sl.l : 'Linh hoạt') : '', need, dts, miss, offTag, ev: evd });
+      out.push({ day, e, ci, co, hrs: a != null && b != null && b > a ? b - a : null, flags, edit: r ? r[5] || null : null, slot: evOk.length ? 'Event' : fx ? (sl && ci ? sl.l : 'Linh hoạt') : '', need, dts, miss, offTag, ev: evd, evTimes: !!evOk.length });
     });
   });
   return out;
