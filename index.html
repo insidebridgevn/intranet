@@ -885,6 +885,7 @@ const KO = {
 };
 const KO_WD = { 'Thứ hai':'월요일','Thứ ba':'화요일','Thứ tư':'수요일','Thứ năm':'목요일','Thứ sáu':'금요일','Thứ bảy':'토요일','Chủ nhật':'일요일','Hôm nay':'오늘','T2':'월','T3':'화','T4':'수','T5':'목','T6':'금','T7':'토','CN':'일' };
 Object.assign(KO, KO_WD);
+KO['* Lưu ý: nếu chọn TRỪ OT, chỉ tính theo giờ chẵn hoặc 0.5 (30 phút).']='* 참고: OT 차감 선택 시 1시간 단위 또는 0.5시간(30분) 단위로만 계산됩니다.';
 /* Chấm công event, giờ linh hoạt, đối chiếu đơn từ, đơn của nhân viên (11/2026) */
 Object.assign(KO, {
   'Chấm công event':'이벤트 근태', 'Lịch ca & check-in/out khi đi event, sale':'이벤트·세일 근무표 및 출퇴근 체크', 'Check-in/out ca event':'이벤트 근무 출퇴근 체크',
@@ -2542,7 +2543,7 @@ const DT = {
     { k:'tong', l:'Tổng số ngày nghỉ', t:'text', ro:1 }, { k:'lydo', l:'Lý do xin nghỉ', t:'textarea', req:1, full:1 } ]},
   tre:{ label:'Đi trễ / Về sớm', icon:'clock', desc:'Báo đi trễ, về sớm', fields:[
     { k:'loai', l:'Loại', t:'chips', o:O.tre, req:1, full:1 }, { k:'ngay', l:'Ngày', t:'date', req:1 }, { k:'gio', l:'Giờ vào trễ / giờ về', t:'time', req:1 },
-    { k:'tru', l:'Hình thức trừ', t:'chips', o:O.tru, req:1, full:1 }, { k:'lydo', l:'Lý do', t:'textarea', req:1, full:1 } ]},
+    { k:'tru', l:'Hình thức trừ', t:'chips', o:O.tru, req:1, full:1, note:'* Lưu ý: nếu chọn TRỪ OT, chỉ tính theo giờ chẵn hoặc 0.5 (30 phút).' }, { k:'lydo', l:'Lý do', t:'textarea', req:1, full:1 } ]},
   ot:{ label:'Đăng ký OT', icon:'moonclock', desc:'OT bù giờ hoặc tính lương', fields:[
     { k:'loai', l:'Loại OT', t:'chips', o:O.ot, req:1, full:1 }, { k:'ngay', l:'Ngày OT', t:'date', req:1 }, { k:'tong', l:'Tổng số giờ', t:'text', ro:1 },
     { k:'tu', l:'Từ giờ', t:'time', req:1 }, { k:'den', l:'Đến giờ', t:'time', req:1 }, { k:'lydo', l:'Nội dung công việc / lý do', t:'textarea', req:1, full:1 } ]},
@@ -2582,7 +2583,7 @@ VIEWS.dontu = async el => {
       if (f.t === 'chips') inp = `<div class="chips" data-chips="${f.k}">${f.o.map((o, i) => `<button type="button" class="chip ${i === 0 ? 'on' : ''}" data-v="${esc(o)}">${esc(vi(o))}</button>`).join('')}</div>`;
       else if (f.t === 'textarea') inp = `<textarea class="textarea" data-k="${f.k}"></textarea>`;
       else inp = `<input class="input" data-k="${f.k}" type="${f.t === 'date' ? 'date' : f.t === 'time' ? 'time' : 'text'}" ${f.ro ? 'readonly' : ''} ${f.t === 'date' ? `value="${today}"` : ''}>`;
-      return `<div class="field ${f.full ? 'full' : ''}">${lab}${inp}</div>`;
+      return `<div class="field ${f.full ? 'full' : ''}">${lab}${inp}${f.note ? `<span class="small" style="color:var(--warn,#b45309);font-style:italic">${esc(f.note)}</span>` : ''}</div>`;
     };
     $('#dt-form').innerHTML = `<div class="card"><div class="card-h"><h3><span class="hi">${ic(T.icon)}</span>${T.label}</h3><span class="pill brand">${esc(S.user.id)}</span></div>
       <form class="card-b stack" id="dt-f">
