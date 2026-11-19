@@ -302,6 +302,8 @@ kbd{font:600 11px var(--fb);background:var(--surface-3);color:var(--text-2);bord
 .tbl td{padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
 .tbl tr:last-child td{border-bottom:0}
 .tbl tbody tr{transition:background .12s}
+.tbl .num{text-align:right;white-space:nowrap}.tbl td.pos{color:var(--ok);font-weight:700}.tbl td.neg{color:var(--bad,#c0392b);font-weight:700}.tbl tr.clk{cursor:pointer}.tbl tr.clk:hover td{background:var(--surface-2,rgba(0,0,0,.03))}
+.bal-tbl tr.bal-open td,.bal-tbl tr.bal-close td{background:var(--surface-2,rgba(0,0,0,.03))}.bal-tbl tr.bal-future td{opacity:.6}.bal-stats .stat .v{font-size:30px}
 .tbl tbody tr:hover{background:var(--surface-2)}
 .tbl-wrap{overflow:auto;border-radius:0 0 var(--r) var(--r);border-top:1px solid var(--line)}
 
@@ -885,6 +887,27 @@ const KO = {
 };
 const KO_WD = { 'Thứ hai':'월요일','Thứ ba':'화요일','Thứ tư':'수요일','Thứ năm':'목요일','Thứ sáu':'금요일','Thứ bảy':'토요일','Chủ nhật':'일요일','Hôm nay':'오늘','T2':'월','T3':'화','T4':'수','T5':'목','T6':'금','T7':'토','CN':'일' };
 Object.assign(KO, KO_WD);
+KO['Phép & OT']='연차 & OT';
+KO['OT event (T2–T6)']='OT 이벤트 (월~금)';
+KO['Ngày phép, giờ OT còn lại & lịch sử cộng / trừ']='잔여 연차·OT 시간 및 증감 내역';
+KO['Phép còn lại, quỹ OT']='잔여 연차, OT 적립';
+KO['Của tôi']='내 정보';
+KO['Nhân viên']='직원';
+KO['Xác nhận OT event']='OT 이벤트 확인';
+KO['Lịch sử phép']='연차 내역';
+KO['Lịch sử OT']='OT 내역';
+KO['Làm quá 8 tiếng · quản lý event xác nhận rồi làm đơn OT']='8시간 초과 근무 · 이벤트 매니저 확인 후 OT 신청';
+KO['Bộ phận / chức vụ']='부서 / 직책';
+KO['Phép còn']='잔여 연차';
+KO['OT còn (giờ)']='잔여 OT (시간)';
+KO['Đầu kỳ']='기초';
+KO['Chờ xác nhận']='확인 대기';
+KO['Đã xử lý']='처리 완료';
+KO['Tất cả']='전체';
+KO['Ngày T2–T6 đi event làm quá 8 tiếng (đã trừ 1 tiếng nghỉ trưa)']='월~금 이벤트 근무 8시간 초과일 (점심 1시간 제외)';
+KO['Không có ngày OT event nào']='OT 이벤트 내역이 없습니다';
+KO['Khi nhân viên đi event T2–T6 làm quá 8 tiếng, dòng sẽ hiện ở đây.']='직원이 월~금 이벤트에서 8시간을 초과 근무하면 여기에 표시됩니다.';
+KO['Tìm tên, mã NV, phòng ban…']='이름, 사번, 부서 검색…';
 KO['* Lưu ý: nếu chọn TRỪ OT, chỉ tính theo giờ chẵn hoặc 0.5 (30 phút).']='* 참고: OT 차감 선택 시 1시간 단위 또는 0.5시간(30분) 단위로만 계산됩니다.';
 /* Chấm công event, giờ linh hoạt, đối chiếu đơn từ, đơn của nhân viên (11/2026) */
 Object.assign(KO, {
@@ -1166,6 +1189,7 @@ const NAV = [
   { group:'Của tôi', items:[
     { key:'luong', label:'Bảng lương', icon:'wallet', sub:'Phiếu lương hằng tháng', desc:'Xem phiếu lương các tháng' },
     { key:'chamcong', label:'Lịch sử chấm công', icon:'clock', sub:'Giờ vào / ra từ khóa cửa TTLock', desc:'Giờ vào, giờ ra từng ngày' },
+    { key:'phepot', label:'Phép & OT', icon:'moonclock', sub:'Ngày phép, giờ OT còn lại & lịch sử cộng / trừ', desc:'Phép còn lại, quỹ OT' },
     { key:'event', label:'Chấm công event', icon:'mapPin', sub:'Lịch ca & check-in/out khi đi event, sale', desc:'Check-in/out ca event' },
     { key:'phonghop', label:'Đăng ký phòng họp', icon:'calendar', sub:'Đặt phòng, tự cập nhật lên lịch công ty', desc:'Đặt phòng, tự lên lịch công ty' } ]},
   { group:'Đơn từ & phê duyệt', items:[
@@ -2567,7 +2591,7 @@ VIEWS.dontu = async el => {
   el.innerHTML = `<div class="stack"><div class="row"><div class="seg" id="dt-tab"><button class="on" data-t="new">Tạo đơn</button><button data-t="my">Đơn của tôi</button>${S.links.dtAll ? '<button data-t="staff">Đơn của nhân viên</button>' : ''}</div>
     <div class="spacer"></div>${S.links.dontu ? `<a class="btn sm ghost" href="${esc(S.links.dontu)}" target="_blank" rel="noopener">${ic('ext')}Web đơn từ cũ</a>` : ''}</div><div id="dt-b"></div></div>`;
   const b = $('#dt-b');
-  let type = (S.pre && S.pre.dontu) || ''; const startTab = (S.pre && S.pre.dontuTab) || 'new'; S.pre = null;
+  let type = (S.pre && S.pre.dontu) || ''; const startTab = (S.pre && S.pre.dontuTab) || 'new'; let preF = (S.pre && S.pre.f) || null; S.pre = null;
   let monthF = startTab === 'my' ? 'cur' : 'all';
   const drawNew = () => {
     b.innerHTML = `<div class="stack"><div class="types" id="dt-types">${Object.keys(DT).map(k => `<button class="type hu-${DTH[k]} ${k === type ? 'on' : ''}" data-k="${k}"><div class="ic">${ic(DT[k].icon)}</div><b>${DT[k].label}</b><span>${DT[k].desc}</span></button>`).join('')}</div><div id="dt-form"></div></div>`;
@@ -2610,6 +2634,7 @@ VIEWS.dontu = async el => {
       if (type === 'ot') { const a = val('tu'), z = val('den'); if (a && z) { const [h1, m1] = a.split(':').map(Number), [h2, m2] = z.split(':').map(Number); const h = (h2 * 60 + m2 - h1 * 60 - m1) / 60; set('tong', h > 0 ? fmtNum(h) + ' giờ' : ''); } }
     };
     f.addEventListener('input', calc); f.addEventListener('change', e => { if (type === 'nghi' && e.target.dataset.k === 'tu' && val('den') < val('tu')) set('den', val('tu')); calc(); });
+    if (preF) { Object.keys(preF).forEach(k => { const ch = $(`[data-chips="${k}"]`, f); if (ch) { const want = $$('.chip', ch).find(x => x.dataset.v === preF[k]); if (want) $$('.chip', ch).forEach(x => x.classList.toggle('on', x === want)); } else set(k, preF[k]); }); preF = null; }
     calc();
     $('#dt-reset').onclick = drawForm;
     f.addEventListener('submit', async e => {
@@ -2854,6 +2879,155 @@ function evEditModal(x, save){
 }
 
 /* ---------- Cài đặt ---------- */
+/* ---------- Phép & OT ---------- */
+const L2 = (vi, ko) => LANG === 'ko' ? ko : vi;
+const n2 = x => { const v = Math.round((+x || 0) * 100) / 100; return String(v); };
+const sgn = x => (x > 0 ? '+' : x < 0 ? '−' : '') + n2(Math.abs(x));
+const ddmm = s => s ? `${s.slice(8, 10)}/${s.slice(5, 7)}` : '';
+const mmyy = s => s ? `${s.slice(5, 7)}/${s.slice(0, 4)}` : '';
+const WDV = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'], WDK = ['일', '월', '화', '수', '목', '금', '토'];
+const wdOf = s => { const d = parseISO(s); return d ? L2(WDV[d.getDay()], WDK[d.getDay()]) : ''; };
+const buoiTxt = b => /SÁNG/.test(b) ? L2('nửa buổi sáng', '오전 반차') : /CHIỀU/.test(b) ? L2('nửa buổi chiều', '오후 반차') : L2('cả ngày', '종일');
+function balLine(h){
+  const rng = h.to && h.to !== h.date ? `${ddmm(h.date)} → ${ddmm(h.to)}` : ddmm(h.date);
+  const soon = h.future ? L2(' (sắp tới)', ' (예정)') : '';
+  switch (h.src) {
+    case 'hd': return L2(`Cộng phép tháng ${mmyy(h.date)} — ngày ${h.date.slice(8, 10)} hằng tháng theo HĐ ký ${vnDate(h.cs)}`, `${mmyy(h.date)} 월 연차 +1 — 계약일(${vnDate(h.cs)}) 기준 매월 ${h.date.slice(8, 10)}일`);
+    case 'nghi': return L2(`Nghỉ phép năm ${rng} (${buoiTxt(h.buoi)}) · ${n2(h.days)} ngày${soon}`, `연차 사용 ${rng} (${buoiTxt(h.buoi)}) · ${n2(h.days)}일${soon}`);
+    case 'nghikl': return L2(`Nghỉ không lương ${rng} (${buoiTxt(h.buoi)}) · ${n2(h.days)} ngày — không trừ phép${soon}`, `무급휴가 ${rng} (${buoiTxt(h.buoi)}) · ${n2(h.days)}일 — 연차 차감 없음${soon}`);
+    case 'nghiot': return L2(`Nghỉ trừ OT ${rng} (${buoiTxt(h.buoi)}) · ${n2(h.days)} ngày × 8 giờ${soon}`, `OT 차감 휴가 ${rng} (${buoiTxt(h.buoi)}) · ${n2(h.days)}일 × 8시간${soon}`);
+    case 'tre': return /TRỄ/.test(h.loai) ? L2(`Đi trễ ${ddmm(h.date)} (vào ${h.gio}) · trừ OT, làm tròn lên 0.5 giờ`, `지각 ${ddmm(h.date)} (출근 ${h.gio}) · OT 차감, 0.5시간 단위 올림`)
+                                          : L2(`Về sớm ${ddmm(h.date)} (ra ${h.gio}) · trừ OT, làm tròn lên 0.5 giờ`, `조퇴 ${ddmm(h.date)} (퇴근 ${h.gio}) · OT 차감, 0.5시간 단위 올림`);
+    case 'ot': {
+      const head = (h.paid ? L2('OT tính lương', 'OT 수당') : L2('OT bù giờ', 'OT 보상휴가')) + ` ${wdOf(h.date)} ${ddmm(h.date)}${h.tu ? ` ${h.tu}–${h.den}` : ''}`;
+      let calc;
+      if (h.mul > 1) {
+        const mulTxt = h.mul === 1.5 ? L2('T7 ×1.5', '토요일 ×1.5') : L2('CN ×2', '일요일 ×2');
+        calc = h.future ? L2(`đăng ký ${n2(h.req)} giờ — chờ có chấm công thực tế (${mulTxt})`, `신청 ${n2(h.req)}시간 — 실제 출퇴근 기록 대기 (${mulTxt})`)
+          : !h.hasData ? L2(`đăng ký ${n2(h.req)} giờ — không có dữ liệu chấm công ngày này → 0`, `신청 ${n2(h.req)}시간 — 해당일 출퇴근 기록 없음 → 0`)
+          : L2(`đăng ký ${n2(h.req)} giờ, chấm công thực tế ${n2(h.actual)} giờ → ${n2(h.used)} × ${h.mul} = ${n2(h.used * h.mul)} giờ`, `신청 ${n2(h.req)}시간, 실제 근무 ${n2(h.actual)}시간 → ${n2(h.used)} × ${h.mul} = ${n2(h.used * h.mul)}시간`);
+      } else calc = L2(`${n2(h.req)} giờ`, `${n2(h.req)}시간`);
+      return `${head} · ${calc}${h.paid ? L2(' — trả trong lương, không cộng quỹ OT', ' — 급여로 지급, OT 적립 없음') : ''}${soon}`;
+    }
+    case 'adj': return L2(`Điều chỉnh: ${h.note}`, `조정: ${h.note}`) + (h.by ? ` (${h.by})` : '');
+  }
+  return '';
+}
+function balHist(d, kind){
+  const rows = d.hist.filter(h => h.kind === kind), u = kind === 'phep' ? L2('ngày', '일') : L2('giờ', '시간');
+  const open = d.pay ? L2(`Số dư đầu kỳ — bảng lương tháng ${mmyy(d.pay.month)}`, `기초 잔액 — ${mmyy(d.pay.month)} 급여대장`) : L2('Chưa có bảng lương tháng trước — tính từ 0', '전월 급여대장 없음 — 0부터 계산');
+  const v0 = kind === 'phep' ? d.phep0 : d.ot0, v1 = kind === 'phep' ? d.phep : d.ot;
+  return `<div class="tbl-wrap"><table class="tbl bal-tbl" data-noi18n><thead><tr><th>${L2('Ngày', '날짜')}</th><th>${L2('Nội dung', '내용')}</th><th class="num">${L2('Cộng / trừ', '증감')}</th><th class="num">${L2('Còn lại', '잔액')}</th></tr></thead><tbody>
+    <tr class="bal-open"><td>${vnDate(d.start)}</td><td><b>${esc(open)}</b></td><td class="num"></td><td class="num"><b>${n2(v0)}</b> ${u}</td></tr>
+    ${rows.map(h => `<tr class="${h.future ? 'bal-future' : ''}"><td>${vnDate(h.date)}</td><td>${esc(balLine(h))}</td><td class="num ${h.delta > 0 ? 'pos' : h.delta < 0 ? 'neg' : 'muted'}">${h.delta ? sgn(h.delta) : '0'}</td><td class="num">${n2(h.bal)}</td></tr>`).join('')
+      || `<tr><td></td><td class="muted">${L2('Chưa có phát sinh từ đầu kỳ', '기초 이후 변동 없음')}</td><td></td><td></td></tr>`}
+    <tr class="bal-close"><td></td><td><b>${rows.some(h => h.future) ? L2('Còn lại (đã tính cả đơn sắp tới)', '잔액 (예정 신청 포함)') : L2('Còn lại hiện tại', '현재 잔액')}</b></td><td></td><td class="num"><b>${n2(v1)}</b> ${u}</td></tr>
+  </tbody></table></div>`;
+}
+const otxSt = x => x.status === 'Đã xác nhận' ? `<span class="pill ok">${L2('Đã xác nhận', '확인 완료')}</span>` : x.status === 'Từ chối' ? `<span class="pill bad">${L2('Từ chối', '반려')}</span>` : `<span class="pill warn">${L2('Chờ xác nhận', '확인 대기')}</span>`;
+const otxWork = x => `${x.from}–${x.to}${x.office ? L2(` (văn phòng ${x.office})`, ` (사무실 ${x.office})`) : ''} · ${n2(x.hours)} ${L2('giờ', '시간')}${x.lunch ? L2(' (đã trừ 1 giờ nghỉ trưa)', ' (점심 1시간 제외)') : ''}`;
+function otxForm(x){
+  const ot = x.otOk != null ? x.otOk : x.ot, end = x.to, toMin = s => { const [h, m] = s.split(':').map(Number); return h * 60 + m; };
+  let b = toMin(end); if (b === 0 || b > 23 * 60 + 59) b = 23 * 60 + 59;
+  const a = Math.max(0, b - Math.round(ot * 60)), hm = m => `${pad(Math.floor(m / 60))}:${pad(m % 60)}`;
+  return { ngay: x.date, tu: hm(a), den: hm(b), loai: O.ot[0], lydo: `OT event ${x.ev} ${vnDate(x.date)}: ${n2(ot)} giờ (đã được ${x.by} xác nhận)` };
+}
+function otxModal(x, done){
+  const m = modal(L2('Xác nhận OT event', 'OT 이벤트 확인'), `<div data-noi18n><div class="small muted" style="margin-bottom:10px"><b>${esc(x.name)}</b> · ${esc(x.dept)}${x.position ? ' · ' + esc(x.position) : ''}<br>${wdOf(x.date)} ${vnDate(x.date)} · ${esc(LANG === 'ko' && x.evKo ? x.evKo : x.ev)}</div>
+    <div class="small" style="margin-bottom:10px">${L2('Giờ làm thực tế', '실제 근무')}: <b>${esc(otxWork(x))}</b><br>${L2('OT tính tự động (quá 8 giờ)', '자동 계산 OT (8시간 초과분)')}: <b>${n2(x.ot)} ${L2('giờ', '시간')}</b></div>
+    <div class="field"><label for="ox-h">${L2('Số giờ OT xác nhận', '확인 OT 시간')}</label><input class="input" id="ox-h" type="number" step="0.5" min="0" max="16" value="${n2(x.otOk != null ? x.otOk : x.ot)}"><span class="small muted">${L2('Có thể sửa, vd làm tròn theo giờ chẵn hoặc 0.5', '수정 가능 (예: 정시 또는 0.5시간 단위)')}</span></div>
+    <div class="field"><label for="ox-n">${L2('Ghi chú', '메모')} <span class="small muted">${L2('(không bắt buộc)', '(선택)')}</span></label><textarea class="textarea" id="ox-n" style="min-height:60px">${esc(x.note || '')}</textarea></div></div>`,
+    `<button class="btn ghost" id="ox-no">${L2('Từ chối', '반려')}</button><button class="btn primary" id="ox-ok">${L2('Xác nhận', '확인')}</button>`);
+  const go = async (ok, btn) => { busy(btn, true, L2('Đang lưu…', '저장 중…'));
+    try { const r = await call('otx.confirm', { key: x.key, ok, hours: $('#ox-h', m.el).value, note: $('#ox-n', m.el).value }); m.close(); toast(ok ? L2('Đã xác nhận OT', 'OT 확인 완료') : L2('Đã từ chối', '반려 완료')); done(r); }
+    catch (err) { toast(err.message, 'err'); busy(btn, false); } };
+  $('#ox-ok', m.el).onclick = e => go(true, e.currentTarget); $('#ox-no', m.el).onclick = e => go(false, e.currentTarget);
+}
+function balAdjModal(d, done){
+  const m = modal(L2('Điều chỉnh phép / OT', '연차 / OT 조정'), `<div data-noi18n><div class="small muted" style="margin-bottom:10px"><b>${esc(d.emp.name)}</b> · ${esc(d.emp.id)}</div>
+    <div class="field"><label>${L2('Loại', '구분')}</label><div class="chips" id="ba-k"><button type="button" class="chip on" data-v="phep">${L2('Phép (ngày)', '연차 (일)')}</button><button type="button" class="chip" data-v="ot">${L2('OT (giờ)', 'OT (시간)')}</button></div></div>
+    <div class="row" style="flex-wrap:nowrap"><div class="field" style="flex:1"><label for="ba-n">${L2('Số cộng (+) / trừ (−)', '증감 (+/−)')}</label><input class="input" id="ba-n" type="number" step="0.5" placeholder="vd: 1 hoặc -0.5"></div>
+    <div class="field" style="flex:1"><label for="ba-d">${L2('Ngày', '날짜')}</label><input class="input" id="ba-d" type="date" value="${d.today}"></div></div>
+    <div class="field"><label for="ba-note">${L2('Lý do', '사유')}</label><textarea class="textarea" id="ba-note" style="min-height:60px"></textarea></div></div>`,
+    `<button class="btn ghost" data-close>${L2('Huỷ', '취소')}</button><button class="btn primary" id="ba-ok">${L2('Lưu', '저장')}</button>`);
+  $('#ba-k', m.el).onclick = e => { const c = e.target.closest('.chip'); if (!c) return; $$('#ba-k .chip', m.el).forEach(x => x.classList.toggle('on', x === c)); };
+  $('#ba-ok', m.el).onclick = async e => { busy(e.currentTarget, true, L2('Đang lưu…', '저장 중…'));
+    try { const r = await call('bal.adj', { empId: d.emp.id, kind: $('#ba-k .chip.on', m.el).dataset.v, n: $('#ba-n', m.el).value, date: $('#ba-d', m.el).value, note: $('#ba-note', m.el).value }); m.close(); toast(L2('Đã lưu điều chỉnh', '조정 저장 완료')); done(r); }
+    catch (err) { toast(err.message, 'err'); busy(e.currentTarget, false); } };
+}
+VIEWS.phepot = async el => {
+  el.innerHTML = skel(3, 90);
+  let tab = 'me', who = null, cache = {};
+  const me = await call('bal.get', {});
+  cache[me.emp.id] = me;
+  el.innerHTML = `<div class="stack"><div class="row"><div class="seg" id="bo-tab"><button data-t="me" class="on">Của tôi</button>${me.canList ? '<button data-t="list">Nhân viên</button>' : ''}${me.otxMgr ? '<button data-t="otx">Xác nhận OT event</button>' : ''}</div></div><div id="bo-b"></div></div>`;
+  const b = $('#bo-b', el);
+  const detail = async (id, back) => {
+    let d = cache[id];
+    if (!d) { b.innerHTML = skel(3, 90); d = cache[id] = await call('bal.get', { empId: id }); }
+    const mine = id === me.emp.id, otx = d.otx || [];
+    b.innerHTML = `<div class="stack">
+      ${back ? `<div class="row"><button class="btn sm ghost" id="bo-back">${ic('chevL')}${L2('Danh sách nhân viên', '직원 목록')}</button></div>` : ''}
+      <div class="row" style="gap:10px" data-noi18n><b style="font-size:17px">${esc(d.emp.name)}</b><span class="small muted">${esc(d.emp.id)} · ${esc(d.emp.dept)}${d.emp.position ? ' · ' + esc(d.emp.position) : ''}</span>
+        <span class="spacer"></span>${d.canAdj ? `<button class="btn sm soft" id="bo-adj">${ic('sliders')}${L2('Điều chỉnh', '조정')}</button>` : ''}</div>
+      <div class="grid g2 bal-stats" data-noi18n>
+        <div class="stat hu-peach"><div class="ic">${ic('plane')}</div><div><div class="k">${L2('Ngày phép còn lại', '잔여 연차')}</div><div class="v">${n2(d.phep)}<small>${L2('ngày', '일')}</small></div>
+          <div class="small muted">${d.pay ? L2(`Đầu kỳ ${n2(d.phep0)} (bảng lương ${mmyy(d.pay.month)})`, `기초 ${n2(d.phep0)} (${mmyy(d.pay.month)} 급여대장)`) : L2('Chưa có bảng lương tháng trước', '전월 급여대장 없음')}</div></div></div>
+        <div class="stat hu-lilac"><div class="ic">${ic('moonclock')}</div><div><div class="k">${L2('Quỹ OT còn lại', '잔여 OT')}</div><div class="v">${n2(d.ot)}<small>${L2('giờ', '시간')}</small></div>
+          <div class="small muted">${d.pay ? L2(`Đầu kỳ ${n2(d.ot0)} (bảng lương ${mmyy(d.pay.month)})`, `기초 ${n2(d.ot0)} (${mmyy(d.pay.month)} 급여대장)`) : ''}</div></div></div>
+      </div>
+      ${otx.length ? `<div class="card"><div class="card-h"><h3><span class="hi">${ic('mapPin')}</span>OT event (T2–T6)</h3><span class="small muted">Làm quá 8 tiếng · quản lý event xác nhận rồi làm đơn OT</span></div>
+        <div class="tbl-wrap"><table class="tbl" data-noi18n><thead><tr><th>${L2('Ngày', '날짜')}</th><th>Event</th><th>${L2('Giờ làm thực tế', '실제 근무')}</th><th class="num">OT</th><th>${L2('Trạng thái', '상태')}</th><th></th></tr></thead><tbody>
+        ${otx.map((x, i) => `<tr><td>${wdOf(x.date)} ${vnDate(x.date)}</td><td>${esc(LANG === 'ko' && x.evKo ? x.evKo : x.ev)}</td><td>${esc(otxWork(x))}</td>
+          <td class="num"><b>${n2(x.otOk != null ? x.otOk : x.ot)}</b> ${L2('giờ', '시간')}${x.otOk != null && x.otOk !== x.ot ? `<div class="small muted">${L2('tự tính', '자동')} ${n2(x.ot)}</div>` : ''}</td>
+          <td>${otxSt(x)}${x.by ? `<div class="small muted">${esc(x.by)}${x.note ? ' · ' + esc(x.note) : ''}</div>` : ''}</td>
+          <td>${mine && x.status === 'Đã xác nhận' ? `<button class="btn sm primary bo-don" data-i="${i}">${ic('file')}${L2('Làm đơn OT', 'OT 신청서 작성')}</button>` : ''}</td></tr>`).join('')}</tbody></table></div></div>` : ''}
+      <div class="card"><div class="card-h"><h3><span class="hi">${ic('plane')}</span>Lịch sử phép</h3></div>${balHist(d, 'phep')}</div>
+      <div class="card"><div class="card-h"><h3><span class="hi">${ic('moonclock')}</span>Lịch sử OT</h3></div>${balHist(d, 'ot')}</div>
+      <div class="small muted">${L2('Số liệu chỉ để xem & đối chiếu — số chính thức theo bảng lương do kế toán chốt. Đơn đã huỷ / không duyệt không được tính.', '조회·대조용 수치이며, 공식 수치는 회계팀이 확정한 급여대장을 따릅니다. 취소/반려된 신청서는 계산에서 제외됩니다.')}</div>
+    </div>`;
+    if (back) $('#bo-back', b).onclick = back;
+    const adj = $('#bo-adj', b); if (adj) adj.onclick = () => balAdjModal(d, r => { r.canAdj = d.canAdj; r.canList = d.canList; r.otxMgr = d.otxMgr; cache[id] = r; detail(id, back); });
+    $$('.bo-don', b).forEach(x => x.onclick = () => { S.pre = { dontu: 'ot', f: otxForm(otx[+x.dataset.i]) }; go('dontu'); });
+  };
+  const list = async () => {
+    b.innerHTML = skel(4, 50);
+    const d = await call('bal.list');
+    let q = '';
+    b.innerHTML = `<div class="card"><div class="card-h"><input class="input" id="bo-q" placeholder="Tìm tên, mã NV, phòng ban…" style="max-width:320px"><span class="small muted">${d.list.length} ${L2('nhân viên', '명')}</span></div><div id="bo-l"></div></div>`;
+    const draw = () => {
+      const k = q.toLowerCase(), rows = d.list.filter(x => !k || (x.name + ' ' + x.id + ' ' + x.dept).toLowerCase().includes(k));
+      $('#bo-l', b).innerHTML = `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Nhân viên</th><th>Bộ phận / chức vụ</th><th class="num">Phép còn</th><th class="num">OT còn (giờ)</th><th>Đầu kỳ</th><th></th></tr></thead><tbody>
+        ${rows.map(x => `<tr class="clk" data-id="${esc(x.id)}"><td data-noi18n><b>${esc(x.name)}</b><div class="small muted">${esc(x.id)}</div></td><td data-noi18n>${esc(x.dept)}${x.position ? `<div class="small muted">${esc(x.position)}</div>` : ''}</td>
+          ${x.err ? `<td colspan="3"><span class="pill bad" data-noi18n>${esc(x.err)}</span></td>` : `<td class="num"><b>${n2(x.phep)}</b></td><td class="num"><b>${n2(x.ot)}</b></td><td data-noi18n>${x.month ? mmyy(x.month + '-01') : '—'}</td>`}
+          <td>${x.otxWait ? `<span class="pill warn" data-noi18n>${L2(`${x.otxWait} OT event chờ`, `OT 이벤트 ${x.otxWait}건 대기`)}</span>` : ''}</td></tr>`).join('')}</tbody></table></div>`;
+      $$('#bo-l tr[data-id]', b).forEach(r => r.onclick = () => detail(r.dataset.id, list));
+    };
+    $('#bo-q', b).oninput = e => { q = e.target.value; draw(); };
+    draw();
+  };
+  const otxView = async () => {
+    b.innerHTML = skel(4, 50);
+    let rows = await call('otx.mgr'), f = 'wait';
+    const draw = () => {
+      const show = rows.filter(x => f === 'all' || (f === 'wait' ? !x.by : !!x.by));
+      b.innerHTML = `<div class="stack"><div class="row"><div class="seg" id="ox-f">${[['wait', 'Chờ xác nhận'], ['done', 'Đã xử lý'], ['all', 'Tất cả']].map(([k, l]) => `<button data-f="${k}" class="${f === k ? 'on' : ''}">${l}</button>`).join('')}</div>
+        <span class="small muted">Ngày T2–T6 đi event làm quá 8 tiếng (đã trừ 1 tiếng nghỉ trưa)</span></div>
+        <div class="card">${show.length ? `<div class="tbl-wrap"><table class="tbl" data-noi18n><thead><tr><th>${L2('Nhân viên', '직원')}</th><th>${L2('Bộ phận / chức vụ', '부서 / 직책')}</th><th>${L2('Ngày', '날짜')}</th><th>${L2('Giờ làm thực tế', '실제 근무')}</th><th class="num">OT</th><th>${L2('Trạng thái', '상태')}</th><th></th></tr></thead><tbody>
+          ${show.map(x => `<tr><td><b>${esc(x.name)}</b><div class="small muted">${esc(x.empId)}</div></td><td>${esc(x.dept)}${x.position ? `<div class="small muted">${esc(x.position)}</div>` : ''}</td>
+            <td>${wdOf(x.date)} ${vnDate(x.date)}<div class="small muted">${esc(LANG === 'ko' && x.evKo ? x.evKo : x.ev)}</div></td><td>${esc(otxWork(x))}</td>
+            <td class="num"><b>${n2(x.otOk != null ? x.otOk : x.ot)}</b> ${L2('giờ', '시간')}</td><td>${otxSt(x)}${x.by ? `<div class="small muted">${esc(x.by)}${x.note ? ' · ' + esc(x.note) : ''}</div>` : ''}</td>
+            <td><button class="btn sm ${x.by ? 'ghost' : 'primary'} ox-btn" data-k="${esc(x.key)}">${x.by ? L2('Sửa', '수정') : L2('Xác nhận', '확인')}</button></td></tr>`).join('')}</tbody></table></div>`
+          : `<div class="empty"><div class="ico">${ic('check')}</div><b>Không có ngày OT event nào</b>Khi nhân viên đi event T2–T6 làm quá 8 tiếng, dòng sẽ hiện ở đây.</div>`}</div></div>`;
+      $('#ox-f', b).onclick = e => { const t = e.target.closest('[data-f]'); if (!t) return; f = t.dataset.f; draw(); };
+      $$('.ox-btn', b).forEach(x => x.onclick = () => { const it = rows.find(y => y.key === x.dataset.k); otxModal(it, r => { if (r) rows = rows.map(y => y.key === r.key ? r : y); delete cache[it.empId]; draw(); }); });
+    };
+    draw();
+  };
+  const open = () => { if (tab === 'list') return who ? detail(who, () => { who = null; list(); }) : list(); if (tab === 'otx') return otxView(); return detail(me.emp.id); };
+  $('#bo-tab', el).onclick = e => { const t = e.target.closest('[data-t]'); if (!t) return; tab = t.dataset.t; who = null; $$('#bo-tab button', el).forEach(x => x.classList.toggle('on', x === t)); open().catch(err => { b.innerHTML = `<div class="card"><div class="empty"><b>${esc(err.message)}</b></div></div>`; }); };
+  await open();
+};
 VIEWS.caidat = async el => {
   const theme = store.get('ibvn_theme2') || 'light';
   const roleName = { ADMIN:'Admin', LEADER:'Leader', ACCOUNTING:'Kế toán', HR:'Nhân sự' };
