@@ -1657,6 +1657,17 @@ VIEWS.home = async el => {
     hb.innerHTML = `${ic('info')}<div><b>${d.hrAlerts.length} nhân sự sắp hết hạn hợp đồng</b><div class="small">${d.hrAlerts.slice(0, 5).map(x => esc(x.name) + ' (' + esc(dLeft(x.daysLeft)).toLowerCase() + ')').join(' · ')} — bấm để xem và lên lịch review</div></div>`;
     const bento = el.querySelector('.bento');   // chỉ 1 thông báo: xoá cái cũ nếu trang chủ được vẽ lại
     if (bento && el.isConnected) { bento.querySelectorAll('.hr-alarm').forEach(x => x.remove()); bento.insertBefore(hb, bento.children[1] || null); } }
+  (async () => {   // đỏ: ngày của mình chưa làm đơn (tháng này; đầu tháng xem cả tháng trước)
+    try {
+      const n = new Date(), ms = [`${n.getFullYear()}-${pad(n.getMonth() + 1)}`];
+      if (n.getDate() <= 5) { const p = new Date(n.getFullYear(), n.getMonth() - 1, 1); ms.unshift(`${p.getFullYear()}-${pad(p.getMonth() + 1)}`); }
+      const list = (await Promise.all(ms.map(attMyMissing))).flat();
+      const bento = el.querySelector('.bento');
+      if (!bento || !el.isConnected) return;
+      bento.querySelectorAll('.dt-alarm').forEach(x => x.remove());
+      if (list.length) { const a = missAlarm(list); a.classList.add('b12'); bento.insertBefore(a, bento.children[1] || null); }
+    } catch (e) {}
+  })();
   const seen = lastSeenAnn(), unread = unreadCount();
   const today = isoDate(now), todayEv = (d.events || []).filter(e => e.start.slice(0, 10) === today);
   const ls = d.lastScan;
@@ -2095,7 +2106,7 @@ VIEWS.chamcong = async el => {
         <span class="spacer"></span>
         <div class="seg" id="cc-v"><button data-v="cal">${ic('calendar')}Lịch</button><button data-v="chart">${ic('chart')}Biểu đồ</button><button data-v="list">${ic('menu')}Danh sách</button></div>
       </div>
-      <div class="small muted" id="cc-upd" style="padding:0 20px 8px"></div><div class="cc-flags" id="cc-fl"></div>
+      <div class="small muted" id="cc-upd" style="padding:0 20px 8px"></div><div id="cc-al" style="padding:0 20px 10px"></div><div class="cc-flags" id="cc-fl"></div>
       <div id="cc-days">${skel(5,44)}</div></div></div>`;
     $$('#cc-v button').forEach(b => b.classList.toggle('on', b.dataset.v === view));
     $('#cc-prev').onclick = () => { const d = parseISO(month+'-01'); d.setMonth(d.getMonth()-1); month = isoDate(d).slice(0,7); sel = ''; load(); };
@@ -2186,6 +2197,8 @@ VIEWS.chamcong = async el => {
         attBuild(R2).forEach(x => BL[x.day] = x);
       }
       const L = Object.values(BL), cnt = f => L.filter(x => x.flags.includes(f)).length, nod = L.filter(x => x.miss.length).length;
+      { const al = $('#cc-al'); if (al) { al.innerHTML = ''; const ml = L.filter(x => x.miss.length && x.day < isoDate(new Date())).map(x => ({ day: x.day, miss: x.miss })).sort((a, b) => a.day < b.day ? -1 : 1);
+        if (ml.length && d.empId === S.user.id && d.set && d.set.dtAt) al.appendChild(missAlarm(ml)); else al.style.display = 'none'; if (ml.length && d.empId === S.user.id) al.style.display = ''; } }
       $('#cc-fl').innerHTML = L.length ? `<span class="muted">Tháng này:</span> <span class="pill ${cnt('late') ? 'warn' : ''}">Đi trễ ${cnt('late')}</span><span class="pill ${cnt('early') ? 'warn' : ''}">Về sớm ${cnt('early')}</span><span class="pill">Quên chấm công ${cnt('noin') + cnt('noout')}</span>`
         + (d.set && d.set.dtAt ? (nod ? `<span class="pill bad">${ic('info')}${nod} ngày chưa làm đơn</span>` : '<span class="pill ok">Đã đủ đơn</span>') + `<span class="small muted">· đơn từ cập nhật ${esc(d.set.dtAt.slice(11, 16) + ' ' + vnDate(d.set.dtAt.slice(0, 10)))}</span>` : '') : '';
       countUp($('#cc-sum'));
@@ -2353,6 +2366,30 @@ const dtNote = x => !x.need ? '' : (x.dts.length ? `<div class="att-dt ok">${ic(
 const dtText = x => !x.need ? '' : [x.dts.length ? 'Đã làm đơn: ' + x.dts.map(dtLabel).join(' / ') : '', x.miss.length ? 'Chưa làm đơn ' + x.miss.map(f => DT_NM[f]).join(', ') : ''].filter(Boolean).join(' | ');
 /** Ô giờ 2 dòng: trên là event, dưới là văn phòng */
 const attTwo = (ev, of) => `<div class="att-two"><span><i>Event</i>${esc(String(ev || '—').slice(0, 5))}</span><span><i>VP</i>${esc(String(of || '—').slice(0, 5))}</span></div>`;
+/** Ngày của chính mình còn thiếu đơn (trễ / sớm / quên quét / nghỉ) trong 1 tháng → [{ day, miss }] */
+async function attMyMissing(month){
+  const d = await call('att.get', { month, empId: S.user.id });
+  if (!d.set || !d.set.dtAt) return [];
+  const RU = d.rule || null, nk = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[đĐ]/g, 'D').toUpperCase().trim(), ED = d.edits || {};
+  const all = d.days.concat(Object.keys(ED).filter(k => !d.days.some(x => x.date === k)).map(k => ({ date:k, scans:[] })));
+  const fl = x => { const ok = x.scans.filter(s => s.ok);
+    if (RU && x.date >= RU.vanTayTu) { const fp = ok.filter(s => /VAN TAY/.test(nk(s.type))), ins = fp.filter(s => nk(s.lock) === nk(RU.khoaVao)), outs = fp.filter(s => nk(s.lock) === nk(RU.khoaRa)); return { first: ins[0] || null, last: outs.length ? outs[outs.length - 1] : null }; }
+    return { first: ok[0], last: ok.length > 1 ? ok[ok.length - 1] : null }; };
+  const rows = all.map(x => { const f = fl(x), ed = ED[x.date]; const a = ed && ed.in ? ed.in : f.first ? f.first.time : '', b = ed && ed.out ? ed.out : f.last ? f.last.time : ''; return [x.date, d.empId, a, b, x.scans.length, ed || null]; });
+  const [yy, mm] = month.split('-').map(Number), last = new Date(yy, mm, 0).getDate();
+  const R2 = { ...d.set, from: month + '-01', to: month + '-' + pad(last), emps: [{ id: d.empId, name: '' }], rows };
+  R2.gioVao = attHM(R2.gioVao) || '08:00'; R2.gioRa = attHM(R2.gioRa) || '17:00';
+  return attBuild(R2).filter(x => x.miss && x.miss.length && x.day < isoDate(new Date())).map(x => ({ day: x.day, miss: x.miss }));
+}
+const DT_NM_KO = { late:'지각', early:'조퇴', noin:'출근 체크 누락', noout:'퇴근 체크 누락', absent:'결근' };
+const missTxt = list => list.map(x => `${x.day.slice(8, 10)}/${x.day.slice(5, 7)} (${x.miss.map(f => L2(DT_NM[f], DT_NM_KO[f])).join(', ')})`).join(' · ');
+function missAlarm(list, onPage){
+  const box = document.createElement('section'); box.className = 'hr-alarm dt-alarm clk'; box.setAttribute('data-noi18n', '');
+  box.innerHTML = `${ic('info')}<div style="flex:1;min-width:0"><b>${L2(`Bạn còn ${list.length} ngày đi trễ / về sớm / nghỉ chưa làm đơn`, `미신청 지각·조퇴·결근 ${list.length}일이 있습니다`)}</b>
+    <div class="small">${esc(missTxt(list.slice(0, 8)))}${list.length > 8 ? ' …' : ''} — ${L2('bấm để làm đơn', '눌러서 신청서 작성')}</div></div>`;
+  box.onclick = () => go('dontu');
+  return box;
+}
 function attBuild(R){
   const wd = String(R.workDays).split(/[^0-9]+/).filter(Boolean).map(Number);
   const vao = attSecs(R.gioVao), ra = attSecs(R.gioRa), by = {};
