@@ -302,6 +302,9 @@ kbd{font:600 11px var(--fb);background:var(--surface-3);color:var(--text-2);bord
 .tbl td{padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
 .tbl tr:last-child td{border-bottom:0}
 .tbl tbody tr{transition:background .12s}
+.maint-bar{display:flex;align-items:center;gap:10px;padding:10px 14px;margin-bottom:14px;border-radius:14px;background:var(--warn-bg);color:var(--warn);font-size:13.5px;font-weight:600}.maint-bar svg{width:18px;height:18px;flex:none}.maint-bar a{margin-left:auto;cursor:pointer;text-decoration:underline;white-space:nowrap}
+.mt-tag{margin-left:auto;font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px;background:var(--warn-bg);color:var(--warn)}
+.mt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}.mt-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;cursor:pointer}.mt-row svg{width:17px;height:17px;color:var(--muted)}.mt-row input{width:17px;height:17px;accent-color:var(--brand,#f26b2b)}.mt-all{border-color:var(--warn);background:var(--warn-bg)}
 .tbl .num{text-align:right;white-space:nowrap}.tbl td.pos{color:var(--ok);font-weight:700}.tbl td.neg{color:var(--bad,#c0392b);font-weight:700}.tbl tr.clk{cursor:pointer}.tbl tr.clk:hover td{background:var(--surface-2,rgba(0,0,0,.03))}
 .bal-tbl tr.bal-open td,.bal-tbl tr.bal-close td{background:var(--surface-2,rgba(0,0,0,.03))}.bal-tbl tr.bal-future td{opacity:.6}.bal-stats .stat .v{font-size:30px}
 .tbl tbody tr:hover{background:var(--surface-2)}
@@ -888,6 +891,17 @@ const KO = {
 const KO_WD = { 'Thứ hai':'월요일','Thứ ba':'화요일','Thứ tư':'수요일','Thứ năm':'목요일','Thứ sáu':'금요일','Thứ bảy':'토요일','Chủ nhật':'일요일','Hôm nay':'오늘','T2':'월','T3':'화','T4':'수','T5':'목','T6':'금','T7':'토','CN':'일' };
 Object.assign(KO, KO_WD);
 KO['Phép & OT']='연차 & OT';
+KO['Bảo trì']='점검';
+KO['Chế độ bảo trì']='점검 모드';
+KO['Lưu']='저장';
+KO['Bảo trì cả intranet']='인트라넷 전체 점검';
+KO['Nhân viên đăng nhập chỉ thấy thông báo bảo trì. Admin vẫn dùng bình thường.']='직원은 로그인 시 점검 안내만 보게 됩니다. 관리자는 정상 이용 가능합니다.';
+KO['Hoặc chỉ bảo trì một số mục — nhân viên bấm vào sẽ thấy thông báo bảo trì, mục vẫn hiện trên menu kèm nhãn “Bảo trì”:']='또는 일부 메뉴만 점검 — 직원이 누르면 점검 안내가 표시되며, 메뉴에는 “점검” 표시와 함께 유지됩니다:';
+KO['Lời nhắn (tiếng Việt)']='안내 문구 (베트남어)';
+KO['— để trống dùng câu mặc định']='— 비워두면 기본 문구 사용';
+KO['Lời nhắn (tiếng Hàn)']='안내 문구 (한국어)';
+KO['Đã bật bảo trì cả intranet']='인트라넷 전체 점검을 켰습니다';
+KO['Đã tắt bảo trì']='점검을 해제했습니다';
 KO['OT event (T2–T6)']='OT 이벤트 (월~금)';
 KO['T2–T6: phần quá 8 tiếng · T7/CN: cả ngày (×1.5 / ×2) · quản lý event xác nhận rồi mới làm đơn']='월~금: 8시간 초과분 · 토/일: 전체 (×1.5 / ×2) · 이벤트 매니저 확인 후 신청';
 KO['Ngày phép, giờ OT còn lại & lịch sử cộng / trừ']='잔여 연차·OT 시간 및 증감 내역';
@@ -1128,6 +1142,7 @@ function call0(action, payload){
       const msg = r ? r.error : 'Có lỗi xảy ra';
       if (msg === 'SESSION_EXPIRED') { toast('Phiên đăng nhập đã hết, vui lòng đăng nhập lại', 'err'); logoutLocal(); }
       if (msg === 'MUST_CHANGE') { S.user.mustChange = true; render(); }
+      if (msg === 'MAINTENANCE') { if (S.links) { S.links.maint = Object.assign({}, S.links.maint, { all: true }); setTimeout(() => go(S.page, true), 0); } return reject(new Error(L2('Intranet đang bảo trì', '인트라넷 점검 중'))); }
       reject(new Error(msg));
     };
     if (IS_GAS) google.script.run.withSuccessHandler(done).withFailureHandler(e => reject(e)).api(action, S.token, payload||{});
@@ -1459,7 +1474,8 @@ function renderNav(){
   nav.innerHTML = NAV.filter(g => !g.role || has(g.role)).map(g => `<h6>${esc(g.group)}</h6>` + g.items.filter(it => !it.role || has(it.role)).map(it => {
     const locked = it.role && !has(it.role);
     const badge = it.key === 'thongbao' && unread ? `<span class="badge">${unread}</span><span class="badge-dot"></span>` : '';
-    return `<a data-go="${it.key}" class="${S.page === it.key ? 'on' : ''}" title="${esc(it.label)}">${ic(it.icon)}<span class="lbl">${esc(it.label)}</span>${badge}${locked ? `<span class="lock">${ic('lock')}</span>` : ''}</a>`;
+    const mt = maintOf(it.key) && !(S.links.maint.all && !isAdm()) ? `<span class="mt-tag" data-noi18n>${L2('Bảo trì', '점검')}</span>` : '';
+    return `<a data-go="${it.key}" class="${S.page === it.key ? 'on' : ''}" title="${esc(it.label)}">${ic(it.icon)}<span class="lbl">${esc(it.label)}</span>${mt}${badge}${locked ? `<span class="lock">${ic('lock')}</span>` : ''}</a>`;
   }).join('')).join('');
   const dot = $('#bell-dot'); if (dot) { dot.hidden = !unread; dot.textContent = unread > 9 ? '9+' : unread; }
 }
@@ -1476,6 +1492,14 @@ document.addEventListener('keydown', e => {
 });
 
 function setMOpen(v){ const app = $('#app'); if (app) app.classList.toggle('mopen', !!v); document.body.classList.toggle('nav-lock', !!v && !!app); }
+const maintOf = key => { const m = S.links && S.links.maint; return !!(m && key !== 'admin' && key !== 'caidat' && (m.all || (m.tabs || []).includes(key))); };
+const isAdm = () => !!(S.user && S.user.roles.includes('ADMIN'));
+function maintBox(key){
+  const m = S.links.maint, msg = L2(m.msg || '', m.msgKo || '');
+  return `<div class="card maint"><div class="empty"><div class="ico">${ic('settings')}</div><b data-noi18n>${m.all ? L2('Intranet đang bảo trì', '인트라넷 점검 중입니다') : L2('Mục này đang bảo trì', '이 메뉴는 점검 중입니다')}</b>
+    <span data-noi18n>${esc(msg) || L2('Bọn mình đang nâng cấp để dùng tốt hơn. Bạn quay lại sau ít phút nhé, cảm ơn bạn!', '더 나은 서비스를 위해 업데이트 중입니다. 잠시 후 다시 이용해 주세요. 감사합니다!')}</span>
+    ${!m.all && key !== 'home' ? `<div style="margin-top:14px"><button class="btn soft" data-go="home">${ic('home')}<span data-noi18n>${L2('Về trang chủ', '홈으로')}</span></button></div>` : ''}</div></div>`;
+}
 function go(key, noPush){
   if (!PAGE[key]) key = 'home';
   S.page = key;
@@ -1498,6 +1522,12 @@ function go(key, noPush){
   }
   window.scrollTo(0, 0);
   const nav = S.nav = (S.nav || 0) + 1;
+  if (maintOf(key)) {
+    if (!isAdm()) { target.innerHTML = maintBox(key); return; }
+    const bn = document.createElement('div'); bn.className = 'maint-bar'; bn.setAttribute('data-noi18n', '');
+    bn.innerHTML = `${ic('settings')}<span>${S.links.maint.all ? L2('Cả intranet đang bật chế độ bảo trì — nhân viên không vào được, chỉ admin dùng được.', '인트라넷 전체 점검 모드 — 직원은 접속 불가, 관리자만 이용 가능합니다.') : L2('Mục này đang bảo trì — nhân viên không vào được, chỉ admin thấy.', '이 메뉴는 점검 중 — 직원은 접속 불가, 관리자만 볼 수 있습니다.')}</span><a data-go="admin">${L2('Tắt bảo trì', '점검 해제')}</a>`;
+    el.prepend(bn);
+  }
   (VIEWS[key] || VIEWS.home)(target).catch(err => { if (S.nav === nav && target.isConnected) target.innerHTML = errBox(err.message); });
 }
 
@@ -3098,7 +3128,7 @@ function resizeImage(file, size){
 /* ---------- Quản trị ---------- */
 VIEWS.admin = async el => {
   if (!has('ADMIN')) { el.innerHTML = errBox('Bạn không có quyền vào trang này'); return; }
-  el.innerHTML = `<div class="stack"><div class="row"><div class="seg" id="ad-t"><button class="on" data-t="nv">Nhân viên & quyền</button><button data-t="cfg">Liên kết & cấu hình</button><button data-t="mail">Email đã gửi</button></div></div><div id="ad-b"></div></div>`;
+  el.innerHTML = `<div class="stack"><div class="row"><div class="seg" id="ad-t"><button class="on" data-t="nv">Nhân viên & quyền</button><button data-t="cfg">Liên kết & cấu hình</button><button data-t="mail">Email đã gửi</button><button data-t="mt">Bảo trì</button></div></div><div id="ad-b"></div></div>`;
   const b = $('#ad-b');
   const ROLES = [['ADMIN','Admin'],['LEADER','Leader'],['ACCOUNTING','Kế toán'],['HR','Nhân sự']];
   const drawNV = async () => {
@@ -3158,6 +3188,21 @@ VIEWS.admin = async el => {
     $('#cf-l').innerHTML = items.filter(i => !hidden.includes(i.key)).map(i => `<div class="field"><label>${esc(i.desc || i.key)} <span class="muted small">· ${esc(i.key)}</span></label><input class="input" data-cfg="${esc(i.key)}" value="${esc(i.value)}"></div>`).join('');
     $('#cf-s').onclick = async e => { busy(e.currentTarget, true, 'Đang lưu…'); try { await call('adm.saveConfig', { items: $$('[data-cfg]').map(x => ({ key: x.dataset.cfg, value: x.value.trim() })) }); const d = await call('me'); S.links = d.links; toast('Đã lưu cấu hình'); } catch(err) { toast(err.message, 'err'); } busy(e.currentTarget, false); };
   };
+  const drawMt = async () => {
+    const d = await call('me'); S.links = d.links; const m = S.links.maint;
+    const tabs = NAV.flatMap(g => g.items).filter(it => it.key !== 'admin');
+    b.innerHTML = `<div class="card"><div class="card-h"><h3><span class="hi">${ic('settings')}</span>Chế độ bảo trì</h3><button class="btn primary sm" id="mt-s">Lưu</button></div><div class="card-b stack">
+      <label class="mt-row mt-all"><input type="checkbox" id="mt-all" ${m.all ? 'checked' : ''}><div><b>Bảo trì cả intranet</b><div class="small muted">Nhân viên đăng nhập chỉ thấy thông báo bảo trì. Admin vẫn dùng bình thường.</div></div></label>
+      <div><div class="small muted" style="margin-bottom:8px">Hoặc chỉ bảo trì một số mục — nhân viên bấm vào sẽ thấy thông báo bảo trì, mục vẫn hiện trên menu kèm nhãn “Bảo trì”:</div>
+        <div class="mt-grid">${tabs.map(it => `<label class="mt-row"><input type="checkbox" class="mt-tab" value="${it.key}" ${(m.tabs || []).includes(it.key) ? 'checked' : ''}>${ic(it.icon)}<span>${esc(it.label)}</span></label>`).join('')}</div></div>
+      <div class="field"><label for="mt-msg">Lời nhắn (tiếng Việt) <span class="small muted">— để trống dùng câu mặc định</span></label><input class="input" id="mt-msg" value="${esc(m.msg || '')}" placeholder="vd: Đang cập nhật tính năng mới, dự kiến xong lúc 14:00"></div>
+      <div class="field"><label for="mt-ko">Lời nhắn (tiếng Hàn)</label><input class="input" id="mt-ko" value="${esc(m.msgKo || '')}" placeholder="예: 신규 기능 업데이트 중, 14:00 완료 예정" data-noi18n></div>
+    </div></div>`;
+    $('#mt-s').onclick = async e => { busy(e.currentTarget, true, 'Đang lưu…');
+      try { const r = await call('adm.maint', { all: $('#mt-all').checked, tabs: $$('.mt-tab').filter(x => x.checked).map(x => x.value), msg: $('#mt-msg').value, msgKo: $('#mt-ko').value });
+        S.links.maint = r; renderNav(); toast(r.all ? L2('Đã bật bảo trì cả intranet', '인트라넷 전체 점검을 켰습니다') : r.tabs.length ? L2(`Đang bảo trì ${r.tabs.length} mục`, `${r.tabs.length}개 메뉴 점검 중`) : L2('Đã tắt bảo trì', '점검을 해제했습니다')); busy(e.currentTarget, false); }
+      catch (err) { toast(err.message, 'err'); busy(e.currentTarget, false); } };
+  };
   const drawMail = async () => {
     b.innerHTML = `<div class="card">${skel(5, 56)}</div>`;
     const list = await call('adm.mailLog');
@@ -3176,7 +3221,7 @@ VIEWS.admin = async el => {
     $('#ml-q').oninput = e => { q = e.target.value.toLowerCase(); paint(); };
     paint();
   };
-  $('#ad-t').onclick = e => { const x = e.target.closest('button'); if (!x) return; $$('#ad-t button').forEach(y => y.classList.toggle('on', y === x)); (x.dataset.t === 'cfg' ? drawCfg : x.dataset.t === 'mail' ? drawMail : drawNV)().catch(err => b.innerHTML = errBox(err.message)); };
+  $('#ad-t').onclick = e => { const x = e.target.closest('button'); if (!x) return; $$('#ad-t button').forEach(y => y.classList.toggle('on', y === x)); (x.dataset.t === 'cfg' ? drawCfg : x.dataset.t === 'mail' ? drawMail : x.dataset.t === 'mt' ? drawMt : drawNV)().catch(err => b.innerHTML = errBox(err.message)); };
   await drawNV();
 };
 
