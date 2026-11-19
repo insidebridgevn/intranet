@@ -1760,7 +1760,7 @@ async function annStatsModal(a){
   if (!a) return;
   const m = modal('Ai đã xem · ' + a.title, `<div id="as-b">${skel(4, 36)}</div>`, `${has('HR') ? '<button class="btn ghost" id="as-mail">Gửi lại email</button>' : ''}<button class="btn primary" data-close>Đóng</button>`);
   const mb = $('#as-mail', m.el);
-  if (mb) mb.onclick = async ev => { if (!confirm('Gửi lại email thông báo này cho TOÀN BỘ nhân viên?')) return; busy(ev.currentTarget, true, 'Đang gửi…'); try { const r = await call('ann.resend', { id:a.id }); toast(`Đã gửi email tới ${r.sent} địa chỉ${r.missing ? ` · ${r.missing} người chưa có email` : ''}`); } catch(err) { toast(err.message, 'err'); } busy(ev.currentTarget, false); };
+  if (mb) mb.onclick = async ev => { if (!confirm('Gửi lại email thông báo này cho TOÀN BỘ nhân viên?')) return; const btn1 = ev.currentTarget; busy(btn1, true, 'Đang gửi…'); try { const r = await call('ann.resend', { id:a.id }); toast(`Đã gửi email tới ${r.sent} địa chỉ${r.missing ? ` · ${r.missing} người chưa có email` : ''}`); } catch(err) { toast(err.message, 'err'); } busy(btn1, false); };
   try {
     const d = await call('ann.stats', { id:a.id });
     const seen = d.emps.filter(e => e.seenAt).sort((x, y) => x.seenAt < y.seenAt ? 1 : -1), not = d.emps.filter(e => !e.seenAt);
@@ -1816,13 +1816,13 @@ VIEWS.thongbao = async el => {
       ${a.id ? '' : `<label class="check"><input type="checkbox" id="an-m"> Gửi email thông báo cho toàn bộ nhân viên (kèm link xem trên intranet)</label>`}`,
       `<button class="btn ghost" data-close>Huỷ</button><button class="btn primary" id="an-s">${a.id ? 'Lưu' : 'Đăng'}</button>`);
     rteInit($('#an-ed', m.el), a.body || '');
-    $('#an-s', m.el).onclick = async ev => { busy(ev.currentTarget, true); try { const em = !a.id && $('#an-m') && $('#an-m').checked; busy(ev.currentTarget, true, em ? 'Đang đăng & gửi email…' : 'Đang lưu…');
-      if (em && !confirm('Đăng và gửi email cho TOÀN BỘ nhân viên?')) { busy(ev.currentTarget, false); return; }
+    $('#an-s', m.el).onclick = async ev => { const btn1 = ev.currentTarget; busy(btn1, true); try { const em = !a.id && $('#an-m') && $('#an-m').checked; busy(ev.currentTarget, true, em ? 'Đang đăng & gửi email…' : 'Đang lưu…');
+      if (em && !confirm('Đăng và gửi email cho TOÀN BỘ nhân viên?')) { busy(btn1, false); return; }
       const r = await call('ann.save', { id:a.id, title:$('#an-t').value, body:rteValue($('#an-ed', m.el)), cat:$('#an-c').value, pinned:$('#an-p').checked, email: em });
       if (Array.isArray(r)) S.ann = r; else { S.ann = r.list;
         if (r.mailError) toast('Đã đăng, nhưng chưa gửi được email: ' + r.mailError, 'err');
         else if (r.mail) toast(`Đã gửi email tới ${r.mail.sent} địa chỉ${r.mail.missing ? ` · ${r.mail.missing} người chưa có email` : ''}`); }
-      m.close(); draw(); markAnnSeen(); renderNav(); toast('Đã lưu thông báo'); } catch(err){ toast(err.message,'err'); busy(ev.currentTarget,false); } };
+      m.close(); draw(); markAnnSeen(); renderNav(); toast('Đã lưu thông báo'); } catch(err){ toast(err.message,'err'); busy(btn1, false); } };
   };
   if (canPost) $('#tb-new').onclick = () => edit();
   $('#tb-list').onclick = async e => {
@@ -1909,9 +1909,9 @@ VIEWS.luong = async el => {
     if (okb) okb.onclick = () => {
       const m = modal('Xác nhận phiếu lương?', `<p style="margin:0">Bạn xác nhận đã kiểm tra và đồng ý với phiếu lương <b>${esc(mLabel(D.thang))}</b>, thực nhận <b>${Math.round(Number(D.thucNhan) || 0).toLocaleString('vi-VN')} VND</b>. Xác nhận sẽ được gửi về kế toán và không huỷ được.</p>`,
         `<button class="btn ghost" data-close>Để sau</button><button class="btn primary" id="ps-ok2">Xác nhận</button>`);
-      $('#ps-ok2', m.el).onclick = async ev => { busy(ev.currentTarget, true, 'Đang gửi…');
+      $('#ps-ok2', m.el).onclick = async ev => { const btn1 = ev.currentTarget; busy(btn1, true, 'Đang gửi…');
         try { const r = await call('payslip.confirm', { month: D.thang, pin: S.payPin }); conf[D.thang] = r.time; m.close(); toast('Đã xác nhận phiếu lương'); draw(); }
-        catch(err) { toast(err.message, 'err'); busy(ev.currentTarget, false); } };
+        catch(err) { toast(err.message, 'err'); busy(btn1, false); } };
     };
     $('#ps-t').onclick = e => { const c = e.target.closest('.chip'); if (c) $$('#ps-t .chip').forEach(x => x.classList.toggle('on', x === c)); };
     $('#ps-f').addEventListener('submit', async e => { e.preventDefault(); const b = $('#ps-b'); busy(b, true, 'Đang gửi…');
@@ -2039,10 +2039,10 @@ function attEditModal(o, done){
     <div class="field"><label for="ae-r">Lý do sửa <span class="req">*</span></label><textarea class="textarea" id="ae-r" style="min-height:70px" placeholder="vd: Quên quét vân tay, đã có đơn quên chấm công…"></textarea></div>
     <span class="small muted">Giờ đã sửa sẽ thay giờ lấy từ khóa cửa ở mọi nơi: trang của nhân viên, tab Toàn công ty, file Excel.</span>`,
     '<button class="btn ghost" data-close>Huỷ</button><button class="btn primary" id="ae-s">Lưu</button>');
-  $('#ae-s', m.el).onclick = async ev => {
-    busy(ev.currentTarget, true, 'Đang lưu…');
+  $('#ae-s', m.el).onclick = async ev => { const btn1 = ev.currentTarget;
+    busy(btn1, true, 'Đang lưu…');
     try { await call('att.edit', { date:o.date, empId:o.id, in:$('#ae-i', m.el).value, out:$('#ae-o', m.el).value, reason:$('#ae-r', m.el).value }); m.close(); toast('Đã sửa giờ chấm công'); done && done(); }
-    catch(err) { toast(err.message, 'err'); busy(ev.currentTarget, false); }
+    catch(err) { toast(err.message, 'err'); busy(btn1, false); }
   };
 }
 const editNote = ed => ed ? `<div class="att-ed">${ic('edit')}Đã sửa bởi ${esc(ed.by)} lúc ${esc(String(ed.at).slice(11, 16))} ${esc(vnDate(String(ed.at).slice(0, 10)))} · ${esc(ed.reason)}</div>` : '';
@@ -2216,15 +2216,15 @@ VIEWS.chamcong = async el => {
         const ts = rows.map(r => r[3]).sort();
         $('#up-prev').innerHTML = `<div class="note">${ic('file')}<div><b>${esc(file.name)}</b><br>${rows.length} dòng · ${names.size} tên · ${vnDate(ts[0])} → ${vnDate(ts[ts.length-1])}</div></div>
           <button class="btn primary lg block" id="up-go" style="margin-top:12px">${ic('upload')}Tải lên & phân bổ cho nhân viên</button>`;
-        $('#up-go').onclick = async ev => {
-          busy(ev.currentTarget, true, 'Đang xử lý…');
+        $('#up-go').onclick = async ev => { const btn1 = ev.currentTarget;
+          busy(btn1, true, 'Đang xử lý…');
           try {
             store.set('ibvn_lock', $('#up-lock').value.trim());
             const r = await call('att.upload', { rows, lockName: $('#up-lock').value.trim(), fileName: file.name });
             $('#up-prev').innerHTML = `<div class="note ${r.unmatched.length ? 'warn' : 'ok'}">${ic(r.unmatched.length ? 'info' : 'check')}<div><b>Đã thêm ${r.added} lượt quét</b> · bỏ qua ${r.dup} dòng trùng.<br>${r.unmatched.length ? `Có <b>${r.unmatched.length} tên chưa khớp</b> với danh sách NV: ${r.unmatched.map(u => esc(u.name)).join(', ')}. <a href="#" id="go-map">Gán ngay →</a>` : 'Tất cả tên đã khớp với nhân viên.'}</div></div>`;
             const gm = $('#go-map'); if (gm) gm.onclick = e2 => { e2.preventDefault(); switchTab('map'); };
             hist();
-          } catch(err) { toast(err.message, 'err'); busy(ev.currentTarget, false); }
+          } catch(err) { toast(err.message, 'err'); busy(btn1, false); }
         };
       } catch(err) { toast(err.message, 'err'); }
     };
@@ -2553,7 +2553,7 @@ VIEWS.phonghop = async el => {
       <div class="field"><label for="ee-n">Ghi chú / người tham dự</label><textarea class="textarea" id="ee-n" style="min-height:70px">${esc(ev.note || '')}</textarea></div>`,
       `${parseISO(ev.start) > new Date() ? '<button class="btn danger" id="ee-x" style="margin-right:auto">Huỷ lịch</button>' : ''}<button class="btn ghost" data-close>Đóng</button><button class="btn primary" id="ee-ok">Lưu thay đổi</button>`);
     const x = $('#ee-x', m.el); if (x) x.onclick = () => { m.close(); askCancel(id); };
-    $('#ee-ok', m.el).onclick = async ev2 => { busy(ev2.currentTarget, true, 'Đang lưu…'); try { await call('room.update', { id, title: $('#ee-t').value, date: $('#ee-d').value, start: $('#ee-s').value, end: $('#ee-e').value, note: $('#ee-n').value }); m.close(); toast('Đã cập nhật lịch họp'); load(); } catch(err) { toast(err.message, 'err'); busy(ev2.currentTarget, false); } };
+    $('#ee-ok', m.el).onclick = async ev2 => { const btn2 = ev2.currentTarget; busy(btn2, true, 'Đang lưu…'); try { await call('room.update', { id, title: $('#ee-t').value, date: $('#ee-d').value, start: $('#ee-s').value, end: $('#ee-e').value, note: $('#ee-n').value }); m.close(); toast('Đã cập nhật lịch họp'); load(); } catch(err) { toast(err.message, 'err'); busy(btn2, false); } };
   };
   const askCancel = id => {
     const ev = events.find(x => x.id === id); if (!ev) return;
@@ -2816,11 +2816,11 @@ function evFormModal(ev, done){
     </div>
     <span class="small muted">Để trống ngày bắt đầu / kết thúc thì lấy theo ngày đầu và cuối trong file lịch. Tab lịch cần có dòng tiêu đề "Mã NV", các dòng "Ngày", "Loại ca", "Bắt đầu", "Kết thúc" và mã vai trò trong ô (CA, SC, BH, KHO, SU, DH).</span>`,
     '<button class="btn ghost" data-close>Huỷ</button><button class="btn primary" id="ea-save">Lưu</button>');
-  $('#ea-save', m.el).onclick = async e => { busy(e.currentTarget, true, 'Đang lưu…');
+  $('#ea-save', m.el).onclick = async e => { const btn0 = e.currentTarget; busy(btn0, true, 'Đang lưu…');
     const f = { name: $('#ea-n', m.el).value, nameKo: $('#ea-k', m.el).value, url: $('#ea-u', m.el).value, tab: $('#ea-t', m.el).value, managers: $('#ea-m', m.el).value,
       start: $('#ea-s', m.el).value, end: $('#ea-e', m.el).value, state: $('#ea-st', m.el).value, note: $('#ea-no', m.el).value, noteKo: $('#ea-nk', m.el).value };
     try { const d = await call(ev ? 'ev.update' : 'ev.add', ev ? { id: ev.id, ...f } : f); m.close(); toast(ev ? 'Đã lưu sự kiện' : 'Đã thêm sự kiện'); done(d); }
-    catch(err) { toast(err.message, 'err'); busy(e.currentTarget, false); } };
+    catch(err) { toast(err.message, 'err'); busy(btn0, false); } };
 }
 async function evOpen(el, id, keepTab){
   el.innerHTML = skel(4, 80);
@@ -2879,7 +2879,7 @@ async function evOpen(el, id, keepTab){
           <td style="white-space:nowrap">${ro ? '' : `${x.in && x.status !== 'Đã xác nhận' ? `<button class="btn sm primary" data-ok="${i}">Xác nhận</button> ` : ''}<button class="btn sm ghost" data-ed="${i}">${ic('edit')}Sửa</button>`}</td></tr>`).join('')}</tbody></table></div>`
         : `<div class="empty"><b>Không có ai trong ca này</b></div>`}</div></div>`;
     $('#ev-pick', box).onchange = e => { pick = e.target.value; drawMgr(box); };
-    if ($('#ev-sync', box)) $('#ev-sync', box).onclick = async e => { busy(e.currentTarget, true, 'Đang đồng bộ…'); try { const r = await call('ev.sync', { id }); toast(`Đã ghi ${r.rows} ca vào tab "5. Chấm công"`); D = await call('ev.get', { id, fresh: 1 }); draw(); } catch(err) { toast(err.message, 'err'); busy(e.currentTarget, false); } };
+    if ($('#ev-sync', box)) $('#ev-sync', box).onclick = async e => { const btn0 = e.currentTarget; busy(btn0, true, 'Đang đồng bộ…'); try { const r = await call('ev.sync', { id }); toast(`Đã ghi ${r.rows} ca vào tab "5. Chấm công"`); D = await call('ev.get', { id, fresh: 1 }); draw(); } catch(err) { toast(err.message, 'err'); busy(btn0, false); } };
     box.querySelectorAll('[data-ok]').forEach(b => b.onclick = () => evOkModal(rows[+b.dataset.ok], async note => { D = await call('ev.confirm', { id, ok: true, note, items: [{ empId: rows[+b.dataset.ok].empId, key: rows[+b.dataset.ok].key }] }); draw(); }));
     box.querySelectorAll('[data-ed]').forEach(b => b.onclick = () => evEditModal(rows[+b.dataset.ed], async (ok, patch) => { D = await call('ev.confirm', { id, ok, note: patch.note, items: [{ empId: patch.empId, key: patch.key, in: patch.in, out: patch.out }] }); draw(); }));
   };
@@ -2891,8 +2891,8 @@ function evOkModal(x, save){
     <div class="row" style="gap:18px;margin-bottom:10px"><div><span class="small muted">Check-in</span><div><b>${evHM(x.in)}</b></div></div><div><span class="small muted">Check-out</span><div><b>${evHM(x.out)}</b></div></div><div>${evChk(x)}</div></div>
     <div class="field"><label for="eo-n">Ghi chú <span class="small muted">(không bắt buộc)</span></label><textarea class="textarea" id="eo-n" style="min-height:70px" placeholder="vd: đi trễ 15 phút do kẹt xe, đã báo trước">${esc(x.note || '')}</textarea></div>`,
     '<button class="btn ghost" data-close>Huỷ</button><button class="btn primary" id="eo-ok">Xác nhận</button>');
-  $('#eo-ok', m.el).onclick = async e => { busy(e.currentTarget, true, 'Đang lưu…');
-    try { await save($('#eo-n', m.el).value.trim()); m.close(); toast('Đã xác nhận ' + x.name); } catch(err) { toast(err.message, 'err'); busy(e.currentTarget, false); } };
+  $('#eo-ok', m.el).onclick = async e => { const btn0 = e.currentTarget; busy(btn0, true, 'Đang lưu…');
+    try { await save($('#eo-n', m.el).value.trim()); m.close(); toast('Đã xác nhận ' + x.name); } catch(err) { toast(err.message, 'err'); busy(btn0, false); } };
 }
 function evEditModal(x, save){
   const m = modal('Xác nhận / sửa giờ', `<div class="small muted" style="margin-bottom:10px"><b>${esc(x.name)}</b> · ${esc(evDay(x.date))} · ${esc(x.type)} ${esc(x.start)}–${esc(x.end)} · ${esc(x.roleName)}</div>
@@ -2988,9 +2988,9 @@ function balAdjModal(d, done){
     <div class="field"><label for="ba-note">${L2('Lý do', '사유')}</label><textarea class="textarea" id="ba-note" style="min-height:60px"></textarea></div></div>`,
     `<button class="btn ghost" data-close>${L2('Huỷ', '취소')}</button><button class="btn primary" id="ba-ok">${L2('Lưu', '저장')}</button>`);
   $('#ba-k', m.el).onclick = e => { const c = e.target.closest('.chip'); if (!c) return; $$('#ba-k .chip', m.el).forEach(x => x.classList.toggle('on', x === c)); };
-  $('#ba-ok', m.el).onclick = async e => { busy(e.currentTarget, true, L2('Đang lưu…', '저장 중…'));
+  $('#ba-ok', m.el).onclick = async e => { const btn0 = e.currentTarget; busy(btn0, true, L2('Đang lưu…', '저장 중…'));
     try { const r = await call('bal.adj', { empId: d.emp.id, kind: $('#ba-k .chip.on', m.el).dataset.v, n: $('#ba-n', m.el).value, date: $('#ba-d', m.el).value, note: $('#ba-note', m.el).value }); m.close(); toast(L2('Đã lưu điều chỉnh', '조정 저장 완료')); done(r); }
-    catch (err) { toast(err.message, 'err'); busy(e.currentTarget, false); } };
+    catch (err) { toast(err.message, 'err'); busy(btn0, false); } };
 }
 VIEWS.phepot = async el => {
   el.innerHTML = skel(3, 90);
@@ -3153,7 +3153,7 @@ VIEWS.admin = async el => {
     };
     draw();
     $('#ad-q').oninput = e => draw(e.target.value);
-    $('#ad-sync').onclick = async e => { busy(e.currentTarget, true, 'Đang đồng bộ…'); try { const r = await call('adm.sync'); toast(`Thêm ${r.added} NV, cập nhật ${r.updated} ô`); drawNV(); } catch(err) { toast(err.message, 'err'); busy(e.currentTarget, false); } };
+    $('#ad-sync').onclick = async e => { const btn0 = e.currentTarget; busy(btn0, true, 'Đang đồng bộ…'); try { const r = await call('adm.sync'); toast(`Thêm ${r.added} NV, cập nhật ${r.updated} ô`); drawNV(); } catch(err) { toast(err.message, 'err'); busy(btn0, false); } };
     $('#ad-l').onclick = async e => {
       const tr = e.target.closest('tr[data-id]'); if (!tr) return; const id = tr.dataset.id;
       if (e.target.closest('[data-imp]')) return startImp(id, e.target.closest('[data-imp]'));
@@ -3164,9 +3164,9 @@ VIEWS.admin = async el => {
           restore ? `<p style="margin:0"><b>${esc(it.name)}</b> (${esc(id)}) sẽ đăng nhập lại được với mật khẩu mặc định <b>123456</b> và phải đổi mật khẩu ngay.</p>`
                   : `<p style="margin:0"><b>${esc(it.name)}</b> (${esc(id)}) sẽ <b>không đăng nhập được nữa</b>, nếu đang đăng nhập sẽ bị thoát ngay. Mật khẩu và quyền bị xoá. Lịch sử chấm công, đơn từ vẫn giữ để tra cứu. Có thể khôi phục lại sau.</p>`,
           `<button class="btn ghost" data-close>Huỷ</button><button class="btn ${restore ? 'primary' : 'danger'}" id="dl-go">${restore ? 'Khôi phục' : 'Xoá'}</button>`);
-        $('#dl-go', m.el).onclick = async ev => { busy(ev.currentTarget, true, '…');
+        $('#dl-go', m.el).onclick = async ev => { const btn1 = ev.currentTarget; busy(btn1, true, '…');
           try { await call('adm.deleteEmployee', { id, restore }); it.status = restore ? 'ĐANG LÀM' : 'ĐÃ XOÁ'; if (!restore) it.roles = ''; m.close(); toast(restore ? 'Đã khôi phục' : 'Đã xoá khỏi hệ thống'); draw($('#ad-q').value); }
-          catch(err) { toast(err.message, 'err'); busy(ev.currentTarget, false); } };
+          catch(err) { toast(err.message, 'err'); busy(btn1, false); } };
         return;
       }
       if (e.target.closest('[data-save]')) {
@@ -3186,7 +3186,7 @@ VIEWS.admin = async el => {
     const items = await call('adm.config');
     const hidden = ['CHAM_CONG_CAP_NHAT', 'CHAM_CONG_DEN'];
     $('#cf-l').innerHTML = items.filter(i => !hidden.includes(i.key)).map(i => `<div class="field"><label>${esc(i.desc || i.key)} <span class="muted small">· ${esc(i.key)}</span></label><input class="input" data-cfg="${esc(i.key)}" value="${esc(i.value)}"></div>`).join('');
-    $('#cf-s').onclick = async e => { busy(e.currentTarget, true, 'Đang lưu…'); try { await call('adm.saveConfig', { items: $$('[data-cfg]').map(x => ({ key: x.dataset.cfg, value: x.value.trim() })) }); const d = await call('me'); S.links = d.links; toast('Đã lưu cấu hình'); } catch(err) { toast(err.message, 'err'); } busy(e.currentTarget, false); };
+    $('#cf-s').onclick = async e => { const btn0 = e.currentTarget; busy(btn0, true, 'Đang lưu…'); try { await call('adm.saveConfig', { items: $$('[data-cfg]').map(x => ({ key: x.dataset.cfg, value: x.value.trim() })) }); const d = await call('me'); S.links = d.links; toast('Đã lưu cấu hình'); } catch(err) { toast(err.message, 'err'); } busy(btn0, false); };
   };
   const drawMt = async () => {
     const d = await call('me'); S.links = d.links; const m = S.links.maint;
@@ -3198,10 +3198,10 @@ VIEWS.admin = async el => {
       <div class="field"><label for="mt-msg">Lời nhắn (tiếng Việt) <span class="small muted">— để trống dùng câu mặc định</span></label><input class="input" id="mt-msg" value="${esc(m.msg || '')}" placeholder="vd: Đang cập nhật tính năng mới, dự kiến xong lúc 14:00"></div>
       <div class="field"><label for="mt-ko">Lời nhắn (tiếng Hàn)</label><input class="input" id="mt-ko" value="${esc(m.msgKo || '')}" placeholder="예: 신규 기능 업데이트 중, 14:00 완료 예정" data-noi18n></div>
     </div></div>`;
-    $('#mt-s').onclick = async e => { busy(e.currentTarget, true, 'Đang lưu…');
+    $('#mt-s').onclick = async e => { const btn0 = e.currentTarget; busy(btn0, true, 'Đang lưu…');
       try { const r = await call('adm.maint', { all: $('#mt-all').checked, tabs: $$('.mt-tab').filter(x => x.checked).map(x => x.value), msg: $('#mt-msg').value, msgKo: $('#mt-ko').value });
-        S.links.maint = r; renderNav(); toast(r.all ? L2('Đã bật bảo trì cả intranet', '인트라넷 전체 점검을 켰습니다') : r.tabs.length ? L2(`Đang bảo trì ${r.tabs.length} mục`, `${r.tabs.length}개 메뉴 점검 중`) : L2('Đã tắt bảo trì', '점검을 해제했습니다')); busy(e.currentTarget, false); }
-      catch (err) { toast(err.message, 'err'); busy(e.currentTarget, false); } };
+        S.links.maint = r; renderNav(); toast(r.all ? L2('Đã bật bảo trì cả intranet', '인트라넷 전체 점검을 켰습니다') : r.tabs.length ? L2(`Đang bảo trì ${r.tabs.length} mục`, `${r.tabs.length}개 메뉴 점검 중`) : L2('Đã tắt bảo trì', '점검을 해제했습니다')); busy(btn0, false); }
+      catch (err) { toast(err.message, 'err'); busy(btn0, false); } };
   };
   const drawMail = async () => {
     b.innerHTML = `<div class="card">${skel(5, 56)}</div>`;
