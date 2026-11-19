@@ -937,7 +937,7 @@ Object.assign(KO, {
   'Đã lưu sự kiện':'이벤트를 저장했습니다', 'Đã thêm sự kiện':'이벤트를 추가했습니다', 'Lịch của tôi':'내 근무', 'Quản lý chấm công':'근태 관리',
   'Bạn không có ca nào trong sự kiện này':'이 이벤트에 배정된 근무가 없습니다', 'Nếu bạn có tham gia, báo quản lý event thêm tên bạn vào lịch.':'참여한다면 이벤트 관리자에게 근무표에 이름을 추가해 달라고 요청하세요.',
   'Sáng':'오전', 'Chiều':'오후', 'Setup':'세팅', 'Dọn hàng':'철수', 'Bán hàng':'판매', 'Thu ngân':'계산원', 'Hỗ trợ thu ngân':'계산 보조', 'Hỗ trợ kho':'창고 지원', 'Set up':'세팅',
-  'Đã xác nhận':'확인 완료', 'Từ chối':'반려', 'Chờ quản lý xác nhận':'관리자 확인 대기', 'Chờ xác nhận':'확인 대기', 'Đối chiếu với lịch':'근무표 대조', 'Đối chiếu':'대조', 'Vai trò':'역할', 'Xác nhận':'확인',
+  'Đã xác nhận':'확인 완료', 'Từ chối':'반려', 'Không xác nhận':'미확인 처리', 'Không xác nhận chấm công':'근태 미확인 처리', 'Đã không xác nhận ':'미확인 처리: ', 'Chờ quản lý xác nhận':'관리자 확인 대기', 'Chờ xác nhận':'확인 대기', 'Đối chiếu với lịch':'근무표 대조', 'Đối chiếu':'대조', 'Vai trò':'역할', 'Xác nhận':'확인',
   'Không check-in':'체크인 없음', 'Chưa check-in':'미체크인', 'Chưa đến ca':'근무 전', 'Thiếu check-out':'체크아웃 누락', 'Đúng giờ':'정시',
   'Ca đã kết thúc':'근무 종료됨', 'Đã quá giờ check-out – báo quản lý event sửa giờ':'체크아웃 시간이 지났습니다 – 이벤트 관리자에게 시간 수정을 요청하세요',
   'Tất cả ca':'전체 근무', 'Đồng bộ sheet':'시트 동기화', 'Đọc lại lịch và ghi tab 5. Chấm công trong file lịch':'근무표를 다시 읽고 근무표 파일의 "5. Chấm công" 탭에 기록', 'Không có ai trong ca này':'이 근무에 배정된 사람이 없습니다',
@@ -2769,7 +2769,7 @@ VIEWS.gopy = async el => {
 const EV_ST = { active:['Đang diễn ra','ok'], upcoming:['Sắp diễn ra','info'], ended:['Đã kết thúc',''], hidden:['Đã ẩn',''] };
 const evHM = s => s ? String(s).slice(11, 16) : '—';
 const evDay = d => `${WD[parseISO(d).getDay()]} ${vnDate(d).slice(0, 5)}`;
-const evStPill = x => x.status === 'Đã xác nhận' ? `<span class="pill ok">${ic('check')}Đã xác nhận</span>` : x.status === 'Từ chối' ? '<span class="pill bad">Từ chối</span>' : x.in ? '<span class="pill warn">Chờ quản lý xác nhận</span>' : '';
+const evStPill = x => x.status === 'Đã xác nhận' ? `<span class="pill ok">${ic('check')}Đã xác nhận</span>` : x.status === 'Từ chối' ? '<span class="pill bad">Không xác nhận</span>' : x.in ? '<span class="pill warn">Chờ quản lý xác nhận</span>' : '';
 const evChk = x => { const bad = /Không check-in|Thiếu|trễ|sớm/.test(x.check), ok = /Đúng giờ/.test(x.check); return `<span class="ev-chk ${bad ? 'bad' : ok ? 'ok' : ''}">${esc(x.check)}</span>`; };
 VIEWS.event = async el => {
   el.innerHTML = skel(3, 90);
@@ -2876,30 +2876,31 @@ async function evOpen(el, id, keepTab){
         ${rows.map((x, i) => `<tr>${pick === '*' ? `<td class="small">${esc(evDay(x.date))}<div class="muted">${esc(x.type)}</div></td>` : ''}<td><b>${esc(x.name)}</b><div class="small muted">${esc(x.empId)}</div></td><td class="small">${esc(x.dept || '—')}<div class="muted">${esc(x.position || '')}</div></td><td class="small">${esc(x.roleName)}</td>
           <td class="tnum">${evHM(x.in)}</td><td class="tnum">${evHM(x.out)}</td><td class="small">${evChk(x)}</td>
           <td>${evStPill(x) || '<span class="small muted">—</span>'}${x.by ? `<div class="small muted">${esc(x.by)} · ${esc(String(x.at).slice(11, 16))}</div>` : ''}${x.note ? `<div class="small">${esc(x.note)}</div>` : ''}</td>
-          <td style="white-space:nowrap">${ro ? '' : `${x.in && x.status !== 'Đã xác nhận' ? `<button class="btn sm primary" data-ok="${i}">Xác nhận</button> ` : ''}<button class="btn sm ghost" data-ed="${i}">${ic('edit')}Sửa</button>`}</td></tr>`).join('')}</tbody></table></div>`
+          <td style="white-space:nowrap">${ro ? '' : `${x.in && x.status !== 'Đã xác nhận' ? `<button class="btn sm primary" data-ok="${i}">Xác nhận</button> ` : ''}${x.status !== 'Từ chối' ? `<button class="btn sm ghost bad-t" data-no="${i}">Không xác nhận</button> ` : ''}<button class="btn sm ghost" data-ed="${i}">${ic('edit')}Sửa</button>`}</td></tr>`).join('')}</tbody></table></div>`
         : `<div class="empty"><b>Không có ai trong ca này</b></div>`}</div></div>`;
     $('#ev-pick', box).onchange = e => { pick = e.target.value; drawMgr(box); };
     if ($('#ev-sync', box)) $('#ev-sync', box).onclick = async e => { const btn0 = e.currentTarget; busy(btn0, true, 'Đang đồng bộ…'); try { const r = await call('ev.sync', { id }); toast(`Đã ghi ${r.rows} ca vào tab "5. Chấm công"`); D = await call('ev.get', { id, fresh: 1 }); draw(); } catch(err) { toast(err.message, 'err'); busy(btn0, false); } };
     box.querySelectorAll('[data-ok]').forEach(b => b.onclick = () => evOkModal(rows[+b.dataset.ok], async note => { D = await call('ev.confirm', { id, ok: true, note, items: [{ empId: rows[+b.dataset.ok].empId, key: rows[+b.dataset.ok].key }] }); draw(); }));
+    box.querySelectorAll('[data-no]').forEach(b => b.onclick = () => evOkModal(rows[+b.dataset.no], async note => { D = await call('ev.confirm', { id, ok: false, note, items: [{ empId: rows[+b.dataset.no].empId, key: rows[+b.dataset.no].key }] }); draw(); }, false));
     box.querySelectorAll('[data-ed]').forEach(b => b.onclick = () => evEditModal(rows[+b.dataset.ed], async (ok, patch) => { D = await call('ev.confirm', { id, ok, note: patch.note, items: [{ empId: patch.empId, key: patch.key, in: patch.in, out: patch.out }] }); draw(); }));
   };
   draw();
 }
 const evOpenAt = x => { const m = String(x.start).match(/(\d+):(\d+)/); if (!m) return ''; const t = (+m[1]) * 60 + (+m[2]) - 60; return `${pad(Math.floor(((t % 1440) + 1440) % 1440 / 60))}:${pad(t % 60 < 0 ? t % 60 + 60 : t % 60)} ${vnDate(x.date).slice(0, 5)}`; };
-function evOkModal(x, save){
-  const m = modal('Xác nhận chấm công', `<div class="small muted" style="margin-bottom:10px"><b>${esc(x.name)}</b> · ${esc(evDay(x.date))} · ${esc(x.type)} ${esc(x.start)}–${esc(x.end)} · ${esc(x.roleName)}</div>
+function evOkModal(x, save, ok = true){
+  const m = modal(ok ? 'Xác nhận chấm công' : 'Không xác nhận chấm công', `<div class="small muted" style="margin-bottom:10px"><b>${esc(x.name)}</b> · ${esc(evDay(x.date))} · ${esc(x.type)} ${esc(x.start)}–${esc(x.end)} · ${esc(x.roleName)}</div>
     <div class="row" style="gap:18px;margin-bottom:10px"><div><span class="small muted">Check-in</span><div><b>${evHM(x.in)}</b></div></div><div><span class="small muted">Check-out</span><div><b>${evHM(x.out)}</b></div></div><div>${evChk(x)}</div></div>
     <div class="field"><label for="eo-n">Ghi chú <span class="small muted">(không bắt buộc)</span></label><textarea class="textarea" id="eo-n" style="min-height:70px" placeholder="vd: đi trễ 15 phút do kẹt xe, đã báo trước">${esc(x.note || '')}</textarea></div>`,
-    '<button class="btn ghost" data-close>Huỷ</button><button class="btn primary" id="eo-ok">Xác nhận</button>');
+    ok ? '<button class="btn ghost" data-close>Huỷ</button><button class="btn primary" id="eo-ok">Xác nhận</button>' : '<button class="btn ghost" data-close>Huỷ</button><button class="btn danger" id="eo-ok">Không xác nhận</button>');
   $('#eo-ok', m.el).onclick = async e => { const btn0 = e.currentTarget; busy(btn0, true, 'Đang lưu…');
-    try { await save($('#eo-n', m.el).value.trim()); m.close(); toast('Đã xác nhận ' + x.name); } catch(err) { toast(err.message, 'err'); busy(btn0, false); } };
+    try { await save($('#eo-n', m.el).value.trim()); m.close(); toast((ok ? 'Đã xác nhận ' : 'Đã không xác nhận ') + x.name); } catch(err) { toast(err.message, 'err'); busy(btn0, false); } };
 }
 function evEditModal(x, save){
   const m = modal('Xác nhận / sửa giờ', `<div class="small muted" style="margin-bottom:10px"><b>${esc(x.name)}</b> · ${esc(evDay(x.date))} · ${esc(x.type)} ${esc(x.start)}–${esc(x.end)} · ${esc(x.roleName)}</div>
     <div class="row" style="flex-wrap:nowrap"><div class="field" style="flex:1"><label for="ee-i">Giờ vào</label><input class="input" type="time" id="ee-i" value="${esc(x.in ? x.in.slice(11, 16) : '')}"></div>
     <div class="field" style="flex:1"><label for="ee-o">Giờ ra</label><input class="input" type="time" id="ee-o" value="${esc(x.out ? x.out.slice(11, 16) : '')}"></div></div>
     <div class="field"><label for="ee-n">Ghi chú</label><textarea class="textarea" id="ee-n" style="min-height:60px" placeholder="vd: quên check-out, đã xác nhận ra lúc 22:05">${esc(x.note || '')}</textarea></div>`,
-    '<button class="btn ghost" id="ee-no">Từ chối</button><button class="btn primary" id="ee-ok">Lưu & xác nhận</button>');
+    '<button class="btn ghost" id="ee-no">Không xác nhận</button><button class="btn primary" id="ee-ok">Lưu & xác nhận</button>');
   const go = async (ok, btn) => { busy(btn, true, 'Đang lưu…');
     try { const i = $('#ee-i', m.el).value, o = $('#ee-o', m.el).value;
       await save(ok, { empId: x.empId, key: x.key, in: i !== (x.in || '').slice(11, 16) ? i : undefined, out: o !== (x.out || '').slice(11, 16) ? o : undefined, note: $('#ee-n', m.el).value });
@@ -2935,7 +2936,7 @@ function balLine(h){
       if (h.ev) {
         const mt = h.mul > 1 ? ` × ${h.mul}` : '';
         calc = h.cf === 'Đã xác nhận' ? L2(`đăng ký ${n2(h.req)} giờ, quản lý event xác nhận ${n2(h.otOk)} giờ → ${n2(h.used)}${mt} = ${n2(h.used * h.mul)} giờ`, `신청 ${n2(h.req)}시간, 이벤트 매니저 확인 ${n2(h.otOk)}시간 → ${n2(h.used)}${mt} = ${n2(h.used * h.mul)}시간`)
-          : h.cf === 'Từ chối' ? L2(`đăng ký ${n2(h.req)} giờ — quản lý event từ chối → 0`, `신청 ${n2(h.req)}시간 — 이벤트 매니저 반려 → 0`)
+          : h.cf === 'Từ chối' ? L2(`đăng ký ${n2(h.req)} giờ — quản lý event không xác nhận → 0`, `신청 ${n2(h.req)}시간 — 이벤트 매니저 미확인 처리 → 0`)
           : L2(`đăng ký ${n2(h.req)} giờ — chờ quản lý event xác nhận → chưa cộng`, `신청 ${n2(h.req)}시간 — 이벤트 매니저 확인 대기 → 미반영`);
       } else if (h.mul > 1) {
         const mulTxt = h.mul === 1.5 ? L2('T7 ×1.5', '토요일 ×1.5') : L2('CN ×2', '일요일 ×2');
@@ -2961,7 +2962,7 @@ function balHist(d, kind){
   </tbody></table></div>`;
 }
 const otxSt = x => (x.hasReq ? `<span class="pill info" style="margin-right:4px">${L2('Đã làm đơn', '신청 완료')}</span>` : '') + otxSt0(x);
-const otxSt0 = x => x.status === 'Đã xác nhận' ? `<span class="pill ok">${L2('Đã xác nhận', '확인 완료')}</span>` : x.status === 'Từ chối' ? `<span class="pill bad">${L2('Từ chối', '반려')}</span>` : `<span class="pill warn">${L2('Chờ xác nhận', '확인 대기')}</span>`;
+const otxSt0 = x => x.status === 'Đã xác nhận' ? `<span class="pill ok">${L2('Đã xác nhận', '확인 완료')}</span>` : x.status === 'Từ chối' ? `<span class="pill bad">${L2('Không xác nhận', '미확인')}</span>` : `<span class="pill warn">${L2('Chờ xác nhận', '확인 대기')}</span>`;
 const otxWork = x => `${x.from}–${x.to}${x.office ? L2(` (văn phòng ${x.office})`, ` (사무실 ${x.office})`) : ''} · ${n2(x.hours)} ${L2('giờ', '시간')}${x.lunch ? L2(' (đã trừ 1 giờ nghỉ trưa)', ' (점심 1시간 제외)') : ''}`;
 function otxForm(x){
   const ot = x.otOk != null ? x.otOk : x.ot, end = x.to, toMin = s => { const [h, m] = s.split(':').map(Number); return h * 60 + m; };
@@ -2969,16 +2970,18 @@ function otxForm(x){
   const a = Math.max(0, b - Math.round(ot * 60)), hm = m => `${pad(Math.floor(m / 60))}:${pad(m % 60)}`;
   return { ngay: x.date, tu: hm(a), den: hm(b), loai: O.ot[0], lydo: `OT event ${x.ev} ${x.wk ? wdOf(x.date) + ' ' : ''}${vnDate(x.date)}: ${n2(ot)} giờ${x.wk ? ` (×${x.mul})` : ''} — đã được ${x.by} xác nhận` };
 }
-function otxModal(x, done){
-  const m = modal(L2('Xác nhận OT event', 'OT 이벤트 확인'), `<div data-noi18n><div class="small muted" style="margin-bottom:10px"><b>${esc(x.name)}</b> · ${esc(x.dept)}${x.position ? ' · ' + esc(x.position) : ''}<br>${wdOf(x.date)} ${vnDate(x.date)} · ${esc(LANG === 'ko' && x.evKo ? x.evKo : x.ev)}</div>
+function otxModal(x, done, okMode = true){
+  const m = modal(okMode ? L2('Xác nhận OT event', 'OT 이벤트 확인') : L2('Không xác nhận OT event', 'OT 이벤트 미확인 처리'), `<div data-noi18n><div class="small muted" style="margin-bottom:10px"><b>${esc(x.name)}</b> · ${esc(x.dept)}${x.position ? ' · ' + esc(x.position) : ''}<br>${wdOf(x.date)} ${vnDate(x.date)} · ${esc(LANG === 'ko' && x.evKo ? x.evKo : x.ev)}</div>
     <div class="small" style="margin-bottom:10px">${L2('Giờ làm thực tế', '실제 근무')}: <b>${esc(otxWork(x))}</b><br>${x.wk ? L2(`OT tính tự động (${wdOf(x.date)}: cả ngày, ×${x.mul})`, `자동 계산 OT (${wdOf(x.date)}: 전체, ×${x.mul})`) : L2('OT tính tự động (quá 8 giờ)', '자동 계산 OT (8시간 초과분)')}: <b>${n2(x.ot)} ${L2('giờ', '시간')}</b></div>
     <div class="field"><label for="ox-h">${L2('Số giờ OT xác nhận', '확인 OT 시간')}</label><input class="input" id="ox-h" type="number" step="0.5" min="0" max="16" value="${n2(x.otOk != null ? x.otOk : x.ot)}"><span class="small muted">${L2('Có thể sửa, vd làm tròn theo giờ chẵn hoặc 0.5', '수정 가능 (예: 정시 또는 0.5시간 단위)')}</span></div>
     <div class="field"><label for="ox-n">${L2('Ghi chú', '메모')} <span class="small muted">${L2('(không bắt buộc)', '(선택)')}</span></label><textarea class="textarea" id="ox-n" style="min-height:60px">${esc(x.note || '')}</textarea></div></div>`,
-    `<button class="btn ghost" id="ox-no">${L2('Từ chối', '반려')}</button><button class="btn primary" id="ox-ok">${L2('Xác nhận', '확인')}</button>`);
+    okMode ? `<button class="btn ghost" id="ox-no">${L2('Không xác nhận', '미확인 처리')}</button><button class="btn primary" id="ox-ok">${L2('Xác nhận', '확인')}</button>`
+           : `<button class="btn ghost" data-close>${L2('Huỷ', '취소')}</button><button class="btn danger" id="ox-no">${L2('Không xác nhận', '미확인 처리')}</button>`);
+  if (!okMode) { const f = $('#ox-h', m.el); if (f) f.closest('.field').style.display = 'none'; }
   const go = async (ok, btn) => { busy(btn, true, L2('Đang lưu…', '저장 중…'));
-    try { const r = await call('otx.confirm', { key: x.key, ok, hours: $('#ox-h', m.el).value, note: $('#ox-n', m.el).value }); m.close(); toast(ok ? L2('Đã xác nhận OT', 'OT 확인 완료') : L2('Đã từ chối', '반려 완료')); done(r); }
+    try { const r = await call('otx.confirm', { key: x.key, ok, hours: $('#ox-h', m.el).value, note: $('#ox-n', m.el).value }); m.close(); toast(ok ? L2('Đã xác nhận OT', 'OT 확인 완료') : L2('Đã ghi không xác nhận', '미확인 처리 완료')); done(r); }
     catch (err) { toast(err.message, 'err'); busy(btn, false); } };
-  $('#ox-ok', m.el).onclick = e => go(true, e.currentTarget); $('#ox-no', m.el).onclick = e => go(false, e.currentTarget);
+  if ($('#ox-ok', m.el)) $('#ox-ok', m.el).onclick = e => go(true, e.currentTarget); $('#ox-no', m.el).onclick = e => go(false, e.currentTarget);
 }
 function balAdjModal(d, done){
   const m = modal(L2('Điều chỉnh phép / OT', '연차 / OT 조정'), `<div data-noi18n><div class="small muted" style="margin-bottom:10px"><b>${esc(d.emp.name)}</b> · ${esc(d.emp.id)}</div>
@@ -3054,9 +3057,10 @@ VIEWS.phepot = async el => {
           ${show.map(x => `<tr><td><b>${esc(x.name)}</b><div class="small muted">${esc(x.empId)}</div></td><td>${esc(x.dept)}${x.position ? `<div class="small muted">${esc(x.position)}</div>` : ''}</td>
             <td>${wdOf(x.date)} ${vnDate(x.date)}<div class="small muted">${esc(LANG === 'ko' && x.evKo ? x.evKo : x.ev)}</div></td><td>${esc(otxWork(x))}</td>
             <td class="num"><b>${n2(x.otOk != null ? x.otOk : x.ot)}</b> ${L2('giờ', '시간')}${x.wk ? ` × ${x.mul}` : ''}</td><td>${otxSt(x)}${x.by ? `<div class="small muted">${esc(x.by)}${x.note ? ' · ' + esc(x.note) : ''}</div>` : ''}</td>
-            <td><button class="btn sm ${x.by ? 'ghost' : 'primary'} ox-btn" data-k="${esc(x.key)}">${x.by ? L2('Sửa', '수정') : L2('Xác nhận', '확인')}</button></td></tr>`).join('')}</tbody></table></div>`
+            <td style="white-space:nowrap">${x.by ? `<button class="btn sm ghost ox-btn" data-k="${esc(x.key)}">${L2('Sửa', '수정')}</button>` : `<button class="btn sm primary ox-btn" data-k="${esc(x.key)}">${L2('Xác nhận', '확인')}</button> <button class="btn sm ghost bad-t ox-no" data-k="${esc(x.key)}">${L2('Không xác nhận', '미확인 처리')}</button>`}</td></tr>`).join('')}</tbody></table></div>`
           : `<div class="empty"><div class="ico">${ic('check')}</div><b>Không có ngày OT event nào</b>Khi nhân viên đi event T2–T6 làm quá 8 tiếng, dòng sẽ hiện ở đây.</div>`}</div></div>`;
       $('#ox-f', b).onclick = e => { const t = e.target.closest('[data-f]'); if (!t) return; f = t.dataset.f; draw(); };
+      $$('.ox-no', b).forEach(x => x.onclick = () => { const it = rows.find(y => y.key === x.dataset.k); otxModal(it, r => { if (r) rows = rows.map(y => y.key === r.key ? r : y); delete cache[it.empId]; draw(); }, false); });
       $$('.ox-btn', b).forEach(x => x.onclick = () => { const it = rows.find(y => y.key === x.dataset.k); otxModal(it, r => { if (r) rows = rows.map(y => y.key === r.key ? r : y); delete cache[it.empId]; draw(); }); });
     };
     draw();
