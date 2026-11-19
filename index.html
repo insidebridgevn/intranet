@@ -889,6 +889,7 @@ const KO_WD = { 'Thứ hai':'월요일','Thứ ba':'화요일','Thứ tư':'수�
 Object.assign(KO, KO_WD);
 KO['Phép & OT']='연차 & OT';
 KO['OT event (T2–T6)']='OT 이벤트 (월~금)';
+KO['T2–T6: làm quá 8 tiếng, quản lý event xác nhận rồi làm đơn · T7/CN: tự tính OT, chỉ cần làm đơn']='월~금: 8시간 초과 시 이벤트 매니저 확인 후 신청 · 토/일: 자동 OT, 신청서만 작성';
 KO['Ngày phép, giờ OT còn lại & lịch sử cộng / trừ']='잔여 연차·OT 시간 및 증감 내역';
 KO['Phép còn lại, quỹ OT']='잔여 연차, OT 적립';
 KO['Của tôi']='내 정보';
@@ -2924,9 +2925,11 @@ function balHist(d, kind){
     <tr class="bal-close"><td></td><td><b>${rows.some(h => h.future) ? L2('Còn lại (đã tính cả đơn sắp tới)', '잔액 (예정 신청 포함)') : L2('Còn lại hiện tại', '현재 잔액')}</b></td><td></td><td class="num"><b>${n2(v1)}</b> ${u}</td></tr>
   </tbody></table></div>`;
 }
-const otxSt = x => x.status === 'Đã xác nhận' ? `<span class="pill ok">${L2('Đã xác nhận', '확인 완료')}</span>` : x.status === 'Từ chối' ? `<span class="pill bad">${L2('Từ chối', '반려')}</span>` : `<span class="pill warn">${L2('Chờ xác nhận', '확인 대기')}</span>`;
+const otxSt = x => x.wk ? (x.hasReq ? `<span class="pill ok">${L2('Đã làm đơn', '신청 완료')}</span>` : `<span class="pill warn">${L2('Chưa làm đơn', '미신청')}</span>`) : x.status === 'Đã xác nhận' ? `<span class="pill ok">${L2('Đã xác nhận', '확인 완료')}</span>` : x.status === 'Từ chối' ? `<span class="pill bad">${L2('Từ chối', '반려')}</span>` : `<span class="pill warn">${L2('Chờ xác nhận', '확인 대기')}</span>`;
 const otxWork = x => `${x.from}–${x.to}${x.office ? L2(` (văn phòng ${x.office})`, ` (사무실 ${x.office})`) : ''} · ${n2(x.hours)} ${L2('giờ', '시간')}${x.lunch ? L2(' (đã trừ 1 giờ nghỉ trưa)', ' (점심 1시간 제외)') : ''}`;
 function otxForm(x){
+  if (x.wk) { let b2 = x.to === '00:00' ? '23:59' : x.to;
+    return { ngay: x.date, tu: x.from, den: b2, loai: O.ot[0], lydo: `OT event ${x.ev} ${wdOf(x.date)} ${vnDate(x.date)}: chấm công thực tế ${n2(x.hours)} giờ (×${x.mul})` }; }
   const ot = x.otOk != null ? x.otOk : x.ot, end = x.to, toMin = s => { const [h, m] = s.split(':').map(Number); return h * 60 + m; };
   let b = toMin(end); if (b === 0 || b > 23 * 60 + 59) b = 23 * 60 + 59;
   const a = Math.max(0, b - Math.round(ot * 60)), hm = m => `${pad(Math.floor(m / 60))}:${pad(m % 60)}`;
@@ -2976,12 +2979,12 @@ VIEWS.phepot = async el => {
         <div class="stat hu-lilac"><div class="ic">${ic('moonclock')}</div><div><div class="k">${L2('Quỹ OT còn lại', '잔여 OT')}</div><div class="v">${n2(d.ot)}<small>${L2('giờ', '시간')}</small></div>
           <div class="small muted">${d.pay ? L2(`Đầu kỳ ${n2(d.ot0)} (bảng lương ${mmyy(d.pay.month)})`, `기초 ${n2(d.ot0)} (${mmyy(d.pay.month)} 급여대장)`) : ''}</div></div></div>
       </div>
-      ${otx.length ? `<div class="card"><div class="card-h"><h3><span class="hi">${ic('mapPin')}</span>OT event (T2–T6)</h3><span class="small muted">Làm quá 8 tiếng · quản lý event xác nhận rồi làm đơn OT</span></div>
+      ${otx.length ? `<div class="card"><div class="card-h"><h3><span class="hi">${ic('mapPin')}</span>OT event</h3><span class="small muted">T2–T6: làm quá 8 tiếng, quản lý event xác nhận rồi làm đơn · T7/CN: tự tính OT, chỉ cần làm đơn</span></div>
         <div class="tbl-wrap"><table class="tbl" data-noi18n><thead><tr><th>${L2('Ngày', '날짜')}</th><th>Event</th><th>${L2('Giờ làm thực tế', '실제 근무')}</th><th class="num">OT</th><th>${L2('Trạng thái', '상태')}</th><th></th></tr></thead><tbody>
         ${otx.map((x, i) => `<tr><td>${wdOf(x.date)} ${vnDate(x.date)}</td><td>${esc(LANG === 'ko' && x.evKo ? x.evKo : x.ev)}</td><td>${esc(otxWork(x))}</td>
-          <td class="num"><b>${n2(x.otOk != null ? x.otOk : x.ot)}</b> ${L2('giờ', '시간')}${x.otOk != null && x.otOk !== x.ot ? `<div class="small muted">${L2('tự tính', '자동')} ${n2(x.ot)}</div>` : ''}</td>
+          <td class="num">${x.wk ? `<b>${n2(x.ot)}</b> ${L2('giờ', '시간')} × ${x.mul}<div class="small muted">= ${n2(x.ot * x.mul)} ${L2('giờ', '시간')}</div>` : `<b>${n2(x.otOk != null ? x.otOk : x.ot)}</b> ${L2('giờ', '시간')}`}${!x.wk && x.otOk != null && x.otOk !== x.ot ? `<div class="small muted">${L2('tự tính', '자동')} ${n2(x.ot)}</div>` : ''}</td>
           <td>${otxSt(x)}${x.by ? `<div class="small muted">${esc(x.by)}${x.note ? ' · ' + esc(x.note) : ''}</div>` : ''}</td>
-          <td>${mine && x.status === 'Đã xác nhận' ? `<button class="btn sm primary bo-don" data-i="${i}">${ic('file')}${L2('Làm đơn OT', 'OT 신청서 작성')}</button>` : ''}</td></tr>`).join('')}</tbody></table></div></div>` : ''}
+          <td>${mine && (x.wk ? !x.hasReq : x.status === 'Đã xác nhận') ? `<button class="btn sm primary bo-don" data-i="${i}">${ic('file')}${L2('Làm đơn OT', 'OT 신청서 작성')}</button>` : ''}</td></tr>`).join('')}</tbody></table></div></div>` : ''}
       <div class="card"><div class="card-h"><h3><span class="hi">${ic('plane')}</span>Lịch sử phép</h3></div>${balHist(d, 'phep')}</div>
       <div class="card"><div class="card-h"><h3><span class="hi">${ic('moonclock')}</span>Lịch sử OT</h3></div>${balHist(d, 'ot')}</div>
       <div class="small muted">${L2('Số liệu chỉ để xem & đối chiếu — số chính thức theo bảng lương do kế toán chốt. Đơn đã huỷ / không duyệt không được tính.', '조회·대조용 수치이며, 공식 수치는 회계팀이 확정한 급여대장을 따릅니다. 취소/반려된 신청서는 계산에서 제외됩니다.')}</div>
