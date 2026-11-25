@@ -302,6 +302,7 @@ kbd{font:600 11px var(--fb);background:var(--surface-3);color:var(--text-2);bord
 .tbl td{padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
 .tbl tr:last-child td{border-bottom:0}
 .tbl tbody tr{transition:background .12s}
+.cal b.hol{white-space:normal;line-height:1.25;text-align:left}
 .maint-bar{display:flex;align-items:center;gap:10px;padding:10px 14px;margin-bottom:14px;border-radius:14px;background:var(--warn-bg);color:var(--warn);font-size:13.5px;font-weight:600}.maint-bar svg{width:18px;height:18px;flex:none}.maint-bar a{margin-left:auto;cursor:pointer;text-decoration:underline;white-space:nowrap}
 .mt-tag{margin-left:auto;font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px;background:var(--warn-bg);color:var(--warn)}
 .mt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}.mt-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;cursor:pointer}.mt-row svg{width:17px;height:17px;color:var(--muted)}.mt-row input{width:17px;height:17px;accent-color:var(--brand,#f26b2b)}.mt-all{border-color:var(--warn);background:var(--warn-bg)}
@@ -2143,7 +2144,7 @@ VIEWS.chamcong = async el => {
       const map = {}; days.forEach(x => map[x.date] = x);
       const calFlags = iso => { const b = BL[iso]; if (!b) return ''; const t = [];
         if (b.flags.includes('late')) t.push('<b>Trễ</b>'); if (b.flags.includes('early')) t.push('<b>Sớm</b>');
-        if (b.flags.includes('absent')) t.push('<b class="no">Vắng</b>'); if (b.flags.includes('holiday')) t.push(`<b class="off hol" title="${esc(b.offTag)}" data-noi18n>${LANG === 'ko' ? '공휴일' : 'Lễ'}</b>`); else if (b.offTag) t.push(`<b class="off">${b.offTag === 'Nghỉ buổi sáng' ? 'Off sáng' : b.offTag === 'Nghỉ buổi chiều' ? 'Off chiều' : 'Nghỉ'}</b>`);
+        if (b.flags.includes('absent')) t.push('<b class="no">Vắng</b>'); if (b.flags.includes('holiday')) t.push(`<b class="off hol" title="${esc(b.offTag)}" data-noi18n>${esc(b.offTag)}</b>`); else if (b.offTag) t.push(`<b class="off">${b.offTag === 'Nghỉ buổi sáng' ? 'Off sáng' : b.offTag === 'Nghỉ buổi chiều' ? 'Off chiều' : 'Nghỉ'}</b>`);
         if (b.ev) t.push('<b class="evd">Event</b>');
         if (b.need) t.push(b.miss.length ? `<b class="no" data-noi18n>${L2('Chưa đơn ' + b.miss.map(f => ({ late:'trễ', early:'sớm', noin:'quên vào', noout:'quên ra', absent:'nghỉ' })[f]).join(', '), b.miss.map(f => ({ late:'지각', early:'조퇴', noin:'출근누락', noout:'퇴근누락', absent:'결근' })[f]).join(', ') + ' 미신청')}</b>` : '<b class="okd">✓ Đơn</b>');
         return t.length ? `<div class="cf">${t.join('')}</div>` : ''; };
