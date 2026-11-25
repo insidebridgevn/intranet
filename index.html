@@ -2390,6 +2390,11 @@ function missAlarm(list, onPage){
   box.onclick = () => go('dontu');
   return box;
 }
+/* Ngày nghỉ lễ mặc định (dùng khi máy chủ chưa gửi danh sách) – sửa ở ô NGAY_LE */
+const HOL_DEF = (() => { const out = {}; '2026-01-01 Tết Dương lịch | 신정; 2026-02-16..2026-02-20 Tết Nguyên đán | 설날(뗏); 2026-04-27 Giỗ Tổ Hùng Vương (nghỉ bù) | 흥왕 기일 (대체휴일); 2026-04-30 Ngày Giải phóng miền Nam | 남부 해방 기념일; 2026-05-01 Quốc tế Lao động | 노동절; 2026-09-01..2026-09-02 Quốc khánh | 국경일; 2026-11-24 Ngày Văn hóa Việt Nam | 베트남 문화의 날; 2027-01-01 Tết Dương lịch | 신정; 2027-02-04..2027-02-05 Tết Nguyên đán | 설날(뗏); 2027-02-08..2027-02-10 Tết Nguyên đán | 설날(뗏); 2027-04-16 Giỗ Tổ Hùng Vương | 흥왕 기일; 2027-04-30 Ngày Giải phóng miền Nam | 남부 해방 기념일; 2027-05-03 Quốc tế Lao động (nghỉ bù) | 노동절 (대체휴일); 2027-09-02..2027-09-03 Quốc khánh | 국경일; 2027-11-24 Ngày Văn hóa Việt Nam | 베트남 문화의 날'.split(/[;\n]+/).forEach(part => { const m = part.trim().match(/^(\d{4}-\d{2}-\d{2})(?:\s*\.\.\s*(\d{4}-\d{2}-\d{2}))?\s*(.*)$/); if (!m) return;
+  const nm = (m[3] || '').split('|'), vi = (nm[0] || '').trim() || 'Nghỉ lễ', ko = (nm[1] || '').trim();
+  for (let d = parseISO(m[1]), e = parseISO(m[2] || m[1]), g = 0; d <= e && g < 31; g++, d.setDate(d.getDate() + 1)) out[isoDate(d)] = { vi, ko }; }); return out; })();
+const holMap = R => (R && R.holidays && Object.keys(R.holidays).length ? R.holidays : null) || (S.links && S.links.holidays && Object.keys(S.links.holidays).length ? S.links.holidays : null) || HOL_DEF;
 const holLabel = h => LANG === 'ko' ? '공휴일: ' + (h.ko || h.vi) : 'Nghỉ lễ: ' + h.vi;
 function attBuild(R){
   const wd = String(R.workDays).split(/[^0-9]+/).filter(Boolean).map(Number);
@@ -2424,7 +2429,7 @@ function attBuild(R){
       if (amOff) V = Math.max(V, chieu);   // nghỉ buổi sáng → vào trước giờ bắt đầu buổi chiều không tính trễ
       if (pmOff) Ra = Math.min(Ra, trua);  // nghỉ buổi chiều → ra từ giờ hết buổi sáng không tính về sớm
       const lastV = amOff ? V : fx ? slots[slots.length - 1].i : vao;
-      const hol = (R.holidays || {})[day];
+      const hol = holMap(R)[day];
       if (hol && !r && !evOk.length) { out.push({ day, e, ci: '', co: '', hrs: null, flags: ['holiday'], mixed: false, of: null, evt: null, edit: null, slot: '', need: false, dts: [], miss: [], offTag: holLabel(hol), hol, ev: evd, evTimes: false }); return; }
       if (!r && (!work || (isToday && now < lastV))) return;
       if (!r && fullOff) flags.push('off');
@@ -2701,7 +2706,7 @@ VIEWS.dontu = async el => {
     const calc = () => {
       if (type === 'nghi') {
         const a = parseISO(val('tu')), z = parseISO(val('den'));
-        if (a && z && z >= a) { let n = 0; for (let d = new Date(a); d <= z; d.setDate(d.getDate() + 1)) if (d.getDay() !== 0 && !((S.links && S.links.holidays) || {})[isoDate(d)]) n++; if (/NỬA/.test(val('buoi'))) n *= 0.5; set('tong', fmtNum(n) + ' ngày'); } else set('tong', '');
+        if (a && z && z >= a) { let n = 0; for (let d = new Date(a); d <= z; d.setDate(d.getDate() + 1)) if (d.getDay() !== 0 && !holMap(null)[isoDate(d)]) n++; if (/NỬA/.test(val('buoi'))) n *= 0.5; set('tong', fmtNum(n) + ' ngày'); } else set('tong', '');
       }
       if (type === 'ot') { const a = val('tu'), z = val('den'); if (a && z) { const [h1, m1] = a.split(':').map(Number), [h2, m2] = z.split(':').map(Number); const h = (h2 * 60 + m2 - h1 * 60 - m1) / 60; set('tong', h > 0 ? fmtNum(h) + ' giờ' : ''); } }
     };
@@ -2959,7 +2964,7 @@ const sgn = x => (x > 0 ? '+' : x < 0 ? '−' : '') + n2(Math.abs(x));
 const ddmm = s => s ? `${s.slice(8, 10)}/${s.slice(5, 7)}` : '';
 const mmyy = s => s ? `${s.slice(5, 7)}/${s.slice(0, 4)}` : '';
 const WDV = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'], WDK = ['일', '월', '화', '수', '목', '금', '토'];
-const wdOf = s => { const d = parseISO(s); if (!d) return ''; const h = ((S.links && S.links.holidays) || {})[s]; return L2(WDV[d.getDay()], WDK[d.getDay()]) + (h ? L2(' (lễ)', ' (공휴일)') : ''); };
+const wdOf = s => { const d = parseISO(s); if (!d) return ''; const h = holMap(null)[s]; return L2(WDV[d.getDay()], WDK[d.getDay()]) + (h ? L2(' (lễ)', ' (공휴일)') : ''); };
 const buoiTxt = b => /SÁNG/.test(b) ? L2('nửa buổi sáng', '오전 반차') : /CHIỀU/.test(b) ? L2('nửa buổi chiều', '오후 반차') : L2('cả ngày', '종일');
 function balLine(h){
   const rng = h.to && h.to !== h.date ? `${ddmm(h.date)} → ${ddmm(h.to)}` : ddmm(h.date);
