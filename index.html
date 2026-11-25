@@ -2145,7 +2145,7 @@ VIEWS.chamcong = async el => {
         if (b.flags.includes('late')) t.push('<b>Trễ</b>'); if (b.flags.includes('early')) t.push('<b>Sớm</b>');
         if (b.flags.includes('absent')) t.push('<b class="no">Vắng</b>'); if (b.flags.includes('holiday')) t.push(`<b class="off hol" title="${esc(b.offTag)}" data-noi18n>${LANG === 'ko' ? '공휴일' : 'Lễ'}</b>`); else if (b.offTag) t.push(`<b class="off">${b.offTag === 'Nghỉ buổi sáng' ? 'Off sáng' : b.offTag === 'Nghỉ buổi chiều' ? 'Off chiều' : 'Nghỉ'}</b>`);
         if (b.ev) t.push('<b class="evd">Event</b>');
-        if (b.need) t.push(b.miss.length ? '<b class="no">Chưa đơn</b>' : '<b class="okd">✓ Đơn</b>');
+        if (b.need) t.push(b.miss.length ? `<b class="no" data-noi18n>${L2('Chưa đơn ' + b.miss.map(f => ({ late:'trễ', early:'sớm', noin:'quên vào', noout:'quên ra', absent:'nghỉ' })[f]).join(', '), b.miss.map(f => ({ late:'지각', early:'조퇴', noin:'출근누락', noout:'퇴근누락', absent:'결근' })[f]).join(', ') + ' 미신청')}</b>` : '<b class="okd">✓ Đơn</b>');
         return t.length ? `<div class="cf">${t.join('')}</div>` : ''; };
       const todayIso = isoDate(new Date());
       let cells = ['T2','T3','T4','T5','T6','T7','CN'].map(w => `<div class="wd">${w}</div>`).join('');
