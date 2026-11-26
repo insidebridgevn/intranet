@@ -200,6 +200,11 @@ svg.i{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-widt
 .nav a.on{background:var(--grad);color:#fff;font-weight:600;box-shadow:var(--glow)}
 .nav a .badge{margin-left:auto;background:var(--grad);color:#fff;font-size:11px;font-weight:700;border-radius:10px;padding:1px 8px}
 .nav a.on .badge{background:rgba(255,255,255,.3)}
+#sb-toggle{position:relative}#sb-toggle.has-bdg::after{content:'';position:absolute;top:6px;right:6px;width:9px;height:9px;border-radius:50%;background:#E5484D;box-shadow:0 0 0 2px var(--surface)}
+.ann-review{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:6px 0 10px;padding:10px 12px;border-radius:12px;background:var(--warn-bg);color:var(--warn);font-size:13px;font-weight:600}.ann-review svg{width:16px;height:16px;flex:none}
+.an-emps{max-height:220px;overflow:auto;display:grid;gap:4px;margin-top:8px;padding:6px 8px;border:1px solid var(--line);border-radius:12px}
+.nav a .badge.red{background:#E5484D;animation:bdgPop .35s ease}.nav a.on .badge.red{background:#fff;color:#E5484D}.badge-dot.red{background:#E5484D}
+@keyframes bdgPop{0%{transform:scale(.4)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
 .nav a .lock{margin-left:auto;color:var(--muted)}
 .nav a .lock svg{width:14px;height:14px}
 .badge-dot{display:none;position:absolute;top:7px;right:14px;width:8px;height:8px;border-radius:50%;background:var(--brand)}
@@ -892,6 +897,18 @@ const KO = {
 const KO_WD = { 'Thứ hai':'월요일','Thứ ba':'화요일','Thứ tư':'수요일','Thứ năm':'목요일','Thứ sáu':'금요일','Thứ bảy':'토요일','Chủ nhật':'일요일','Hôm nay':'오늘','T2':'월','T3':'화','T4':'수','T5':'목','T6':'금','T7':'토','CN':'일' };
 Object.assign(KO, KO_WD);
 KO['Phép & OT']='연차 & OT';
+KO['Gửi đến']='수신 대상';
+KO['Team của tôi']='내 팀';
+KO['Chọn bộ phận / nhân viên']='부서 / 직원 선택';
+KO['Toàn công ty']='전사';
+KO['Mọi nhân viên đều thấy.']='모든 직원이 볼 수 있습니다.';
+KO['Thông báo toàn công ty cần quản lý duyệt trước khi mọi người thấy.']='전사 공지는 관리자 승인 후 공개됩니다.';
+KO['Chỉ nhân viên trong team của bạn thấy.']='내 팀 직원만 볼 수 있습니다.';
+KO['Chỉ bộ phận / nhân viên được chọn thấy.']='선택한 부서 / 직원만 볼 수 있습니다.';
+KO['Bộ phận']='부서';
+KO['Thêm từng nhân viên']='직원 개별 추가';
+KO['Gửi email cho người nhận (kèm link xem trên intranet)']='수신자에게 이메일 발송 (인트라넷 링크 포함)';
+KO['Chọn ít nhất 1 bộ phận hoặc 1 nhân viên']='부서 또는 직원을 1명 이상 선택하세요';
 KO['Bảo trì']='점검';
 KO['Chế độ bảo trì']='점검 모드';
 KO['Lưu']='저장';
@@ -1135,7 +1152,22 @@ function call(action, payload){
   if (action !== 'ann.seen' && action !== 'me') { Object.keys(CACHE).forEach(k => delete CACHE[k]); rcClear(); }
   return call0(action, payload);
 }
-function prefetch(){ const n = new Date(), m = `${n.getFullYear()}-${pad(n.getMonth()+1)}`; ['ann.list', 'req.my'].forEach(a => call(a).catch(() => {})); if (S.user) call('att.get', { month:m, empId:S.user.id }).catch(() => {}); }
+/* ---------- Số trên menu: Đơn từ (ngày chưa làm đơn + đơn mới của nhân viên) · Đơn cần duyệt ---------- */
+let BADGE_T = 0;
+function loadBadges(force){
+  if (!S.user || S.user.mustChange || (!force && Date.now() - BADGE_T < 150000)) return;
+  BADGE_T = Date.now();
+  const n = new Date(), ms = [`${n.getFullYear()}-${pad(n.getMonth() + 1)}`];
+  if (n.getDate() <= 5) { const p = new Date(n.getFullYear(), n.getMonth() - 1, 1); ms.unshift(`${p.getFullYear()}-${pad(p.getMonth() + 1)}`); }
+  let since = +(store.get('ibvn_dtseen') || 0); if (!since) { since = Date.now(); store.set('ibvn_dtseen', String(since)); }
+  Promise.all([Promise.all(ms.map(attMyMissing)).then(x => x.flat().length).catch(() => 0), call0('badges', { since }).catch(() => null)]).then(([miss, b]) => {
+    const d = b && b.duyet;
+    S.badges = { miss, dtNew: b ? b.dtNew || 0 : 0, duyet: d ? (d.approve || 0) + (d.info || 0) : 0, duyetD: d || null };
+    renderNav();
+  });
+}
+setInterval(() => loadBadges(), 300000);
+function prefetch(){ loadBadges(); const n = new Date(), m = `${n.getFullYear()}-${pad(n.getMonth()+1)}`; ['req.my'].forEach(a => call(a).catch(() => {})); if (S.user) call('att.get', { month:m, empId:S.user.id }).catch(() => {}); }
 function call0(action, payload){
   return new Promise((resolve, reject) => {
     const done = r => {
@@ -1474,10 +1506,15 @@ function renderNav(){
   const nav = $('#nav'); if (!nav) return;
   nav.innerHTML = NAV.filter(g => !g.role || has(g.role)).map(g => `<h6>${esc(g.group)}</h6>` + g.items.filter(it => !it.role || has(it.role)).map(it => {
     const locked = it.role && !has(it.role);
-    const badge = it.key === 'thongbao' && unread ? `<span class="badge">${unread}</span><span class="badge-dot"></span>` : '';
+    const B = S.badges || {}, nDt = it.key === 'dontu' ? (B.miss || 0) + (B.dtNew || 0) : 0, nDy = it.key === 'duyet' ? B.duyet || 0 : 0;
+    const tip = it.key === 'dontu' ? [B.miss ? L2(`${B.miss} ngày bạn chưa làm đơn`, `미신청 ${B.miss}일`) : '', B.dtNew ? L2(`${B.dtNew} đơn mới của nhân viên`, `직원 신규 신청 ${B.dtNew}건`) : ''].filter(Boolean).join(' · ')
+              : it.key === 'duyet' && B.duyetD ? [B.duyetD.approve ? L2(`${B.duyetD.approve} đơn chờ bạn duyệt`, `결재 대기 ${B.duyetD.approve}건`) : '', B.duyetD.info ? L2(`${B.duyetD.info} đơn của bạn cần bổ sung`, `보완 요청 ${B.duyetD.info}건`) : ''].filter(Boolean).join(' · ') : '';
+    const badge = it.key === 'thongbao' && unread ? `<span class="badge">${unread}</span><span class="badge-dot"></span>`
+      : (nDt || nDy) ? `<span class="badge red" title="${esc(tip)}" data-noi18n>${nDt || nDy}</span><span class="badge-dot red"></span>` : '';
     const mt = maintOf(it.key) && !(S.links.maint.all && !isAdm()) ? `<span class="mt-tag" data-noi18n>${L2('Bảo trì', '점검')}</span>` : '';
-    return `<a data-go="${it.key}" class="${S.page === it.key ? 'on' : ''}" title="${esc(it.label)}">${ic(it.icon)}<span class="lbl">${esc(it.label)}</span>${mt}${badge}${locked ? `<span class="lock">${ic('lock')}</span>` : ''}</a>`;
+    return `<a data-go="${it.key}" class="${S.page === it.key ? 'on' : ''}" title="${esc(it.label)}${tip ? ' — ' + esc(tip) : ''}">${ic(it.icon)}<span class="lbl">${esc(it.label)}</span>${mt}${badge}${locked ? `<span class="lock">${ic('lock')}</span>` : ''}</a>`;
   }).join('')).join('');
+  { const tg = $('#sb-toggle'), B = S.badges || {}; if (tg) tg.classList.toggle('has-bdg', !!((B.miss || 0) + (B.dtNew || 0) + (B.duyet || 0))); }
   const dot = $('#bell-dot'); if (dot) { dot.hidden = !unread; dot.textContent = unread > 9 ? '9+' : unread; }
 }
 
@@ -1570,7 +1607,7 @@ const skel = (n=3, h=64) => `<div class="stack">${Array.from({length:n}, () => `
 /* ---------- Announcements badge ---------- */
 async function loadAnnBadge(){ try { S.ann = await call('ann.list'); renderNav(); } catch(e){} }
 function lastSeenAnn(){ return store.get('ibvn_seen_' + (S.user && S.user.id)) || ''; }
-function unreadCount(){ const ls = lastSeenAnn(); return (S.ann||[]).filter(a => a.date > ls).length; }
+function unreadCount(){ const ls = lastSeenAnn(); return (S.ann||[]).filter(a => (!a.status && a.date > ls) || a.canReview).length; }
 function markAnnSeen(){ const max = (S.ann||[]).reduce((m,a) => a.date > m ? a.date : m, ''); if (max) store.set('ibvn_seen_' + S.user.id, max); }
 
 /* ================================================================
@@ -1654,6 +1691,7 @@ VIEWS.home = async el => {
   loadBd();
   const d = await call('home');
   S.ann = mergeAnn(d.announcements);
+  if (d.announcements && d.announcements.length > 6) CACHE['ann.list|{}'] = { t: Date.now(), v: d.announcements };   // trang chủ đã gửi đủ danh sách → không gọi lại
   if (d.hrAlerts && d.hrAlerts.length) { const hb = document.createElement('section'); hb.className = 'b12 hr-alarm clk'; hb.dataset.go = 'nhansu';
     hb.innerHTML = `${ic('info')}<div><b>${d.hrAlerts.length} nhân sự sắp hết hạn hợp đồng</b><div class="small">${d.hrAlerts.slice(0, 5).map(x => esc(x.name) + ' (' + esc(dLeft(x.daysLeft)).toLowerCase() + ')').join(' · ')} — bấm để xem và lên lịch review</div></div>`;
     const bento = el.querySelector('.bento');   // chỉ 1 thông báo: xoá cái cũ nếu trang chủ được vẽ lại
@@ -1792,7 +1830,7 @@ async function annStatsModal(a){
 
 /* ---------- Thông báo ---------- */
 VIEWS.thongbao = async el => {
-  const canPost = has('HR');
+  const canPost = has('HR') || has('LEADER'), full = has('HR');
   el.innerHTML = `<div class="stack">
     <div class="row"><div class="seg" id="tb-f"><button class="on" data-c="">Tất cả</button><button data-c="Chung">Chung</button><button data-c="Nhân sự">Nhân sự</button><button data-c="Sự kiện">Sự kiện</button><button data-c="Khẩn">Khẩn</button></div>
       <div class="spacer"></div>${canPost ? `<button class="btn primary" id="tb-new">${ic('plus')}Đăng thông báo</button>` : ''}</div>
@@ -1804,12 +1842,14 @@ VIEWS.thongbao = async el => {
     const list = S.ann.filter(a => !cat || a.cat === cat);
     $('#tb-list').innerHTML = list.length ? list.map(a => { const d = parseISO(a.date) || new Date(); return `<div class="ann hu-${({ 'Nhân sự':'sky', 'Sự kiện':'mint', 'Khẩn':'rose' })[a.cat] || 'peach'} ${a.date > prevSeen ? 'new' : ''}" id="ann-${esc(a.id)}">
       <div class="date"><b>${pad(d.getDate())}</b><span>Th ${d.getMonth()+1}</span></div>
-      <div style="flex:1;min-width:0"><h4>${a.pinned ? `<span class="pill brand">${ic('pin')}Ghim</span>` : ''}${esc(a.title)}</h4>
+      <div style="flex:1;min-width:0"><h4>${a.status === 'Chờ duyệt' ? `<span class="pill warn">${L2('Chờ duyệt', '승인 대기')}</span>` : a.status === 'Không duyệt' ? `<span class="pill bad">${L2('Không duyệt', '반려')}</span>` : ''}${a.pinned ? `<span class="pill brand">${ic('pin')}Ghim</span>` : ''}${esc(a.title)}</h4>
+        ${a.canReview ? `<div class="ann-review" data-noi18n>${ic('info')}<span>${L2(`${esc(a.by)} đăng thông báo toàn công ty — cần bạn duyệt trước khi mọi người thấy.`, `${esc(a.by)}님이 전사 공지를 등록했습니다 — 승인 후 전 직원에게 공개됩니다.`)}</span><span class="spacer"></span><button class="btn sm ghost bad-t" data-rv="${esc(a.id)}" data-ok="0">${L2('Không duyệt', '반려')}</button><button class="btn sm primary" data-rv="${esc(a.id)}" data-ok="1">${ic('check')}${L2('Duyệt & đăng', '승인·게시')}</button></div>` : ''}
+        ${a.status && a.review && a.review.note ? `<div class="small muted" data-noi18n>${L2('Ghi chú duyệt', '승인 메모')}: ${esc(a.review.note)} (${esc(a.review.by)})</div>` : ''}
         <div class="body rich">${richHtml(a.body)}</div>
         <div class="ann-rx" data-rx="${esc(a.id)}">${ANN_EMOJI.map(em => { const n = (a.react || {})[em] || 0, on = (a.myReact || []).includes(em); return `<button class="rx ${on ? 'on' : ''} ${n ? '' : 'z'}" data-em="${em}" title="${on ? 'Bỏ cảm xúc' : 'Thả cảm xúc'}">${em}${n ? `<b>${n}</b>` : ''}</button>`; }).join('')}
           <span class="spacer"></span>${a.views != null ? `<button class="btn sm ghost" data-stats="${esc(a.id)}">${ic('eye')}${a.views} đã xem</button>` : ''}<button class="btn sm ghost" data-link="${esc(a.id)}" title="Sao chép link thông báo">${ic('ext')}Link</button></div>
-        <div class="meta"><span class="pill ${a.cat === 'Khẩn' ? 'bad' : a.cat === 'Nhân sự' ? 'info' : a.cat === 'Sự kiện' ? 'ok' : ''}">${esc(a.cat)}</span><span>${esc(a.by)}</span><span>${vnDateTime(a.date)}</span>
-        ${canPost ? `<span class="spacer"></span><button class="btn sm ghost" data-edit="${esc(a.id)}">${ic('edit')}Sửa</button><button class="btn sm danger" data-del="${esc(a.id)}">${ic('trash')}Gỡ</button>` : ''}</div></div></div>`; }).join('')
+        <div class="meta"><span class="pill ${a.cat === 'Khẩn' ? 'bad' : a.cat === 'Nhân sự' ? 'info' : a.cat === 'Sự kiện' ? 'ok' : ''}">${esc(a.cat)}</span>${annScopePill(a)}<span>${esc(a.by)}</span><span>${vnDateTime(a.date)}</span>
+        ${a.canEdit ?? canPost ? `<span class="spacer"></span><button class="btn sm ghost" data-edit="${esc(a.id)}">${ic('edit')}Sửa</button><button class="btn sm danger" data-del="${esc(a.id)}">${ic('trash')}Gỡ</button>` : ''}</div></div></div>`; }).join('')
       : `<div class="empty"><div class="ico">${ic('bell')}</div><b>Chưa có thông báo</b>Khi công ty đăng tin mới, bạn sẽ thấy ở đây.</div>`;
   };
   draw(); markAnnSeen(); renderNav();
@@ -1824,14 +1864,35 @@ VIEWS.thongbao = async el => {
       <div class="field"><label>Tiêu đề <span class="req">*</span></label><input class="input" id="an-t" value="${esc(a.title||'')}"></div>
       <div class="field"><label>Nội dung</label>${rteHtml()}</div>
       <div class="row"><div class="field" style="flex:1"><label>Loại</label><select class="select" id="an-c">${['Chung','Nhân sự','Sự kiện','Khẩn'].map(c => `<option ${a.cat===c?'selected':''}>${c}</option>`).join('')}</select></div>
-      <label class="check" style="margin-top:22px"><input type="checkbox" id="an-p" ${a.pinned?'checked':''}> Ghim lên đầu</label></div>
-      ${a.id ? '' : `<label class="check"><input type="checkbox" id="an-m"> Gửi email thông báo cho toàn bộ nhân viên (kèm link xem trên intranet)</label>`}`,
+      ${full ? `<label class="check" style="margin-top:22px"><input type="checkbox" id="an-p" ${a.pinned?'checked':''}> Ghim lên đầu</label>` : ''}</div>
+      <div class="field"><label>Gửi đến</label><div class="chips" id="an-sc">${[['team','Team của tôi'],['custom','Chọn bộ phận / nhân viên'],['all','Toàn công ty']].map(([k, l]) => `<button type="button" class="chip ${(a.scope || (full ? 'all' : 'team')) === k ? 'on' : ''}" data-v="${k}">${l}</button>`).join('')}</div>
+        <div id="an-scx" class="small muted" style="margin-top:6px"></div></div>
+      <div id="an-pick" hidden></div>
+      ${a.id ? '' : `<label class="check"><input type="checkbox" id="an-m"> Gửi email cho người nhận (kèm link xem trên intranet)</label>`}`,
       `<button class="btn ghost" data-close>Huỷ</button><button class="btn primary" id="an-s">${a.id ? 'Lưu' : 'Đăng'}</button>`);
     rteInit($('#an-ed', m.el), a.body || '');
+    let scope = a.scope || (full ? 'all' : 'team'), selD = new Set(a.scope === 'custom' ? a.depts || [] : []), selE = new Set(a.scope === 'custom' ? a.emps || [] : []), TG = null, q = '';
+    const scx = () => { $('#an-scx', m.el).innerHTML = scope === 'all' ? (full ? 'Mọi nhân viên đều thấy.' : `<b style="color:var(--warn)">Thông báo toàn công ty cần quản lý duyệt trước khi mọi người thấy.</b>`)
+        : scope === 'team' ? 'Chỉ nhân viên trong team của bạn thấy.' : 'Chỉ bộ phận / nhân viên được chọn thấy.';
+      const pk = $('#an-pick', m.el); pk.hidden = scope !== 'custom'; if (scope === 'custom') drawPick(); };
+    const drawPick = async () => {
+      const pk = $('#an-pick', m.el);
+      if (!TG) { pk.innerHTML = skel(2, 36); try { TG = await call('ann.targets'); } catch (err) { pk.innerHTML = errBox(err.message); return; } }
+      const emps = TG.emps.filter(x => !q || (x.name + ' ' + x.id + ' ' + x.dept).toLowerCase().includes(q.toLowerCase())).slice(0, 80);
+      pk.innerHTML = `<div class="field"><label>Bộ phận</label><div class="chips">${TG.depts.map(d => `<button type="button" class="chip ${selD.has(d) ? 'on' : ''}" data-dp="${esc(d)}" data-noi18n>${esc(d)}</button>`).join('')}</div></div>
+        <div class="field"><label>Thêm từng nhân viên <span class="small muted">(${selE.size} người)</span></label><input class="input" id="an-q" placeholder="Tìm tên, mã NV, bộ phận…" value="${esc(q)}">
+        <div class="an-emps">${emps.map(x => `<label class="check" data-noi18n><input type="checkbox" data-em="${esc(x.id)}" ${selE.has(x.id) ? 'checked' : ''}> ${esc(x.name)} <span class="small muted">${esc(x.id)} · ${esc(x.dept)}</span></label>`).join('')}</div></div>`;
+      const qi = $('#an-q', pk); qi.oninput = e => { q = e.target.value; const pos = e.target.selectionStart; drawPick().then(() => { const n = $('#an-q', pk); n.focus(); n.setSelectionRange(pos, pos); }); };
+    };
+    $('#an-sc', m.el).onclick = e => { const c = e.target.closest('.chip'); if (!c) return; scope = c.dataset.v; $$('#an-sc .chip', m.el).forEach(x => x.classList.toggle('on', x === c)); scx(); };
+    $('#an-pick', m.el).onclick = e => { const d = e.target.closest('[data-dp]'); if (d) { const v = d.dataset.dp; selD.has(v) ? selD.delete(v) : selD.add(v); d.classList.toggle('on', selD.has(v)); } };
+    $('#an-pick', m.el).onchange = e => { const c = e.target.closest('[data-em]'); if (c) { c.checked ? selE.add(c.dataset.em) : selE.delete(c.dataset.em); const l = $('#an-pick label .small', m.el); if (l) l.textContent = `(${selE.size} người)`; } };
+    scx();
     $('#an-s', m.el).onclick = async ev => { const btn1 = ev.currentTarget; busy(btn1, true); try { const em = !a.id && $('#an-m') && $('#an-m').checked; busy(ev.currentTarget, true, em ? 'Đang đăng & gửi email…' : 'Đang lưu…');
-      if (em && !confirm('Đăng và gửi email cho TOÀN BỘ nhân viên?')) { busy(btn1, false); return; }
-      const r = await call('ann.save', { id:a.id, title:$('#an-t').value, body:rteValue($('#an-ed', m.el)), cat:$('#an-c').value, pinned:$('#an-p').checked, email: em });
-      if (Array.isArray(r)) S.ann = r; else { S.ann = r.list;
+      if (em && scope === 'all' && full && !confirm('Đăng và gửi email cho TOÀN BỘ nhân viên?')) { busy(btn1, false); return; }
+      if (scope === 'custom' && !selD.size && !selE.size) { toast('Chọn ít nhất 1 bộ phận hoặc 1 nhân viên', 'err'); busy(btn1, false); return; }
+      const r = await call('ann.save', { id:a.id, title:$('#an-t').value, body:rteValue($('#an-ed', m.el)), cat:$('#an-c').value, pinned: !!($('#an-p') && $('#an-p').checked), email: em, scope, depts:[...selD], emps:[...selE] });
+      if (Array.isArray(r)) S.ann = r; else { S.ann = r.list; if (r.pending) toast(L2('Đã gửi — thông báo toàn công ty sẽ hiện sau khi quản lý duyệt', '전사 공지는 관리자 승인 후 게시됩니다'));
         if (r.mailError) toast('Đã đăng, nhưng chưa gửi được email: ' + r.mailError, 'err');
         else if (r.mail) toast(`Đã gửi email tới ${r.mail.sent} địa chỉ${r.mail.missing ? ` · ${r.mail.missing} người chưa có email` : ''}`); }
       m.close(); draw(); markAnnSeen(); renderNav(); toast('Đã lưu thông báo'); } catch(err){ toast(err.message,'err'); busy(btn1, false); } };
@@ -1846,12 +1907,29 @@ VIEWS.thongbao = async el => {
     if (lk) { const url = annUrl(lk.dataset.link); try { await navigator.clipboard.writeText(url); toast('Đã sao chép link thông báo'); } catch(err) { modal('Link thông báo', `<input class="input" value="${esc(url)}" readonly onclick="this.select()">`, '<button class="btn primary" data-close>Đóng</button>'); } return; }
     const st = e.target.closest('[data-stats]');
     if (st) return annStatsModal(S.ann.find(a => a.id === st.dataset.stats));
+    const rv = e.target.closest('[data-rv]');
+    if (rv) { const ok = rv.dataset.ok === '1', a = S.ann.find(x => x.id === rv.dataset.rv);
+      const m = modal(ok ? L2('Duyệt & đăng thông báo', '공지 승인·게시') : L2('Không duyệt thông báo', '공지 반려'), `<div data-noi18n><p style="margin:0 0 10px"><b>${esc(a.title)}</b> · ${esc(a.by)}</p>
+        <div class="field"><label for="rv-n">${L2('Ghi chú cho người đăng', '작성자에게 메모')} <span class="small muted">${L2('(không bắt buộc)', '(선택)')}</span></label><textarea class="textarea" id="rv-n" style="min-height:60px"></textarea></div></div>`,
+        `<button class="btn ghost" data-close>${L2('Huỷ', '취소')}</button><button class="btn ${ok ? 'primary' : 'danger'}" id="rv-ok">${ok ? L2('Duyệt & đăng', '승인·게시') : L2('Không duyệt', '반려')}</button>`);
+      $('#rv-ok', m.el).onclick = async ev => { const b1 = ev.currentTarget; busy(b1, true, L2('Đang lưu…', '저장 중…'));
+        try { const r = await call('ann.review', { id: a.id, ok, note: $('#rv-n', m.el).value }); S.ann = r.list; m.close(); draw(); renderNav();
+          toast(ok ? L2('Đã duyệt — thông báo đã hiện với mọi người', '승인 완료 — 전 직원에게 게시되었습니다') : L2('Đã ghi không duyệt', '반려 처리했습니다'));
+          if (r.mailError) toast(r.mailError, 'err'); else if (r.mail) toast(`Đã gửi email tới ${r.mail.sent} địa chỉ`); }
+        catch (err) { toast(err.message, 'err'); busy(b1, false); } };
+      return; }
     const ed = e.target.closest('[data-edit]'), dl = e.target.closest('[data-del]');
     if (ed) edit(S.ann.find(a => a.id === ed.dataset.edit));
     if (dl) { const m = modal('Gỡ thông báo?', '<p style="margin:0">Thông báo sẽ không còn hiện với nhân viên.</p>', '<button class="btn ghost" data-close>Huỷ</button><button class="btn danger" id="dl-ok">Gỡ</button>');
       $('#dl-ok', m.el).onclick = async () => { try { S.ann = await call('ann.delete', { id:dl.dataset.del }); m.close(); draw(); toast('Đã gỡ'); } catch(err){ toast(err.message,'err'); } }; }
   };
 };
+
+function annScopePill(a){
+  if (!a.scope || a.scope === 'all') return '';
+  const t = a.scope === 'team' ? L2('Team', '팀') + (a.depts && a.depts.length ? ' ' + a.depts.join(', ') : '') : [a.depts && a.depts.length ? a.depts.join(', ') : '', a.emps && a.emps.length ? L2(`${a.emps.length} người`, `${a.emps.length}명`) : ''].filter(Boolean).join(' · ');
+  return `<span class="pill" title="${esc(L2('Chỉ người nhận thấy thông báo này', '수신자만 볼 수 있는 공지'))}" data-noi18n>${ic('users')}${esc(t)}</span>`;
+}
 
 /* ---------- Bảng lương ---------- */
 VIEWS.luong = async el => {
@@ -2712,8 +2790,17 @@ VIEWS.dontu = async el => {
       if (type === 'ot') { const a = val('tu'), z = val('den'); if (a && z) { const [h1, m1] = a.split(':').map(Number), [h2, m2] = z.split(':').map(Number); const h = (h2 * 60 + m2 - h1 * 60 - m1) / 60; set('tong', h > 0 ? fmtNum(h) + ' giờ' : ''); } }
     };
     f.addEventListener('input', calc); f.addEventListener('change', e => { if (type === 'nghi' && e.target.dataset.k === 'tu' && val('den') < val('tu')) set('den', val('tu')); calc(); });
+    let phepBal = S.phepBal;   // số phép còn lại (tải 1 lần) – hết phép thì không cho gửi đơn phép năm
+    const phepBox = type === 'nghi' ? (() => { const ch = $('[data-chips="loai"]', f); if (!ch) return null; const d = document.createElement('div'); d.className = 'small'; d.style.marginTop = '6px'; d.setAttribute('data-noi18n', ''); ch.after(d); return d; })() : null;
+    const phepNeed = () => { const m = String(val('tong')).match(/[\d.,]+/); return m ? parseFloat(m[0].replace(',', '.')) : 0; };
+    const phepOver = () => type === 'nghi' && /PHÉP NĂM/.test(val('loai')) && phepBal != null && phepNeed() > phepBal + 1e-9;
+    const phepPaint = () => { if (!phepBox) return; if (!/PHÉP NĂM/.test(val('loai')) || phepBal == null) { phepBox.innerHTML = ''; return; }
+      const over = phepOver();
+      phepBox.innerHTML = `<span style="color:${over || phepBal <= 0 ? 'var(--bad)' : 'var(--muted)'};font-weight:${over ? 700 : 500}">${phepBal <= 0 ? L2('Bạn đã hết ngày phép năm — chọn "Không lương" hoặc "Trừ OT".', '연차를 모두 사용했습니다 — "무급휴가" 또는 "OT 차감"을 선택하세요.') : L2(`Bạn còn ${n2(phepBal)} ngày phép năm`, `잔여 연차 ${n2(phepBal)}일`) + (over ? L2(` — không đủ cho ${n2(phepNeed())} ngày`, ` — ${n2(phepNeed())}일에 부족합니다`) : '')}</span>`; };
+    if (phepBox && phepBal == null) call('bal.get', {}).then(d => { phepBal = S.phepBal = d.phep; phepPaint(); }).catch(() => {});
+    f.addEventListener('input', phepPaint); f.addEventListener('change', phepPaint); f.addEventListener('click', () => setTimeout(phepPaint, 0));
     if (preF) { Object.keys(preF).forEach(k => { const ch = $(`[data-chips="${k}"]`, f); if (ch) { const want = $$('.chip', ch).find(x => x.dataset.v === preF[k]); if (want) $$('.chip', ch).forEach(x => x.classList.toggle('on', x === want)); } else set(k, preF[k]); }); preF = null; }
-    calc();
+    calc(); phepPaint();
     $('#dt-reset').onclick = drawForm;
     f.addEventListener('submit', async e => {
       e.preventDefault();
@@ -2721,6 +2808,7 @@ VIEWS.dontu = async el => {
       for (const fd of T.fields) { data[fd.k] = val(fd.k); if (fd.req && !data[fd.k]) return toast(`Vui lòng điền "${fd.l}"`, 'err'); }
       data.ghichu = val('ghichu');
       if (type === 'nghi' && data.den < data.tu) return toast('Ngày kết thúc phải sau ngày bắt đầu', 'err');
+      if (phepOver()) return toast(phepBal <= 0 ? L2('Bạn đã hết ngày phép năm', '연차를 모두 사용했습니다') : L2(`Bạn chỉ còn ${n2(phepBal)} ngày phép năm`, `잔여 연차는 ${n2(phepBal)}일뿐입니다`), 'err');
       if ((type === 'ot' || type === 'congtac' || type === 'ccngoai' || type === 'dieuchinh') && data.den <= data.tu) return toast('Giờ kết thúc phải sau giờ bắt đầu', 'err');
       const btn = $('#dt-send'); busy(btn, true, 'Đang gửi…');
       try {
@@ -2730,7 +2818,7 @@ VIEWS.dontu = async el => {
           const b64 = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1]); r.onerror = rej; r.readAsDataURL(file); });
           data.file = (await call('req.upload', { name: file.name, mime: file.type, data: b64 })).url;
         }
-        await call('req.submit', { type, f: data });
+        await call('req.submit', { type, f: data }); S.phepBal = null; setTimeout(() => loadBadges(true), 1500);
         toast('Đã gửi đơn ' + T.label.toLowerCase());
         type = ''; switchTab('my');
       } catch(err) { toast(err.message, 'err'); busy(btn, false); }
@@ -2764,7 +2852,7 @@ VIEWS.dontu = async el => {
       const it = e.target.closest('.req-item'); if (it) showDetail(list[+it.dataset.i]);
     };
   };
-  const switchTab = t => { $$('#dt-tab button').forEach(x => x.classList.toggle('on', x.dataset.t === t)); (t === 'my' ? drawMy : t === 'staff' ? () => drawStaffReq(b) : async () => drawNew())().catch(err => b.innerHTML = errBox(err.message)); };
+  const switchTab = t => { $$('#dt-tab button').forEach(x => x.classList.toggle('on', x.dataset.t === t)); (t === 'my' ? drawMy : t === 'staff' ? () => { store.set('ibvn_dtseen', String(Date.now())); if (S.badges && S.badges.dtNew) { S.badges.dtNew = 0; renderNav(); } return drawStaffReq(b); } : async () => drawNew())().catch(err => b.innerHTML = errBox(err.message)); };
   $('#dt-tab').onclick = e => { const x = e.target.closest('button'); if (x) switchTab(x.dataset.t); };
   if (startTab === 'my') switchTab('my'); else drawNew();
 };
