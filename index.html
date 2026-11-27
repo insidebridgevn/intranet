@@ -1166,10 +1166,10 @@ function loadBadges(force){
   BADGE_T = Date.now();
   const n = new Date(), ms = [`${n.getFullYear()}-${pad(n.getMonth() + 1)}`];
   if (n.getDate() <= 5) { const p = new Date(n.getFullYear(), n.getMonth() - 1, 1); ms.unshift(`${p.getFullYear()}-${pad(p.getMonth() + 1)}`); }
-  let since = +(store.get('ibvn_dtseen') || 0); if (!since) { since = Date.now(); store.set('ibvn_dtseen', String(since)); }
-  Promise.all([Promise.all(ms.map(attMyMissing)).then(x => x.flat().length).catch(() => 0), call0('badges', { since }).catch(() => null)]).then(([miss, b]) => {
+  // không đếm đơn mới của nhân viên (chỉ báo ngày mình chưa làm đơn + đơn cần duyệt)
+  Promise.all([Promise.all(ms.map(attMyMissing)).then(x => x.flat().length).catch(() => 0), call0('badges', {}).catch(() => null)]).then(([miss, b]) => {
     const d = b && b.duyet;
-    S.badges = { miss, dtNew: b ? b.dtNew || 0 : 0, duyet: d ? (d.approve || 0) + (d.info || 0) : 0, duyetD: d || null };
+    S.badges = { miss, dtNew: 0, duyet: d ? (d.approve || 0) + (d.info || 0) : 0, duyetD: d || null };
     renderNav();
     if (window.__dtMissRedraw && $('#dt-miss')) window.__dtMissRedraw();   // đang mở trang Đơn từ → vẽ lại khung ngày thiếu đơn
   });
