@@ -1171,6 +1171,7 @@ function loadBadges(force){
     const d = b && b.duyet;
     S.badges = { miss, dtNew: b ? b.dtNew || 0 : 0, duyet: d ? (d.approve || 0) + (d.info || 0) : 0, duyetD: d || null };
     renderNav();
+    if (window.__dtMissRedraw && $('#dt-miss')) window.__dtMissRedraw();   // đang mở trang Đơn từ → vẽ lại khung ngày thiếu đơn
   });
 }
 setInterval(() => loadBadges(), 300000);
@@ -1567,6 +1568,7 @@ function go(key, noPush){
   }
   window.scrollTo(0, 0);
   const nav = S.nav = (S.nav || 0) + 1;
+  setTimeout(() => loadBadges(), 600);   // mở thẳng trang nào cũng tải số trên menu (tối đa 1 lần / 2,5 phút)
   if (maintOf(key)) {
     if (!isAdm()) { target.innerHTML = maintBox(key); return; }
     const bn = document.createElement('div'); bn.className = 'maint-bar'; bn.setAttribute('data-noi18n', '');
@@ -2784,6 +2786,7 @@ VIEWS.dontu = async el => {
   };
   /* Ngày còn thiếu đơn: bấm từng dòng → mở đúng loại đơn, điền sẵn ngày / giờ */
   const drawMiss = async () => {
+    window.__dtMissRedraw = drawMiss;
     const box = $('#dt-miss'); if (!box) return;
     const n = new Date(), ms = [`${n.getFullYear()}-${pad(n.getMonth() + 1)}`];
     if (n.getDate() <= 5) { const p = new Date(n.getFullYear(), n.getMonth() - 1, 1); ms.unshift(`${p.getFullYear()}-${pad(p.getMonth() + 1)}`); }
