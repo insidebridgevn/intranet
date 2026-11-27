@@ -201,6 +201,13 @@ svg.i{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-widt
 .nav a .badge{margin-left:auto;background:var(--grad);color:#fff;font-size:11px;font-weight:700;border-radius:10px;padding:1px 8px}
 .nav a.on .badge{background:rgba(255,255,255,.3)}
 #sb-toggle{position:relative}#sb-toggle.has-bdg::after{content:'';position:absolute;top:6px;right:6px;width:9px;height:9px;border-radius:50%;background:#E5484D;box-shadow:0 0 0 2px var(--surface)}
+.dt-miss{border-color:rgba(229,72,77,.35)}.dm-list{display:grid;gap:6px;padding:0 14px 14px}
+.dm-it{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font:inherit;color:inherit;transition:border-color .12s,background .12s}
+.dm-it:hover,.dm-it.on{border-color:#E5484D;background:var(--bad-bg)}.dm-d{display:flex;flex-direction:column;min-width:86px;font-size:12px;color:var(--muted)}.dm-d b{font-size:14px;color:var(--text)}
+.dm-k{font-weight:700;font-size:13.5px}.dm-k.late,.dm-k.early{color:var(--warn)}.dm-k.noin,.dm-k.noout,.dm-k.absent{color:var(--bad)}
+.dm-go{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:var(--brand)}.dm-go svg{width:15px;height:15px}
+.dm-new{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:12px 18px;border-top:1px dashed var(--line);font-weight:600}.dm-new span{display:inline-flex;align-items:center;gap:8px}.dm-new svg{width:16px;height:16px}
+@media (max-width:640px){.dm-it{flex-wrap:wrap}.dm-go{width:100%;justify-content:flex-end}}
 .ann-review{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:6px 0 10px;padding:10px 12px;border-radius:12px;background:var(--warn-bg);color:var(--warn);font-size:13px;font-weight:600}.ann-review svg{width:16px;height:16px;flex:none}
 .an-emps{max-height:220px;overflow:auto;display:grid;gap:4px;margin-top:8px;padding:6px 8px;border:1px solid var(--line);border-radius:12px}
 .nav a .badge.red{background:#E5484D;animation:bdgPop .35s ease}.nav a.on .badge.red{background:#fff;color:#E5484D}.badge-dot.red{background:#E5484D}
@@ -2458,7 +2465,26 @@ async function attMyMissing(month){
   const [yy, mm] = month.split('-').map(Number), last = new Date(yy, mm, 0).getDate();
   const R2 = { ...d.set, from: month + '-01', to: month + '-' + pad(last), emps: [{ id: d.empId, name: '' }], rows };
   R2.gioVao = attHM(R2.gioVao) || '08:00'; R2.gioRa = attHM(R2.gioRa) || '17:00';
-  return attBuild(R2).filter(x => x.miss && x.miss.length && x.day < isoDate(new Date())).map(x => ({ day: x.day, miss: x.miss }));
+  const done = dtDoneGet();
+  return attBuild(R2).map(x => ({ day: x.day, miss: (x.miss || []).filter(f => !done[x.day + '|' + f] && !done[x.day + '|*']), ci: x.ci || '', co: x.co || '' }))
+    .filter(x => x.miss.length && x.day < isoDate(new Date()));
+}
+/* Đơn vừa gửi (chưa kịp đồng bộ – đồng bộ ~10 phút / nửa ngày) → ẩn ngay khỏi danh sách thiếu đơn trên máy này */
+function dtDoneGet(){ try { const o = JSON.parse(store.get('ibvn_dtdone') || '{}'), now = Date.now(); Object.keys(o).forEach(k => { if (now - o[k] > 3 * 864e5) delete o[k]; }); return o; } catch (e) { return {}; } }
+function dtDoneAdd(type, f){
+  const o = dtDoneGet(), now = Date.now(), N = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[đĐ]/g, 'D').toUpperCase();
+  if (type === 'tre' && f.ngay) o[f.ngay + '|' + (/SOM/.test(N(f.loai)) ? 'early' : 'late')] = now;
+  if (type === 'quen' && f.ngay) { const k = N(f.loai); if (/CA NGAY/.test(k)) { o[f.ngay + '|noin'] = now; o[f.ngay + '|noout'] = now; o[f.ngay + '|absent'] = now; } else o[f.ngay + '|' + (/OUT/.test(k) ? 'noout' : 'noin')] = now; }
+  if (type === 'nghi' && f.tu) { for (let d = parseISO(f.tu), e = parseISO(f.den || f.tu), g = 0; d <= e && g < 31; g++, d.setDate(d.getDate() + 1)) o[isoDate(d) + '|*'] = now; }
+  store.set('ibvn_dtdone', JSON.stringify(o));
+}
+/** Ngày thiếu đơn → loại đơn + thông tin điền sẵn */
+function missForm(x, f){
+  if (f === 'late') return { type: 'tre', f: { loai: O.tre[0], ngay: x.day, gio: (x.ci || '').slice(0, 5) } };
+  if (f === 'early') return { type: 'tre', f: { loai: O.tre[1], ngay: x.day, gio: (x.co || '').slice(0, 5) } };
+  if (f === 'noin') return { type: 'quen', f: { loai: O.quen[0], ngay: x.day } };
+  if (f === 'noout') return { type: 'quen', f: { loai: O.quen[1], ngay: x.day } };
+  return { type: 'nghi', f: { buoi: O.buoi[0], tu: x.day, den: x.day } };
 }
 const DT_NM_KO = { late:'지각', early:'조퇴', noin:'출근 체크 누락', noout:'퇴근 체크 누락', absent:'결근' };
 const missTxt = list => list.map(x => `${x.day.slice(8, 10)}/${x.day.slice(5, 7)} (${x.miss.map(f => L2(DT_NM[f], DT_NM_KO[f])).join(', ')})`).join(' · ');
@@ -2750,10 +2776,39 @@ VIEWS.dontu = async el => {
   let type = (S.pre && S.pre.dontu) || ''; const startTab = (S.pre && S.pre.dontuTab) || 'new'; let preF = (S.pre && S.pre.f) || null; S.pre = null;
   let monthF = startTab === 'my' ? 'cur' : 'all';
   const drawNew = () => {
-    b.innerHTML = `<div class="stack"><div class="types" id="dt-types">${Object.keys(DT).map(k => `<button class="type hu-${DTH[k]} ${k === type ? 'on' : ''}" data-k="${k}"><div class="ic">${ic(DT[k].icon)}</div><b>${DT[k].label}</b><span>${DT[k].desc}</span></button>`).join('')}</div><div id="dt-form"></div></div>`;
+    b.innerHTML = `<div class="stack"><div id="dt-miss"></div><div class="types" id="dt-types">${Object.keys(DT).map(k => `<button class="type hu-${DTH[k]} ${k === type ? 'on' : ''}" data-k="${k}"><div class="ic">${ic(DT[k].icon)}</div><b>${DT[k].label}</b><span>${DT[k].desc}</span></button>`).join('')}</div><div id="dt-form"></div></div>`;
     $('#dt-types').onclick = e => { const t = e.target.closest('.type'); if (!t) return; type = t.dataset.k; $$('#dt-types .type').forEach(x => x.classList.toggle('on', x === t)); drawForm(); };
+    drawMiss();
     if (type) drawForm();
     else $('#dt-form').innerHTML = `<div class="card"><div class="empty"><div class="ico">${ic('file')}</div><b>Chọn loại đơn ở trên để bắt đầu</b>Thông tin nhân viên được điền sẵn, bạn chỉ cần điền phần còn lại.</div></div>`;
+  };
+  /* Ngày còn thiếu đơn: bấm từng dòng → mở đúng loại đơn, điền sẵn ngày / giờ */
+  const drawMiss = async () => {
+    const box = $('#dt-miss'); if (!box) return;
+    const n = new Date(), ms = [`${n.getFullYear()}-${pad(n.getMonth() + 1)}`];
+    if (n.getDate() <= 5) { const p = new Date(n.getFullYear(), n.getMonth() - 1, 1); ms.unshift(`${p.getFullYear()}-${pad(p.getMonth() + 1)}`); }
+    let list = [];
+    try { list = (await Promise.all(ms.map(attMyMissing))).flat().sort((a, c) => a.day < c.day ? -1 : 1); } catch (e) { return; }
+    if (!box.isConnected) return;
+    const dtNew = (S.badges && S.badges.dtNew) || 0;
+    if (S.badges) { S.badges.miss = list.length; renderNav(); }
+    if (!list.length && !dtNew) { box.innerHTML = ''; return; }
+    const NM = { late: L2('Đi trễ', '지각'), early: L2('Về sớm', '조퇴'), noin: L2('Quên check-in', '출근 체크 누락'), noout: L2('Quên check-out', '퇴근 체크 누락'), absent: L2('Nghỉ / không có chấm công', '결근 / 출퇴근 기록 없음') };
+    const FORM = { tre: L2('Đơn đi trễ / về sớm', '지각/조퇴 신청'), quen: L2('Đơn quên chấm công', '출퇴근 누락 신청'), nghi: L2('Đơn xin nghỉ', '휴가 신청') };
+    const items = []; list.forEach(x => x.miss.forEach(f => items.push({ x, f })));
+    box.innerHTML = `<div class="card dt-miss" data-noi18n>
+      ${items.length ? `<div class="card-h"><h3><span class="hi" style="background:var(--bad-bg);color:var(--bad)">${ic('info')}</span>${L2(`Bạn còn ${list.length} ngày chưa làm đơn`, `미신청 ${list.length}일`)}</h3><span class="small muted">${L2('Bấm vào từng dòng để mở đơn đã điền sẵn', '항목을 누르면 내용이 채워진 신청서가 열립니다')}</span></div>
+      <div class="dm-list">${items.map((it, i) => { const mf = missForm(it.x, it.f), t = it.f === 'late' ? it.x.ci : it.f === 'early' ? it.x.co : '';
+        return `<button class="dm-it" data-mi="${i}"><span class="dm-d"><b>${wdOf(it.x.day)}</b>${vnDate(it.x.day)}</span><span class="dm-k ${it.f}">${NM[it.f]}${t ? ` · ${esc(t.slice(0, 5))}` : ''}</span><span class="spacer"></span><span class="dm-go">${ic('file')}${FORM[mf.type]}${ic('chevR')}</span></button>`; }).join('')}</div>` : ''}
+      ${dtNew ? `<div class="dm-new"><span>${ic('users')}${L2(`${dtNew} đơn mới của nhân viên`, `직원 신규 신청 ${dtNew}건`)}</span><button class="btn sm soft" id="dm-staff">${L2('Xem đơn của nhân viên', '직원 신청서 보기')}</button></div>` : ''}</div>`;
+    $$('.dm-it', box).forEach(btn => btn.onclick = () => {
+      const it = items[+btn.dataset.mi], mf = missForm(it.x, it.f);
+      $$('.dm-it', box).forEach(x => x.classList.toggle('on', x === btn));
+      type = mf.type; preF = mf.f; $$('#dt-types .type').forEach(x => x.classList.toggle('on', x.dataset.k === type)); drawForm();
+      const fo = $('#dt-form'); if (fo) fo.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setTimeout(() => { const r = $('#dt-f [data-k="lydo"]'); if (r) r.focus({ preventScroll: true }); }, 450);
+    });
+    const st = $('#dm-staff', box); if (st) st.onclick = () => switchTab('staff');
   };
   const drawForm = () => {
     const T = DT[type], today = isoDate(new Date());
@@ -2818,7 +2873,7 @@ VIEWS.dontu = async el => {
           const b64 = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1]); r.onerror = rej; r.readAsDataURL(file); });
           data.file = (await call('req.upload', { name: file.name, mime: file.type, data: b64 })).url;
         }
-        await call('req.submit', { type, f: data }); S.phepBal = null; setTimeout(() => loadBadges(true), 1500);
+        await call('req.submit', { type, f: data }); S.phepBal = null; dtDoneAdd(type, data); setTimeout(() => loadBadges(true), 1500);
         toast('Đã gửi đơn ' + T.label.toLowerCase());
         type = ''; switchTab('my');
       } catch(err) { toast(err.message, 'err'); busy(btn, false); }
