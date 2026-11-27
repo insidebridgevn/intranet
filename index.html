@@ -2285,7 +2285,7 @@ VIEWS.chamcong = async el => {
         attBuild(R2).forEach(x => BL[x.day] = x);
       }
       const L = Object.values(BL), cnt = f => L.filter(x => x.flags.includes(f)).length, nod = L.filter(x => x.miss.length).length;
-      { const al = $('#cc-al'); if (al) { al.innerHTML = ''; const ml = L.filter(x => x.miss.length && x.day < isoDate(new Date())).map(x => ({ day: x.day, miss: x.miss })).sort((a, b) => a.day < b.day ? -1 : 1);
+      { const al = $('#cc-al'); if (al) { al.innerHTML = ''; const ml = L.map(x => ({ day: x.day, miss: (x.miss || []).filter(f => x.day < isoDate(new Date()) || f === 'late'), ci: x.ci || '', co: x.co || '' })).filter(x => x.miss.length && x.day <= isoDate(new Date())).sort((a, b) => a.day < b.day ? -1 : 1);
         if (ml.length && d.empId === S.user.id && d.set && d.set.dtAt) al.appendChild(missAlarm(ml)); else al.style.display = 'none'; if (ml.length && d.empId === S.user.id) al.style.display = ''; } }
       $('#cc-fl').innerHTML = L.length ? `<span class="muted">Tháng này:</span> <span class="pill ${cnt('late') ? 'warn' : ''}">Đi trễ ${cnt('late')}</span><span class="pill ${cnt('early') ? 'warn' : ''}">Về sớm ${cnt('early')}</span><span class="pill">Quên chấm công ${cnt('noin') + cnt('noout')}</span>`
         + (d.set && d.set.dtAt ? (nod ? `<span class="pill bad">${ic('info')}${nod} ngày chưa làm đơn</span>` : '<span class="pill ok">Đã đủ đơn</span>') + `<span class="small muted">· đơn từ cập nhật ${esc(d.set.dtAt.slice(11, 16) + ' ' + vnDate(d.set.dtAt.slice(0, 10)))}</span>` : '') : '';
@@ -2468,8 +2468,9 @@ async function attMyMissing(month){
   const R2 = { ...d.set, from: month + '-01', to: month + '-' + pad(last), emps: [{ id: d.empId, name: '' }], rows };
   R2.gioVao = attHM(R2.gioVao) || '08:00'; R2.gioRa = attHM(R2.gioRa) || '17:00';
   const done = dtDoneGet();
-  return attBuild(R2).map(x => ({ day: x.day, miss: (x.miss || []).filter(f => !done[x.day + '|' + f] && !done[x.day + '|*']), ci: x.ci || '', co: x.co || '' }))
-    .filter(x => x.miss.length && x.day < isoDate(new Date()));
+  const today = isoDate(new Date());   // hôm nay: đi trễ đã chốt khi quét vào → báo luôn; về sớm / quên quét / nghỉ chờ hết ngày mới báo
+  return attBuild(R2).map(x => ({ day: x.day, miss: (x.miss || []).filter(f => !done[x.day + '|' + f] && !done[x.day + '|*'] && (x.day < today || f === 'late')), ci: x.ci || '', co: x.co || '' }))
+    .filter(x => x.miss.length && x.day <= today);
 }
 /* Đơn vừa gửi (chưa kịp đồng bộ – đồng bộ ~10 phút / nửa ngày) → ẩn ngay khỏi danh sách thiếu đơn trên máy này */
 function dtDoneGet(){ try { const o = JSON.parse(store.get('ibvn_dtdone') || '{}'), now = Date.now(); Object.keys(o).forEach(k => { if (now - o[k] > 3 * 864e5) delete o[k]; }); return o; } catch (e) { return {}; } }
