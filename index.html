@@ -3122,8 +3122,9 @@ function balLine(h){
     case 'nghi': return L2(`Nghỉ phép năm ${rng} (${buoiTxt(h.buoi)}) · ${n2(h.days)} ngày${soon}`, `연차 사용 ${rng} (${buoiTxt(h.buoi)}) · ${n2(h.days)}일${soon}`);
     case 'nghikl': return L2(`Nghỉ không lương ${rng} (${buoiTxt(h.buoi)}) · ${n2(h.days)} ngày — không trừ phép${soon}`, `무급휴가 ${rng} (${buoiTxt(h.buoi)}) · ${n2(h.days)}일 — 연차 차감 없음${soon}`);
     case 'nghiot': return L2(`Nghỉ trừ OT ${rng} (${buoiTxt(h.buoi)}) · ${n2(h.days)} ngày × 8 giờ${soon}`, `OT 차감 휴가 ${rng} (${buoiTxt(h.buoi)}) · ${n2(h.days)}일 × 8시간${soon}`);
-    case 'tre': return /TRỄ/.test(h.loai) ? L2(`Đi trễ ${ddmm(h.date)} (vào ${h.gio}) · trừ OT, làm tròn lên 0.5 giờ`, `지각 ${ddmm(h.date)} (출근 ${h.gio}) · OT 차감, 0.5시간 단위 올림`)
-                                          : L2(`Về sớm ${ddmm(h.date)} (ra ${h.gio}) · trừ OT, làm tròn lên 0.5 giờ`, `조퇴 ${ddmm(h.date)} (퇴근 ${h.gio}) · OT 차감, 0.5시간 단위 올림`);
+    case 'tre': { const ca = h.ca ? L2(` so với ${h.ev ? 'ca event ' : 'giờ '}${h.ca} → ${h.mins} phút`, ` ${h.ev ? '이벤트 근무 ' : '기준 '}${h.ca} 대비 ${h.mins}분`) : '';
+      return /TRỄ/.test(h.loai) ? L2(`Đi trễ ${ddmm(h.date)} (vào ${h.gio}${ca}) · trừ OT, làm tròn lên 0.5 giờ`, `지각 ${ddmm(h.date)} (출근 ${h.gio}${ca}) · OT 차감, 0.5시간 단위 올림`)
+                                : L2(`Về sớm ${ddmm(h.date)} (ra ${h.gio}${ca}) · trừ OT, làm tròn lên 0.5 giờ`, `조퇴 ${ddmm(h.date)} (퇴근 ${h.gio}${ca}) · OT 차감, 0.5시간 단위 올림`); }
     case 'ot': {
       const head = (h.paid ? L2('OT tính lương', 'OT 수당') : L2('OT bù giờ', 'OT 보상휴가')) + ` ${wdOf(h.date)} ${ddmm(h.date)}${h.tu ? ` ${h.tu}–${h.den}` : ''}`;
       let calc;
